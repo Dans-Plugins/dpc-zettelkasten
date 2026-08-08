@@ -246,7 +246,7 @@ function renderStats() {
   $("#stats").innerHTML =
     `<b>${META.noteCount}</b> notes · <b>${META.linkCount}</b> links<br>` +
     `<b>${META.citationCount}</b> citations from <b>${META.repos.length}</b> repos<br>` +
-    `built ${esc(META.generated)}`;
+    `content as of ${esc(META.updated)}`;
 }
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

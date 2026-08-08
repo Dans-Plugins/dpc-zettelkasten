@@ -10,7 +10,6 @@ Usage:
 """
 
 import argparse
-import datetime
 import json
 import os
 import sys
@@ -103,8 +102,11 @@ def main():
         for source in note.sources:
             repos.setdefault(source["repo"], set()).add(source["ref"])
 
+    # Derived from the notes, never from the clock: the build must be
+    # reproducible so CI can diff a fresh build against the committed
+    # site/index.html and detect a stale one.
     meta = {
-        "generated": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "updated": max([n.meta.get("updated", "") for n in notes] or [""]),
         "noteCount": len(notes),
         "mocCount": sum(1 for n in notes if n.type == "moc"),
         "conceptCount": sum(1 for n in notes if n.type == "concept"),
