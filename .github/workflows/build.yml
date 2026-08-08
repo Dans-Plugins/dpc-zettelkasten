@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Validate notes
+        run: python3 tools/validate.py
+
+      - name: Check docs/SOURCES.md is current
+        run: python3 tools/sources_index.py --check
+
+      - name: Check site/index.html matches the notes
+        run: |
+          cp site/index.html /tmp/committed.html
+          python3 tools/build.py
+          if ! diff -q /tmp/committed.html site/index.html > /dev/null; then
+            echo "::error::site/index.html is out of date — run 'python3 tools/build.py' and commit the result"
+            exit 1
+          fi
+          echo "site/index.html is up to date"
+
+  citations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      # Citations are checked against the live GitHub API. Drift is reported but
+      # never fails the build — code moving on is expected and is a signal to
+      # re-verify a note, not a reason to block an unrelated change. Only an
+      # invalid citation (missing file at the pinned commit, or a line range past
+      # the end of the file) is a failure.
+      - name: Check citations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/check_sources.py
