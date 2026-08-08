@@ -31,9 +31,13 @@ measured against. It contains no code — six documents and a ready-to-use promp
 | `RELEASE_AUTOMATION.md` | [[release-automation]] |
 | `GITHUB_COPILOT_INSTRUCTIONS.md` | The required `.github/copilot-instructions.md` |
 
-Every one of them points at [[medieval-factions]] as the reference
-implementation. The standard is not an abstract ideal; it is "look at what the
-flagship does".
+Five of the six point at [[medieval-factions]] as the reference implementation.
+The standard is not an abstract ideal; it is "look at what the flagship does".
+
+`GITHUB_COPILOT_INSTRUCTIONS.md` is the exception, and so is the
+`CLAUDE_PROMPT.md` at the repository root — neither mentions the flagship at
+all, because both describe a file each repository must write about *itself*
+rather than a shape to copy from elsewhere.
 
 ## Conventions for coding agents
 

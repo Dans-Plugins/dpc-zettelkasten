@@ -16,13 +16,13 @@ rather than incidentally.
 | [Dans-Plugins/Dans-Plugin-Manager](https://github.com/Dans-Plugins/Dans-Plugin-Manager) | [`7b302f2820`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/tree/7b302f2820a017373558a50f752697226f9ec975) | 2 | 1 |
 | [Dans-Plugins/Fiefs](https://github.com/Dans-Plugins/Fiefs) | [`4c66e09aa5`](https://github.com/Dans-Plugins/Fiefs/tree/4c66e09aa50f467921ce1519f0b7236a5f23f7a2) | 2 | 1 |
 | [Dans-Plugins/Mailboxes](https://github.com/Dans-Plugins/Mailboxes) | [`3f8fb186bb`](https://github.com/Dans-Plugins/Mailboxes/tree/3f8fb186bbdd067ae893d911b26d065d8f3fdaf8) | 2 | 1 |
-| [Dans-Plugins/Medieval-Factions](https://github.com/Dans-Plugins/Medieval-Factions) | [`3a51c55366`](https://github.com/Dans-Plugins/Medieval-Factions/tree/3a51c55366b544d31429fae8bcb64efaf1878e15) | 44 | 30 |
+| [Dans-Plugins/Medieval-Factions](https://github.com/Dans-Plugins/Medieval-Factions) | [`3a51c55366`](https://github.com/Dans-Plugins/Medieval-Factions/tree/3a51c55366b544d31429fae8bcb64efaf1878e15) | 45 | 30 |
 | [Dans-Plugins/Ponder](https://github.com/Dans-Plugins/Ponder) | [`ff5276ae2f`](https://github.com/Dans-Plugins/Ponder/tree/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f) | 3 | 1 |
 | [Dans-Plugins/dansplugins-dot-com](https://github.com/Dans-Plugins/dansplugins-dot-com) | [`21faae72f8`](https://github.com/Dans-Plugins/dansplugins-dot-com/tree/21faae72f893a5267d4d754a0fd97d1c183f3aba) | 2 | 1 |
 | [Dans-Plugins/dpc-conventions](https://github.com/Dans-Plugins/dpc-conventions) | [`9dc9aa37e9`](https://github.com/Dans-Plugins/dpc-conventions/tree/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec) | 5 | 7 |
 | [Dans-Plugins/dpc-mc-server](https://github.com/Dans-Plugins/dpc-mc-server) | [`d42e0ec06f`](https://github.com/Dans-Plugins/dpc-mc-server/tree/d42e0ec06f9b29baaa043442d24ef2dd81edfa49) | 2 | 2 |
 
-9 repositories, 9 pinned commits, 88 citations across 42 notes.
+9 repositories, 9 pinned commits, 90 citations across 42 notes.
 
 ## Cited files by repository
 
@@ -71,6 +71,7 @@ At `3a51c55366b544d31429fae8bcb64efaf1878e15`:
 - [`src/main/kotlin/com/dansplugins/factionsystem/claim/MfClaimedChunk.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/claim/MfClaimedChunk.kt)
 - [`src/main/kotlin/com/dansplugins/factionsystem/command/faction/claim/MfFactionClaimCircleCommand.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/command/faction/claim/MfFactionClaimCircleCommand.kt)
 - [`src/main/kotlin/com/dansplugins/factionsystem/command/faction/claim/MfFactionClaimFillCommand.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/command/faction/claim/MfFactionClaimFillCommand.kt)
+- [`src/main/kotlin/com/dansplugins/factionsystem/command/faction/kick/MfFactionKickCommand.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/command/faction/kick/MfFactionKickCommand.kt)
 - [`src/main/kotlin/com/dansplugins/factionsystem/dpc/DpcFactionPayload.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/dpc/DpcFactionPayload.kt)
 - [`src/main/kotlin/com/dansplugins/factionsystem/dpc/MfDpcApiService.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/dpc/MfDpcApiService.kt)
 - [`src/main/kotlin/com/dansplugins/factionsystem/event/faction/FactionCreateEvent.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/event/faction/FactionCreateEvent.kt)

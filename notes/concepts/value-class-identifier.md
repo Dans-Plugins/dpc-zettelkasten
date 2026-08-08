@@ -20,8 +20,9 @@ sources:
 ---
 
 `MfFactionId`, `MfPlayerId`, `MfLawId`, `MfGateId`, `MfLockedBlockId`,
-`MfDuelId`, `MfFactionRoleId` — every identifier in the plugin is a
-`@JvmInline value class` wrapping a `String`.
+`MfDuelId`, `MfFactionRoleId`, `MfApprovalRequestId`,
+`MfFactionRelationshipId` — all nine identifiers in the plugin are
+`@JvmInline value class` wrappers around a `String`, with no exceptions.
 
 ## What it buys
 

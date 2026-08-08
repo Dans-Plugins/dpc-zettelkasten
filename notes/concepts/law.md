@@ -15,25 +15,31 @@ sources:
   - repo: Dans-Plugins/Medieval-Factions
     path: src/main/kotlin/com/dansplugins/factionsystem/law/MfLawService.kt
     ref: 3a51c55366b544d31429fae8bcb64efaf1878e15
-    claim: Laws are managed by a dedicated service over a repository, following the same pattern as other domain records.
+    claim: The law service exposes only get, save, delete and move — no evaluation or enforcement of a law's text.
+  - repo: Dans-Plugins/Medieval-Factions
+    path: README.md
+    ref: 3a51c55366b544d31429fae8bcb64efaf1878e15
+    claim: The README describes the plugin as letting players write laws and generally attempt to recreate society, framing it as a set of mechanics rather than an enforcement system.
 ---
 
 A law is a numbered line of text belonging to a [[faction]]. The plugin stores
 it, orders it, and displays it — and does nothing else with it.
 
-## Deliberately inert
+## Inert by construction
 
-Nothing in the codebase reads a law's text and acts on it. There is no rule
-engine, no automatic punishment, no parser. A law is a `String` with an ordinal.
+Nothing in the codebase reads a law's text and acts on it. `MfLawService` offers
+get, save, delete, and move — there is no rule engine, no automatic punishment,
+no parser. A law is a `String` with an ordinal.
 
-This is not an omission. The design bet of [[medieval-factions]] is that the
-interesting parts of a society — legitimacy, enforcement, dispute — are things
-players do to each other, and that the plugin's job is to give them the props.
-Mechanically enforced laws would replace the politics with a rules lawyer.
+Set beside [[faction-permission]], which *is* enforced, the pair marks a line:
+permissions constrain what a client is *able* to do, while laws describe what
+members *should* do. One is a security boundary; the other is a social one, and
+only the first is the plugin's to police.
 
-Compare [[faction-permission]], which *is* enforced: the split is that
-permissions constrain what the client can do, while laws describe what members
-*should* do. One is a security boundary; the other is a social one.
+Whether that split was reasoned out or simply where the feature stopped is not
+recorded anywhere. What is on the record is the README's framing of the plugin —
+players "write laws" and "attempt to recreate society somewhat" — which reads as
+a description of props for a society rather than of a system that runs one.
 
 ## Numbering
 

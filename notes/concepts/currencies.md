@@ -44,9 +44,9 @@ that faction's currencies and saves each one with status `RETIRED`. Nothing is
 deleted.
 
 Coins already minted therefore survive the state that issued them. That is both
-historically apt and the only tractable option: the money is `ItemStack`s spread
-across player inventories, chests, and the ground, and there is no way to recall
-them.
+historically apt and the practical option: the money is `ItemStack`s spread
+across player inventories, chests, and the ground, and nothing in the plugin
+could recall them.
 
 ## A faithful copy of the flagship's architecture
 

@@ -14,8 +14,8 @@ sources:
 ---
 
 The organization writes its standards down. [[dpc-conventions]] is the repository
-that holds them, and [[medieval-factions]] is the worked example every document
-points back at.
+that holds them, and [[medieval-factions]] is the worked example most of those
+documents point back at.
 
 ## The documents
 

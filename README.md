@@ -32,7 +32,7 @@ natively. GitHub renders them as ordinary Markdown too.
 
 ## What's in it
 
-45 notes: 7 Maps of Content and 38 concept notes, carrying 88 citations across 9
+45 notes: 7 Maps of Content and 38 concept notes, carrying 90 citations across 9
 repositories.
 
 Start at [Dan's Plugins Community](notes/moc/moc-dans-plugins-community.md), the

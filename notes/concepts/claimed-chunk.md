@@ -22,8 +22,8 @@ coordinates, and every question about land reduces to a lookup on
 ## The shape of the record
 
 `MfClaimedChunk` holds four fields and no behaviour: the world UUID, the chunk's
-`x` and `z`, and the owning `factionId`. It is deliberately the smallest thing
-that can answer "who owns this ground?".
+`x` and `z`, and the owning `factionId`. It is the smallest record that can answer
+"who owns this ground?", and it holds nothing else.
 
 Note the direction of the reference. The chunk points at the faction; the
 [[faction]] record does not hold a list of its claims. Territory is therefore

@@ -24,8 +24,8 @@ picking from a fixed list.
 
 ## Three-level resolution
 
-The permission map is `Map<String, Boolean?>` — nullable on purpose. Looking up
-whether a role grants a permission walks three levels:
+The permission map is `Map<String, Boolean?>`, and the nullability carries
+meaning. Looking up whether a role grants a permission walks three levels:
 
 1. **The role's own value**, if it is not null.
 2. **The faction's default** for that permission.

@@ -30,8 +30,9 @@ server can turn it off entirely. When it is on, a faction that tries to claim
 past its allowance is refused with the *demesne limit* message and the count it
 is allowed, floored to a whole number.
 
-The term is borrowed deliberately: a demesne is the land a medieval lord held
-directly, as distinct from land held by his vassals.
+The plugin's own language key calls this the demesne limit. A demesne is the
+land a medieval lord held directly, as distinct from land held by vassals —
+which is the same distinction [[vassalage]] draws mechanically.
 
 ## Why it is the keystone
 

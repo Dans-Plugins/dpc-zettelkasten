@@ -56,8 +56,8 @@ again, which is a very different message from an internal error.
 
 `MfFactionService` is the fullest example: it loads every [[faction]] into a
 `ConcurrentHashMap` at startup, serves reads from that map, and on write both
-persists through the [[repository-pattern]] and updates the cache. Reads are
-therefore free; writes are the only thing that touches the database.
+persists through the [[repository-pattern]] and updates the cache. After that
+one bulk load, ordinary reads never reach the database — only writes do.
 
 ## Related
 

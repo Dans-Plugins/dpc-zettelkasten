@@ -21,9 +21,9 @@ sources:
     claim: Ponder modules are published to repo.dansplugins.com under the com.dansplugins group and are also available via GitHub Packages.
 ---
 
-Ponder is the shared library DPC plugins build on. It is deliberately small —
-three modules, each a handful of files — and published as Maven artifacts rather
-than shaded into each plugin.
+Ponder is the shared library DPC plugins build on. It is small — three modules,
+each a handful of files — and published as Maven artifacts rather than shaded
+into each plugin.
 
 ## The three modules
 

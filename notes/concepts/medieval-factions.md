@@ -18,9 +18,9 @@ sources:
 ---
 
 Medieval Factions is a Spigot plugin written in Kotlin that lets players
-organise into feudal nations. It is the largest and most heavily documented
-codebase in the organization, and every document in [[dpc-conventions]] names it
-as the reference implementation.
+organise into feudal nations. It is the largest repository in the organization
+and the most heavily documented, and [[dpc-conventions]] names it as the
+reference implementation the other plugins are measured against.
 
 ## What it simulates
 
