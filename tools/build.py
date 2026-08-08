@@ -21,6 +21,7 @@ import zklib  # noqa: E402
 import re  # noqa: E402
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "template.html")
+ENGINE_PATH = os.path.join(zklib.REPO_ROOT, "lib", "zk-graphql.js")
 GITHUB_BASE = "https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/"
 ROOT_MOC = "moc-dans-plugins-community"
 
@@ -163,6 +164,8 @@ def clusters(notes, payload):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default=os.path.join("site", "index.html"))
+    parser.add_argument("--dataset", default=os.path.join("site", "dataset.json"),
+                        help="where to write the machine-readable graph consumed by dpc-mcp-server")
     args = parser.parse_args()
 
     try:
@@ -199,8 +202,12 @@ def main():
 
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as handle:
         template = handle.read()
+    with open(ENGINE_PATH, "r", encoding="utf-8") as handle:
+        engine = handle.read()
 
     html = template.replace(
+        "/*__ZKGRAPHQL__*/", engine
+    ).replace(
         "/*__NOTES__*/null", json.dumps(payload, ensure_ascii=False, sort_keys=True)
     ).replace(
         "/*__META__*/null", json.dumps(meta, ensure_ascii=False, sort_keys=True)
@@ -213,6 +220,24 @@ def main():
     with open(out_path, "w", encoding="utf-8") as handle:
         handle.write(html)
 
+    # The same graph, minus the rendered HTML and plus the raw Markdown, for
+    # consumers that are not a browser — chiefly dpc-mcp-server.
+    dataset = {"meta": meta, "notes": {}}
+    for note in notes:
+        record = dict(payload[note.id])
+        record.pop("html", None)
+        record.pop("toc", None)
+        record["body"] = note.body
+        dataset["notes"][note.id] = record
+    data_path = (os.path.join(zklib.REPO_ROOT, args.dataset)
+                 if not os.path.isabs(args.dataset) else args.dataset)
+    data_dir = os.path.dirname(data_path)
+    if data_dir and not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+    with open(data_path, "w", encoding="utf-8") as handle:
+        json.dump(dataset, handle, ensure_ascii=False, sort_keys=True, indent=1)
+        handle.write("\n")
+
     print(
         "built %s — %d notes (%d MOCs, %d concepts), %d links, %d citations across %d repos"
         % (
@@ -221,6 +246,8 @@ def main():
             meta["linkCount"], meta["citationCount"], len(meta["repos"]),
         )
     )
+    print("wrote %s — %d notes with Markdown bodies"
+          % (os.path.relpath(data_path, zklib.REPO_ROOT), len(dataset["notes"])))
     return 0
 
 

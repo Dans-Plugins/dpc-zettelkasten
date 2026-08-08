@@ -90,8 +90,12 @@ notes/
 docs/
   NOTE_FORMAT.md   The rules: frontmatter, citations, wikilinks
   SOURCES.md       Generated index of every pinned commit
+lib/
+  zk-graphql.js    The GraphQL schema + engine, shared by the explorer and MCP
 tools/            Dependency-free Python 3.8+ toolchain
-site/index.html   The generated explorer (committed, so it works on clone)
+site/
+  index.html       The generated explorer (committed, so it works on clone)
+  dataset.json     The same graph as data, for non-browser consumers
 .claude/skills/   Skills for growing and auditing the collection
 ```
 
@@ -109,9 +113,26 @@ python3 tools/build.py          # regenerate site/index.html
 `validate.py` and `build.py` run offline and are what CI enforces.
 `check_sources.py` needs an authenticated [`gh`](https://cli.github.com/).
 
-**After changing any note, rebuild `site/index.html` and commit it.** It is a
-generated file kept in the repository so the explorer works straight from a
-clone.
+**After changing any note, rebuild and commit `site/index.html` and
+`site/dataset.json`.** Both are generated files kept in the repository so the
+explorer works straight from a clone and downstream consumers have something
+stable to fetch. CI fails if either is stale.
+
+## Consuming it elsewhere
+
+`lib/zk-graphql.js` is the schema and engine as a standalone module, and
+`site/dataset.json` is the same graph the explorer uses with the rendered HTML
+swapped for raw Markdown. Together they run anywhere Node does:
+
+```js
+const { createEngine } = require("./lib/zk-graphql.js");
+const engine = createEngine(require("./site/dataset.json"));
+engine.execute("{ notes(orderBy: degree, first: 5) { title degree } }");
+```
+
+[**dpc-mcp-server**](https://github.com/Dans-Plugins/dpc-mcp-server) is built on
+exactly this, exposing the collection to any MCP client so an agent can query
+the graph and read the citations behind a claim.
 
 ## Skills
 

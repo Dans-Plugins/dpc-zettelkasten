@@ -21,15 +21,37 @@ jobs:
       - name: Check docs/SOURCES.md is current
         run: python3 tools/sources_index.py --check
 
-      - name: Check site/index.html matches the notes
+      - name: Check generated artifacts match the notes
         run: |
           cp site/index.html /tmp/committed.html
+          cp site/dataset.json /tmp/committed.json
           python3 tools/build.py
-          if ! diff -q /tmp/committed.html site/index.html > /dev/null; then
-            echo "::error::site/index.html is out of date — run 'python3 tools/build.py' and commit the result"
-            exit 1
-          fi
-          echo "site/index.html is up to date"
+          for f in index.html:/tmp/committed.html dataset.json:/tmp/committed.json; do
+            name="${f%%:*}"; old="${f##*:}"
+            if ! diff -q "$old" "site/$name" > /dev/null; then
+              echo "::error::site/$name is out of date — run 'python3 tools/build.py' and commit the result"
+              exit 1
+            fi
+          done
+          echo "site/index.html and site/dataset.json are up to date"
+
+      # dpc-mcp-server consumes lib/zk-graphql.js directly. If it stops loading
+      # outside a browser, that server breaks without this repo's tests failing.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check the GraphQL engine runs headless
+        run: |
+          node -e "
+            const { createEngine } = require('./lib/zk-graphql.js');
+            const engine = createEngine(require('./site/dataset.json'));
+            const { data, notes } = engine.execute('{ stats { noteCount citationCount } notes(first: 3) { title degree } }');
+            if (data.stats.noteCount < 1) throw new Error('empty dataset');
+            if (!notes.length) throw new Error('no notes tracked during execution');
+            if (engine.sdl().indexOf('type Note') === -1) throw new Error('schema missing Note type');
+            console.log('engine ok —', data.stats.noteCount, 'notes,', data.stats.citationCount, 'citations');
+          "
 
   citations:
     runs-on: ubuntu-latest
