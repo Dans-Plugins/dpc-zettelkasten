@@ -1,6 +1,6 @@
 ---
 id: moc-medieval-factions
-title: Medieval Factions
+title: Medieval Factions Map
 type: moc
 tags: [moc, medieval-factions]
 summary: Index of every concept note about the flagship plugin, grouped by the layer of the system it belongs to.

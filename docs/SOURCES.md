@@ -22,7 +22,7 @@ rather than incidentally.
 | [Dans-Plugins/dpc-conventions](https://github.com/Dans-Plugins/dpc-conventions) | [`9dc9aa37e9`](https://github.com/Dans-Plugins/dpc-conventions/tree/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec) | 5 | 7 |
 | [Dans-Plugins/dpc-mc-server](https://github.com/Dans-Plugins/dpc-mc-server) | [`d42e0ec06f`](https://github.com/Dans-Plugins/dpc-mc-server/tree/d42e0ec06f9b29baaa043442d24ef2dd81edfa49) | 2 | 2 |
 
-9 repositories, 9 pinned commits, 86 citations across 42 notes.
+9 repositories, 9 pinned commits, 88 citations across 42 notes.
 
 ## Cited files by repository
 

@@ -32,13 +32,13 @@ natively. GitHub renders them as ordinary Markdown too.
 
 ## What's in it
 
-45 notes: 7 Maps of Content and 38 concept notes, carrying 81 citations across 9
+45 notes: 7 Maps of Content and 38 concept notes, carrying 88 citations across 9
 repositories.
 
 Start at [Dan's Plugins Community](notes/moc/moc-dans-plugins-community.md), the
 root map. From there:
 
-- [Medieval Factions](notes/moc/moc-medieval-factions.md) — the flagship, indexed
+- [Medieval Factions Map](notes/moc/moc-medieval-factions.md) — the flagship, indexed
 - [Faction Domain Model](notes/moc/moc-faction-domain-model.md) — the nouns of the simulation
 - [Plugin Architecture](notes/moc/moc-plugin-architecture.md) — how it is built
 - [Plugin Ecosystem](notes/moc/moc-plugin-ecosystem.md) — the library, expansions, and neighbours

@@ -14,7 +14,7 @@ sources:
   - repo: Dans-Plugins/Mailboxes
     path: src/main/java/dansplugins/mailboxes/externalapi/MailboxesAPI.java
     ref: 3f8fb186bbdd067ae893d911b26d065d8f3fdaf8
-    claim: Mailboxes exposes a dedicated externalapi package with a MailboxesAPI class and wrapper types for mailboxes and messages.
+    claim: MailboxesAPI returns wrapper types M_Mailbox and M_Message rather than internal objects, reports its own APIVersion, and offers sendPluginMessageToPlayer overloads taking either a Player or a UUID.
 ---
 
 Mailboxes is a standalone plugin: persistent player-to-player mail, with items
@@ -28,16 +28,20 @@ other plugins reach into `Mailbox` and `Message` directly, Mailboxes exposes
 `MailboxesAPI` plus wrapper types `M_Mailbox` and `M_Message`.
 
 The `M_` prefix marks the boundary: those are the types other plugins are
-allowed to hold. Internal classes can then be refactored without breaking
-consumers — a discipline worth copying, since most plugins in the organization
-have no such boundary and their integrators consequently break on upgrade.
+allowed to hold. `getMailbox` and `getMessage` wrap the internal object on the
+way out, so internal classes can be refactored without breaking consumers.
+
+The class also reports its own `APIVersion`, separate from the plugin version —
+so a consumer can check whether the *contract* changed rather than merely
+whether the plugin did.
 
 ## How the flagship uses it
 
 `MailboxesNotificationService` implements the flagship's [[notification]]
-interface by calling `sendPluginMessageToPlayer`. That is the entire
-integration: a faction announcement to an offline member becomes a piece of mail
-waiting when they next log in.
+interface by calling `sendPluginMessageToPlayer`, using the `UUID` overload —
+which matters, because the recipient is by definition offline and there is no
+`Player` object to pass. That is the entire integration: a faction announcement
+to an absent member becomes a piece of mail waiting when they next log in.
 
 Because the flagship resolves the plugin by name and returns quietly if it is
 absent, Mailboxes remains genuinely optional.

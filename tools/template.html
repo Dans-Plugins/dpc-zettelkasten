@@ -141,6 +141,7 @@
   .rail-list li { margin-bottom: 5px; }
   .rail-list a { color: var(--fg-dim); font-size: 13px; text-decoration: none; }
   .rail-list a:hover { color: var(--accent); }
+  .rail-list a.moc { color: var(--moc); }
   .rail-empty { color: var(--fg-faint); font-size: 12.5px; font-style: italic; }
   .src {
     background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius);
@@ -150,7 +151,7 @@
   .src .claim { color: var(--fg); display: block; font-size: 12.5px; line-height: 1.45; }
   .src .loc {
     color: var(--fg-faint); display: block; font-family: var(--mono);
-    font-size: 10.5px; margin-top: 5px; word-break: break-all;
+    font-size: 10.5px; margin-top: 5px; overflow-wrap: anywhere;
   }
   .src .sha { color: var(--accent); }
   .toc { list-style: none; margin: 0; padding: 0; }
@@ -256,7 +257,11 @@ let current = null;
 
 function renderNote(id) {
   const n = NOTES[id];
-  if (!n) { $("#note").innerHTML = `<h1>Not found</h1><p>No note with id <code>${esc(id)}</code>.</p>`; return; }
+  if (!n) {
+    $("#note").innerHTML = `<h1>Not found</h1><p>No note with id <code>${esc(id)}</code>.</p>`;
+    $("#rail").innerHTML = "";
+    return;
+  }
   current = id;
 
   const chips = [`<span class="chip type-${n.type}">${n.type === "moc" ? "Map of Content" : "Concept"}</span>`]
@@ -274,12 +279,16 @@ function renderNote(id) {
     ? n.sources.map((s) =>
         `<a class="src" href="${esc(s.url)}" target="_blank" rel="noopener">` +
         `<span class="claim">${esc(s.claim)}</span>` +
-        `<span class="loc">${esc(s.repo)} · ${esc(s.path)}${s.lines ? ":" + esc(s.lines) : ""} @ <span class="sha">${esc(s.shortRef)}</span></span></a>`
+        `<span class="loc">${esc(s.repo)} · ${esc(s.path).replace(/\//g, "/<wbr>")}${s.lines ? ":" + esc(s.lines) : ""} @ <span class="sha">${esc(s.shortRef)}</span></span></a>`
       ).join("")
     : `<div class="rail-empty">No citations.</div>`;
 
   const linkList = (list) => list.length
-    ? `<ul class="rail-list">${list.map((t) => `<li><a href="#/${t}">${esc(NOTES[t] ? NOTES[t].title : t)}</a></li>`).join("")}</ul>`
+    ? `<ul class="rail-list">${list.map((t) => {
+        const target = NOTES[t];
+        const cls = target && target.type === "moc" ? ' class="moc"' : "";
+        return `<li><a href="#/${t}"${cls}>${esc(target ? target.title : t)}</a></li>`;
+      }).join("")}</ul>`
     : `<div class="rail-empty">None.</div>`;
 
   const toc = n.toc.filter((h) => h.level <= 3);
@@ -310,7 +319,7 @@ function seedLayout(w, h) {
   nodes.forEach((n, i) => {
     // Deterministic spiral seed: same layout every load, no RNG.
     const a = i * 2.399963;
-    const r = 26 * Math.sqrt(i + 1);
+    const r = 38 * Math.sqrt(i + 1);
     n.x = w / 2 + r * Math.cos(a);
     n.y = h / 2 + r * Math.sin(a);
     n.vx = 0; n.vy = 0;
@@ -318,14 +327,16 @@ function seedLayout(w, h) {
 }
 
 function step() {
-  const K = 90;
+  // Ideal edge length. Scaled by node count so the graph keeps breathing room
+  // as the collection grows rather than collapsing into a denser ball.
+  const K = 78 + Math.sqrt(nodes.length) * 11;
   for (let i = 0; i < nodes.length; i++) {
     const a = nodes[i];
     for (let j = i + 1; j < nodes.length; j++) {
       const b = nodes[j];
       let dx = b.x - a.x, dy = b.y - a.y;
       let d2 = dx * dx + dy * dy || 0.01;
-      if (d2 > 360000) continue;
+      if (d2 > 1000000) continue;
       const f = (K * K) / d2;
       const d = Math.sqrt(d2);
       const fx = (dx / d) * f, fy = (dy / d) * f;
@@ -336,14 +347,14 @@ function step() {
     const a = nodes[i], b = nodes[j];
     const dx = b.x - a.x, dy = b.y - a.y;
     const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    const f = (d - K) * 0.05;
+    const f = (d - K) * 0.045;
     const fx = (dx / d) * f, fy = (dy / d) * f;
     a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
   }
   const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
   for (const n of nodes) {
-    n.vx += (cx - n.x) * 0.004;
-    n.vy += (cy - n.y) * 0.004;
+    n.vx += (cx - n.x) * 0.0022;
+    n.vy += (cy - n.y) * 0.0022;
     n.vx *= 0.82; n.vy *= 0.82;
     n.x += Math.max(-18, Math.min(18, n.vx));
     n.y += Math.max(-18, Math.min(18, n.vy));
@@ -386,7 +397,7 @@ function draw() {
 
   for (let i = 0; i < nodes.length; i++) {
     const n = nodes[i];
-    const r = 4 + Math.min(7, n.deg * 0.65);
+    const r = 4.5 + Math.min(8, n.deg * 0.62);
     const dim = near && !near.has(i);
     ctx.globalAlpha = dim ? 0.25 : 1;
     ctx.fillStyle = n.moc ? moc : accent;
@@ -410,7 +421,7 @@ function draw() {
 let ticks = 0;
 function loop() {
   if ($("#graph-view").classList.contains("on")) {
-    if (ticks < 480) { step(); ticks++; }
+    if (ticks < 700) { step(); ticks++; }
     draw();
   }
   requestAnimationFrame(loop);
@@ -447,7 +458,8 @@ canvas.addEventListener("mousemove", (e) => {
 });
 canvas.addEventListener("click", (e) => {
   const i = pick(toGraphCoords(e));
-  if (i !== null) { location.hash = "#/" + nodes[i].id; showNotes(); }
+  // Setting the hash is enough — route() switches back to the note view.
+  if (i !== null) location.hash = "#/" + nodes[i].id;
 });
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
@@ -481,6 +493,7 @@ function route() {
   const anchor = hash.split("#")[1];
   if (NOTES[id]) {
     if (id !== current) renderNote(id);
+    showNotes();
     if (anchor) {
       const el = document.getElementById(anchor);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });

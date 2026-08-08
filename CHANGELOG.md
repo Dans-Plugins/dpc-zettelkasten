@@ -7,7 +7,7 @@ All notable changes to this project are documented here.
 Initial scaffolding.
 
 ### Added
-- 45 notes: 7 Maps of Content and 38 concept notes, carrying 81 citations across
+- 45 notes: 7 Maps of Content and 38 concept notes, carrying 88 citations across
   9 Dans-Plugins repositories.
 - `docs/NOTE_FORMAT.md` — the note specification: frontmatter, pinned-SHA
   citations, wikilinks, and what not to write.

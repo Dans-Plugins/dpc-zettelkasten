@@ -17,6 +17,16 @@ sources:
     ref: 3a51c55366b544d31429fae8bcb64efaf1878e15
     lines: 30-45
     claim: The faction service keeps all factions in a ConcurrentHashMap loaded from the repository at startup.
+  - repo: Dans-Plugins/Medieval-Factions
+    path: src/main/kotlin/com/dansplugins/factionsystem/faction/MfFactionService.kt
+    ref: 3a51c55366b544d31429fae8bcb64efaf1878e15
+    lines: 62-66
+    claim: Finding which faction a player belongs to is a linear scan over every cached faction's member list, not an indexed lookup.
+  - repo: Dans-Plugins/Medieval-Factions
+    path: src/main/kotlin/com/dansplugins/factionsystem/faction/JooqMfFactionRepository.kt
+    ref: 3a51c55366b544d31429fae8bcb64efaf1878e15
+    lines: 35-42
+    claim: Membership is persisted in a separate mf_faction_member table, and the repository's player lookup is a subquery against it.
 ---
 
 A faction is the unit of political organisation: a named group of players that
@@ -57,9 +67,21 @@ so that they can fire [[faction-events]] and be persisted through the
 [[repository-pattern]]. Code should never reach past the service to the
 repository — see [[service-layer]].
 
+## Membership is stored sideways
+
+The `members` list on the record is a view, not the storage. Membership lives in
+its own `mf_faction_member` table, and the repository's "which faction is this
+player in?" query is a subquery against it.
+
+In memory, though, the service answers that question by scanning every cached
+faction's member list until one matches. That is fine at the scale these servers
+run at, and worth knowing before calling it inside a loop over online players.
+
+Note also that the player record itself holds no faction reference — see
+[[player-power]]. The edge is stored in exactly one place, which is why a player
+cannot end up in two factions through disagreeing records.
+
 ## Related
 
-Membership is one half of a pair: a faction lists its members, and a
-[[player-power|player]] record separately answers "which faction am I in?"
-through a repository lookup. Diplomacy lives entirely outside the faction record
-in [[faction-relationship]].
+Diplomacy lives entirely outside the faction record in
+[[faction-relationship]].
