@@ -2,6 +2,7 @@
 id: service-layer
 title: Service Layer
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture]
 summary: Services own in-memory state, enforce the rules, fire events, and return typed failures — commands and listeners talk only to them.
 created: 2026-08-07

@@ -18,9 +18,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import md  # noqa: E402
 import zklib  # noqa: E402
+import re  # noqa: E402
 
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "template.html")
 GITHUB_BASE = "https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/"
+ROOT_MOC = "moc-dans-plugins-community"
 
 
 def make_wikilink_renderer(by_id, note_id, unresolved):
@@ -36,6 +38,21 @@ def make_wikilink_renderer(by_id, note_id, unresolved):
             md.escape(href), md.escape(target), md.escape(text)
         )
     return wikilink
+
+
+def heading_text(text, by_id):
+    """Plain text for a heading, with wikilinks resolved to their display form.
+
+    A heading such as `## [[moc-plugin-architecture|How it is built]]` must read
+    as "How it is built" in the table of contents, not as raw wikilink syntax.
+    """
+    def replace(match):
+        target, _, label = match.group(1).partition("|")
+        target = target.strip()
+        if label:
+            return label.strip()
+        return by_id[target].title if target in by_id else target
+    return re.sub(r"\[\[([^\]]+)\]\]", replace, text)
 
 
 def build_payload(notes):
@@ -67,11 +84,15 @@ def build_payload(notes):
             "id": note.id,
             "title": note.title,
             "type": note.type,
+            "moc": note.moc,
             "tags": note.tags,
             "summary": note.summary,
             "updated": note.meta.get("updated", ""),
             "html": html,
-            "toc": [{"level": lvl, "text": txt, "slug": slug} for lvl, txt, slug in headings],
+            "toc": [
+                {"level": lvl, "text": heading_text(txt, by_id), "slug": slug}
+                for lvl, txt, slug in headings
+            ],
             "links": [t for t in note.links if t in by_id],
             "backlinks": backlinks.get(note.id, []),
             "sources": sources,
@@ -81,6 +102,62 @@ def build_payload(notes):
         }
 
     return payload, unresolved
+
+
+def moc_order(notes):
+    """MOC ids with the root first, then in the order the root links them."""
+    by_id = dict((n.id, n) for n in notes)
+    order = [ROOT_MOC] if ROOT_MOC in by_id else []
+    root = by_id.get(ROOT_MOC)
+    if root:
+        for target in root.links:
+            if target in by_id and by_id[target].type == "moc" and target not in order:
+                order.append(target)
+    for note in sorted(notes, key=lambda n: n.title):
+        if note.type == "moc" and note.id not in order:
+            order.append(note.id)
+    return order
+
+
+def clusters(notes, payload):
+    """Ordered [{moc, title, notes:[id]}] for the grouped sidebar.
+
+    Cluster order follows the order the root map links its sub-maps, so the
+    sidebar and the landing page present the collection in the same sequence
+    rather than disagreeing about it. The root itself is not a cluster — it
+    holds no concepts, it routes to the ones that do.
+    """
+    by_id = dict((n.id, n) for n in notes)
+    homed = {}
+    for note in notes:
+        if note.moc:
+            homed.setdefault(note.moc, []).append(note.id)
+
+    order = []
+    root = by_id.get(ROOT_MOC)
+    if root:
+        for target in root.links:
+            if (target in by_id and by_id[target].type == "moc"
+                    and target != ROOT_MOC and target not in order):
+                order.append(target)
+    for note in sorted(notes, key=lambda n: n.title):
+        if note.type == "moc" and note.id != ROOT_MOC and note.id not in order:
+            order.append(note.id)
+
+    out = []
+    for moc_id in order:
+        members = sorted(homed.get(moc_id, []), key=lambda i: payload[i]["title"])
+        if members:
+            out.append({"moc": moc_id, "title": by_id[moc_id].title, "notes": members})
+
+    placed = set(i for c in out for i in c["notes"])
+    stray = sorted(
+        (n.id for n in notes if n.type == "concept" and n.id not in placed),
+        key=lambda i: payload[i]["title"],
+    )
+    if stray:
+        out.append({"moc": "", "title": "Unclustered", "notes": stray})
+    return out
 
 
 def main():
@@ -113,7 +190,11 @@ def main():
         "citationCount": sum(len(n.sources) for n in notes),
         "linkCount": sum(len(payload[n.id]["links"]) for n in notes),
         "repos": sorted(repos),
-        "home": "moc-dans-plugins-community" if "moc-dans-plugins-community" in payload else sorted(payload)[0],
+        "home": ROOT_MOC if ROOT_MOC in payload else sorted(payload)[0],
+        # Sidebar order: the root map first, then each cluster with the concepts
+        # that call it home. Computed here so the page needs no grouping logic.
+        "clusters": clusters(notes, payload),
+        "mocOrder": moc_order(notes),
     }
 
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as handle:

@@ -2,6 +2,7 @@
 id: optimistic-locking
 title: Optimistic Locking
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, persistence, concurrency]
 summary: Every mutable record carries a version column; a write that does not match the version it read is rejected rather than silently overwriting.
 created: 2026-08-07

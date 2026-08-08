@@ -2,6 +2,7 @@
 id: medieval-factions
 title: Medieval Factions
 type: concept
+moc: moc-medieval-factions
 tags: [medieval-factions, plugin, flagship]
 summary: The flagship plugin — a Kotlin Spigot plugin simulating sovereign nations, and the reference implementation every DPC convention points at.
 created: 2026-08-07

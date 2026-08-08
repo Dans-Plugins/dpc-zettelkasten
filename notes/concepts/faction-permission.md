@@ -2,6 +2,7 @@
 id: faction-permission
 title: Faction Permission
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, governance]
 summary: The individually grantable capabilities inside a faction, each with a default and a type.
 created: 2026-08-07

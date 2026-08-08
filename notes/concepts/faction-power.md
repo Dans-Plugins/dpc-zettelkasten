@@ -2,6 +2,7 @@
 id: faction-power
 title: Faction Power
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, power]
 summary: A faction's live strength — the sum of its members' power plus a conditional vassal contribution — and the cap on how much land it may hold.
 created: 2026-08-07

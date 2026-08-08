@@ -2,6 +2,7 @@
 id: faction-role
 title: Faction Role
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, governance]
 summary: A named bundle of permission overrides that a faction assigns to its members.
 created: 2026-08-07

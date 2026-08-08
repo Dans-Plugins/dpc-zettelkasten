@@ -2,6 +2,7 @@
 id: gate
 title: Gate
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, territory]
 summary: A faction-owned wall of blocks that opens and closes when a redstone trigger block is powered.
 created: 2026-08-07

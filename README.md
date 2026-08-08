@@ -20,11 +20,33 @@ no network — the whole collection is embedded in one self-contained file.
 
 | | |
 |---|---|
-| **Notes** | Rendered Markdown with working `[[wikilinks]]` |
+| **Notes** | Rendered Markdown with working `[[wikilinks]]`, grouped by cluster |
 | **Backlinks** | Every note shows what links to it, not just what it links to |
 | **Sources** | Each note's citations, one click from the exact lines on GitHub |
 | **Graph** | Force-directed view of the whole collection — press `g` |
+| **GraphQL** | Query the note graph and draw the result — press `q` |
 | **Search** | Full-text across titles, summaries, and bodies — press `/` |
+
+### Querying the graph
+
+The **GraphQL** tab is a real query engine over the collection — schema,
+parser, and executor, all in the page, no server. Ask structural questions and
+get answers:
+
+```graphql
+{
+  notes(orderBy: degree, first: 5) {
+    title
+    degree
+    moc { title }
+  }
+}
+```
+
+Every result can be flipped from JSON to a **graph of exactly the notes that
+query touched**, which is the fastest way to see a cluster's real shape rather
+than the shape its MOC claims. The schema is in the left pane; eight worked
+examples are one click away.
 
 The notes also open directly in [Obsidian](https://obsidian.md/): point a vault
 at this repository and wikilinks, backlinks, and the graph view all work
@@ -35,8 +57,22 @@ natively. GitHub renders them as ordinary Markdown too.
 45 notes: 7 Maps of Content and 38 concept notes, carrying 90 citations across 9
 repositories.
 
-Start at [Dan's Plugins Community](notes/moc/moc-dans-plugins-community.md), the
-root map. From there:
+The collection is a hierarchy, not a heap. [Dan's Plugins
+Community](notes/moc/moc-dans-plugins-community.md) is a **map of maps** — it
+holds no claims, it routes. Every concept note declares exactly one home MOC,
+and `validate.py` fails the build if that MOC does not link back.
+
+```
+Dan's Plugins Community          the root map — an index of indexes
+├── Medieval Factions Map        the flagship, which needs two maps of its own
+│   ├── Faction Domain Model     14 notes — what the simulation is
+│   └── Plugin Architecture      10 notes — how the code is arranged
+├── Plugin Ecosystem              6 notes — library, expansions, neighbours
+├── Conventions and Process       4 notes — the organization's standards
+└── Web and Infrastructure        3 notes — the site, the server, the pipe
+```
+
+From the root map:
 
 - [Medieval Factions Map](notes/moc/moc-medieval-factions.md) — the flagship, indexed
 - [Faction Domain Model](notes/moc/moc-faction-domain-model.md) — the nouns of the simulation

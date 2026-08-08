@@ -2,6 +2,7 @@
 id: fiefs
 title: Fiefs
 type: concept
+moc: moc-plugin-ecosystem
 tags: [fiefs, expansion, ecosystem]
 summary: An expansion adding sub-factions inside a faction — and the clearest surviving example of the pre-version-5 integration style.
 created: 2026-08-07

@@ -2,6 +2,7 @@
 id: player-power
 title: Player Power
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, power]
 summary: The per-player scalar that accrues with time online and is lost on death, and which sums into a faction's strength.
 created: 2026-08-07

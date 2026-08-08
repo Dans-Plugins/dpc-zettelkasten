@@ -2,6 +2,7 @@
 id: mailboxes
 title: Mailboxes
 type: concept
+moc: moc-plugin-ecosystem
 tags: [mailboxes, ecosystem, integration]
 summary: A standalone plugin giving players persistent in-game mail with item attachments, and the delivery backend Medieval Factions prefers for offline notifications.
 created: 2026-08-07

@@ -134,6 +134,7 @@ class Note(object):
         self.tags = meta.get("tags") or []
         self.sources = [s for s in (meta.get("sources") or []) if isinstance(s, dict)]
         self.summary = meta.get("summary", "")
+        self.moc = meta.get("moc", "")
 
     @property
     def links(self):

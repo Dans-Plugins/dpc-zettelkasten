@@ -2,6 +2,7 @@
 id: dpc-conventions
 title: DPC Conventions
 type: concept
+moc: moc-conventions-and-process
 tags: [dpc, conventions, process]
 summary: The repository that writes the organization's standards down, using Medieval Factions as the worked example throughout.
 created: 2026-08-07

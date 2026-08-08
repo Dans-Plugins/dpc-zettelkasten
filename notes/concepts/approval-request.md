@@ -2,6 +2,7 @@
 id: approval-request
 title: Approval Request
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, diplomacy]
 summary: The consent step for the three diplomatic changes that bind two factions — war, alliance, and vassalisation.
 created: 2026-08-07

@@ -2,6 +2,7 @@
 id: dans-plugin-manager
 title: Dan's Plugin Manager
 type: concept
+moc: moc-plugin-ecosystem
 tags: [dpm, ecosystem, tooling]
 summary: A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.
 created: 2026-08-07

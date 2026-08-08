@@ -2,6 +2,7 @@
 id: two-tier-documentation
 title: Two-Tier Documentation
 type: concept
+moc: moc-conventions-and-process
 tags: [dpc, conventions, documentation]
 summary: Reference documents live in the repository and are versioned with the code; narrative and community content lives in the GitHub wiki.
 created: 2026-08-07

@@ -2,6 +2,7 @@
 id: repository-pattern
 title: Repository Pattern
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, persistence]
 summary: Each domain record gets a storage-agnostic interface plus a jOOQ implementation, so services never name a database.
 created: 2026-08-07

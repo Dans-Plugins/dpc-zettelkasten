@@ -2,6 +2,7 @@
 id: faction
 title: Faction
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model]
 summary: The central record of the simulation — a named group of players with land, roles, diplomacy, and a power score.
 created: 2026-08-07

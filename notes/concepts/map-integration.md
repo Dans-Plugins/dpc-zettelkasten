@@ -2,6 +2,7 @@
 id: map-integration
 title: Map Integration
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, integration, ecosystem]
 summary: Claimed territory is drawn on web maps through a one-method interface with a Dynmap implementation, wired only when the optional plugin is present.
 created: 2026-08-07

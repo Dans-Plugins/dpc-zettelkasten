@@ -3,9 +3,9 @@ id: moc-medieval-factions
 title: Medieval Factions Map
 type: moc
 tags: [moc, medieval-factions]
-summary: Index of every concept note about the flagship plugin, grouped by the layer of the system it belongs to.
+summary: Mid-level map of the flagship — routes to the domain model and the architecture, and names the seams other software attaches to.
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-08
 sources:
   - repo: Dans-Plugins/Medieval-Factions
     path: README.md
@@ -14,38 +14,45 @@ sources:
 ---
 
 [[medieval-factions]] is the largest codebase in the organization and the
-reference implementation for everything else. This map indexes the concepts
-that make it up.
+reference implementation for everything else. It carries enough distinct
+material to need two maps rather than one, and this note is the fork between
+them.
 
-## The simulation
+## The two halves
 
-The domain model — see [[moc-faction-domain-model]] for the annotated version.
+**[[moc-faction-domain-model]] — what the simulation *is*.** Factions, power,
+land, diplomacy, governance. Read this if you want to understand the game, or if
+you are deciding what a feature should *do*.
 
-- [[faction]] · [[faction-power]] · [[player-power]] · [[demesne-limit]]
-- [[claimed-chunk]] · [[faction-relationship]] · [[vassalage]]
-- [[faction-role]] · [[faction-permission]] · [[faction-flag]]
-- [[law]] · [[gate]] · [[locked-block]] · [[approval-request]]
+**[[moc-plugin-architecture]] — how the code is *arranged*.** Services,
+repositories, persistence, concurrency. Read this if you are deciding where a
+feature should *live*.
 
-## The machinery
-
-How the plugin is put together — see [[moc-plugin-architecture]].
-
-- [[service-layer]] · [[repository-pattern]] · [[jooq-persistence]]
-- [[optimistic-locking]] · [[value-class-identifier]] · [[main-thread-safety]]
-- [[faction-events]] · [[legacy-data-migration]]
+The split is clean in practice: a change almost always starts in one and lands
+in the other.
 
 ## The seams
 
-Points where other software attaches:
+Four places other software attaches, each covered by its own note under
+[[moc-plugin-architecture]] or [[moc-plugin-ecosystem]]:
 
-- [[notification]] — pluggable delivery, backed by [[mailboxes]] when present.
-- [[map-integration]] — claimed land drawn on a web map.
-- [[dpc-api-faction-sync]] — the roster pushed to [[dansplugins-dot-com]].
-- [[expansion-plugin]] — how [[fiefs]] and [[currencies]] build on top.
+| Seam | What attaches | Note |
+|---|---|---|
+| Bukkit events | Anything reacting to a faction change | [[faction-events]] |
+| Service registry | Anything reading or writing faction state | [[service-layer]] |
+| Pluggable interfaces | Optional plugins supplying an implementation | [[notification]] · [[map-integration]] |
+| Outbound HTTP | The community website | [[dpc-api-faction-sync]] |
+
+If you are writing an [[expansion-plugin]], the first two are the ones you want.
 
 ## Reading the source
 
-Documentation lives beside the code by convention (see
-[[two-tier-documentation]]): `USER_GUIDE.md`, `COMMANDS.md`, `CONFIG.md`,
-`FACTION_FLAGS.md`, and `DATABASE_QUERYING.md` are all in the repository root.
-Start there before reading Kotlin.
+Documentation lives beside the code by convention — see
+[[two-tier-documentation]]. `USER_GUIDE.md`, `COMMANDS.md`, `CONFIG.md`,
+`FACTION_FLAGS.md`, `DATABASE_QUERYING.md`, and `FAQ.md` are all in the
+repository root. Start there before reading Kotlin.
+
+## Where it sits
+
+Up: [[moc-dans-plugins-community]]. Sideways: [[moc-plugin-ecosystem]] for the
+plugins around it, [[moc-web-and-infrastructure]] for where its data goes.

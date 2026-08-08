@@ -2,6 +2,7 @@
 id: testing-and-ci
 title: Testing and CI
 type: concept
+moc: moc-conventions-and-process
 tags: [dpc, conventions, ci, testing]
 summary: Gradle for unit tests with Bukkit mocked out, plus a Docker Compose Spigot server for anything that cannot be isolated.
 created: 2026-08-07

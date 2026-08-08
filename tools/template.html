@@ -64,6 +64,8 @@
 
   /* ---------- layout ---------- */
   main { display: grid; grid-template-columns: 262px minmax(0,1fr) 274px; min-height: 0; }
+  main.wide { grid-template-columns: 262px minmax(0,1fr); }
+  main.wide aside.right { display: none; }
   aside { background: var(--bg-2); overflow-y: auto; padding: 14px 0 40px; }
   aside.left { border-right: 1px solid var(--line); }
   aside.right { border-left: 1px solid var(--line); padding: 18px 16px 40px; }
@@ -72,8 +74,15 @@
   .sec-title {
     color: var(--fg-faint); font-size: 11px; font-weight: 650;
     letter-spacing: 0.09em; text-transform: uppercase;
-    padding: 12px 16px 6px;
+    padding: 14px 16px 6px;
   }
+  .sec-title.sub { padding-top: 16px; }
+  .sec-title.sub::before {
+    background: var(--line); content: ""; display: block;
+    height: 1px; margin: 0 0 12px; width: 100%;
+  }
+  .sec-title a.sec-link { color: var(--moc); text-decoration: none; }
+  .sec-title a.sec-link:hover { text-decoration: underline; }
   aside.left ul { list-style: none; margin: 0; padding: 0; }
   aside.left li a {
     color: var(--fg-dim); display: block; font-size: 13.5px;
@@ -171,8 +180,57 @@
   }
   .graph-legend .row { align-items: center; display: flex; gap: 7px; margin-bottom: 4px; }
   .graph-legend .row:last-child { margin: 0; color: var(--fg-faint); }
+  @media (max-width: 900px) { #gql-view.on { grid-template-columns: 1fr; } .gql-right { display: none; } }
   .dot { border-radius: 50%; height: 9px; width: 9px; }
   #content.hidden { display: none; }
+
+  /* ---------- graphql ---------- */
+  #gql-view { display: none; grid-template-columns: minmax(320px, 42%) 1fr; min-height: 0; }
+  #gql-view.on { display: grid; }
+  .gql-left { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .gql-right { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .pane-h {
+    align-items: center; background: var(--bg-2); border-bottom: 1px solid var(--line);
+    color: var(--fg-faint); display: flex; flex: none; font-size: 11px; font-weight: 650; gap: 10px;
+    letter-spacing: 0.09em; padding: 9px 14px; text-transform: uppercase;
+  }
+  .pane-h .hint { font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.75; }
+  .seg { display: flex; gap: 2px; margin-left: auto; }
+  .seg button {
+    background: none; border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--fg-dim); cursor: pointer; font: inherit; font-size: 10.5px;
+    letter-spacing: 0.06em; padding: 3px 9px; text-transform: uppercase;
+  }
+  .seg button.on { background: var(--bg-3); border-color: var(--accent-dim); color: var(--fg); }
+  #gql-editor {
+    background: var(--code-bg); border: 0; border-bottom: 1px solid var(--line);
+    color: var(--fg); flex: none; font-family: var(--mono); font-size: 12.5px;
+    line-height: 1.6; min-height: 210px; padding: 14px; resize: vertical; tab-size: 2; width: 100%;
+  }
+  #gql-editor:focus { outline: none; }
+  .gql-actions { border-bottom: 1px solid var(--line); flex: none; padding: 10px 14px; }
+  #gql-run {
+    background: var(--accent-dim); border: 0; border-radius: var(--radius); color: #fff;
+    cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; padding: 7px 15px;
+  }
+  #gql-run:hover { background: var(--accent); }
+  #gql-examples { display: flex; flex: none; flex-wrap: wrap; gap: 6px; padding: 12px 14px; }
+  .gql-ex {
+    background: var(--bg-3); border: 1px solid var(--line); border-radius: 999px;
+    color: var(--fg-dim); cursor: pointer; font: inherit; font-size: 11.5px; padding: 3px 11px;
+  }
+  .gql-ex:hover { border-color: var(--accent-dim); color: var(--fg); }
+  #gql-schema {
+    color: var(--fg-dim); font-family: var(--mono); font-size: 11.5px; line-height: 1.55;
+    margin: 0; padding: 12px 14px 40px; white-space: pre; overflow-x: auto;
+  }
+  #gql-json {
+    color: var(--fg); flex: 1; font-family: var(--mono); font-size: 12px; line-height: 1.55;
+    margin: 0; min-height: 0; overflow: auto; padding: 14px; white-space: pre;
+  }
+  #gql-json.error { color: #e06c75; }
+  #gql-graph { display: block; flex: 1; min-height: 0; width: 100%; cursor: grab; }
+  .hidden { display: none !important; }
 
   .stats { color: var(--fg-faint); font-size: 12px; padding: 14px 16px 0; line-height: 1.7; }
   .stats b { color: var(--fg-dim); font-weight: 600; }
@@ -187,6 +245,7 @@
   <nav>
     <button class="tab on" id="tab-notes">Notes</button>
     <button class="tab" id="tab-graph">Graph</button>
+    <button class="tab" id="tab-gql">GraphQL</button>
   </nav>
   <div class="spacer"></div>
   <input id="search" type="search" placeholder="Search notes…  (/)" autocomplete="off">
@@ -210,6 +269,29 @@
     </div>
   </div>
 
+  <div id="gql-view">
+    <div class="gql-left">
+      <div class="pane-h">Query <span class="hint">⌘/Ctrl + ⏎</span></div>
+      <textarea id="gql-editor" spellcheck="false" autocomplete="off"></textarea>
+      <div class="gql-actions"><button id="gql-run">▶&nbsp; Run query</button></div>
+      <div class="pane-h">Examples</div>
+      <div id="gql-examples"></div>
+      <div class="pane-h">Schema</div>
+      <pre id="gql-schema"></pre>
+    </div>
+    <div class="gql-right">
+      <div class="pane-h">
+        Result <span class="hint" id="gql-count"></span>
+        <span id="gql-toggle" class="seg">
+          <button class="on" data-view="json">JSON</button>
+          <button data-view="graph">Graph</button>
+        </span>
+      </div>
+      <pre id="gql-json"></pre>
+      <canvas id="gql-graph" class="hidden"></canvas>
+    </div>
+  </div>
+
   <aside class="right" id="rail"></aside>
 </main>
 
@@ -224,22 +306,33 @@ const byTitle = (a, b) => NOTES[a].title.localeCompare(NOTES[b].title);
 /* ------------------------------------------------------------------ nav */
 function renderNav(filter) {
   const q = (filter || "").trim().toLowerCase();
-  const match = q ? ids.filter((id) => NOTES[id].text.includes(q)) : ids;
-  const mocs = match.filter((id) => NOTES[id].type === "moc").sort(byTitle);
-  const concepts = match.filter((id) => NOTES[id].type !== "moc").sort(byTitle);
+  const hit = q ? new Set(ids.filter((id) => NOTES[id].text.includes(q))) : null;
+  const keep = (id) => !hit || hit.has(id);
 
-  const group = (label, list) => {
+  const item = (id) => {
+    const cls = (NOTES[id].type === "moc" ? "moc " : "") + (id === current ? "on" : "");
+    return `<li><a class="${cls}" href="#/${id}">${esc(NOTES[id].title)}</a></li>`;
+  };
+  const group = (label, list, opts) => {
     if (!list.length) return "";
-    let html = `<div class="sec-title">${label}<span class="count">${list.length}</span></div><ul>`;
-    for (const id of list) {
-      const cls = (NOTES[id].type === "moc" ? "moc " : "") + (id === current ? "on" : "");
-      html += `<li><a class="${cls}" href="#/${id}">${esc(NOTES[id].title)}</a></li>`;
-    }
-    return html + "</ul>";
+    const sub = opts && opts.sub ? " sub" : "";
+    const href = opts && opts.href ? ` href="#/${opts.href}"` : "";
+    const head = href
+      ? `<a class="sec-link"${href}>${label}</a>`
+      : label;
+    return `<div class="sec-title${sub}">${head}<span class="count">${list.length}</span></div>` +
+           `<ul>${list.map(item).join("")}</ul>`;
   };
 
-  let html = group("Maps of Content", mocs) + group("Concepts", concepts);
-  if (!match.length) html = `<div class="empty">No notes match “${esc(q)}”.</div>`;
+  // Maps first, then one group per cluster — the same order as the root map.
+  let html = group("Maps of Content", META.mocOrder.filter(keep));
+  let shown = META.mocOrder.filter(keep).length;
+  for (const c of META.clusters) {
+    const list = c.notes.filter(keep);
+    shown += list.length;
+    html += group(esc(c.title), list, { sub: true, href: c.moc || null });
+  }
+  if (!shown) html = `<div class="empty">No notes match “${esc(q)}”.</div>`;
   $("#nav").innerHTML = html;
 }
 
@@ -294,7 +387,7 @@ function renderNote(id) {
   const toc = n.toc.filter((h) => h.level <= 3);
   $("#rail").innerHTML =
     `<div class="rail-h">Sources of truth <span class="count">${n.sources.length}</span></div>${sources}` +
-    (toc.length > 1 ? `<div class="rail-h">On this page</div><ul class="toc">${toc.map((h) => `<li class="lvl-${h.level}"><a href="#${h.slug}">${esc(h.text.replace(/\[\[|\]\]/g, ""))}</a></li>`).join("")}</ul>` : "") +
+    (toc.length > 1 ? `<div class="rail-h">On this page</div><ul class="toc">${toc.map((h) => `<li class="lvl-${h.level}"><a href="#${h.slug}">${esc(h.text)}</a></li>`).join("")}</ul>` : "") +
     `<div class="rail-h">Backlinks <span class="count">${n.backlinks.length}</span></div>${linkList(n.backlinks)}` +
     `<div class="rail-h">Links out <span class="count">${n.links.length}</span></div>${linkList(n.links)}` +
     `<div class="rail-h">Source file</div><ul class="rail-list"><li><a href="${esc(n.sourceUrl)}" target="_blank" rel="noopener">${esc(n.sourcePath)}</a></li></ul>`;
@@ -304,187 +397,684 @@ function renderNote(id) {
 }
 
 /* ---------------------------------------------------------------- graph */
-const nodes = ids.map((id) => ({ id, moc: NOTES[id].type === "moc", deg: NOTES[id].links.length + NOTES[id].backlinks.length }));
-const nodeIndex = {};
-nodes.forEach((n, i) => { nodeIndex[n.id] = i; });
-const edges = [];
-for (const id of ids) for (const t of NOTES[id].links) {
-  if (nodeIndex[t] !== undefined) edges.push([nodeIndex[id], nodeIndex[t]]);
-}
-
-let view = { x: 0, y: 0, k: 1 };
-let hover = null, graphReady = false;
-
-function seedLayout(w, h) {
-  nodes.forEach((n, i) => {
-    // Deterministic spiral seed: same layout every load, no RNG.
-    const a = i * 2.399963;
-    const r = 38 * Math.sqrt(i + 1);
-    n.x = w / 2 + r * Math.cos(a);
-    n.y = h / 2 + r * Math.sin(a);
-    n.vx = 0; n.vy = 0;
-  });
-}
-
-function step() {
-  // Ideal edge length. Scaled by node count so the graph keeps breathing room
-  // as the collection grows rather than collapsing into a denser ball.
-  const K = 78 + Math.sqrt(nodes.length) * 11;
-  for (let i = 0; i < nodes.length; i++) {
-    const a = nodes[i];
-    for (let j = i + 1; j < nodes.length; j++) {
-      const b = nodes[j];
-      let dx = b.x - a.x, dy = b.y - a.y;
-      let d2 = dx * dx + dy * dy || 0.01;
-      if (d2 > 1000000) continue;
-      const f = (K * K) / d2;
-      const d = Math.sqrt(d2);
-      const fx = (dx / d) * f, fy = (dy / d) * f;
-      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
-    }
-  }
-  for (const [i, j] of edges) {
-    const a = nodes[i], b = nodes[j];
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-    const f = (d - K) * 0.045;
-    const fx = (dx / d) * f, fy = (dy / d) * f;
-    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
-  }
-  const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
-  for (const n of nodes) {
-    n.vx += (cx - n.x) * 0.0022;
-    n.vy += (cy - n.y) * 0.0022;
-    n.vx *= 0.82; n.vy *= 0.82;
-    n.x += Math.max(-18, Math.min(18, n.vx));
-    n.y += Math.max(-18, Math.min(18, n.vy));
-  }
-}
-
-const canvas = $("#graph");
-const ctx = canvas.getContext("2d");
-
 function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
-function draw() {
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-    canvas.width = w * dpr; canvas.height = h * dpr;
-  }
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, w, h);
-  ctx.save();
-  ctx.translate(view.x, view.y);
-  ctx.scale(view.k, view.k);
+/* A self-contained force-directed view over a set of note ids. Used twice: once
+   for the whole collection, once for whatever a GraphQL query returned. */
+function makeGraph(canvas, opts) {
+  opts = opts || {};
+  const ctx = canvas.getContext("2d");
+  let nodes = [], edges = [], index = {};
+  let view = { x: 0, y: 0, k: 1 };
+  let hover = null, ticks = 0, seeded = false;
 
-  const line = css("--line"), accent = css("--accent"), moc = css("--moc"), fg = css("--fg-dim");
-  const near = hover === null ? null : new Set([hover].concat(
-    edges.filter(([i, j]) => i === hover || j === hover).map(([i, j]) => (i === hover ? j : i))
-  ));
-
-  ctx.lineWidth = 1;
-  for (const [i, j] of edges) {
-    const lit = near && (near.has(i) && near.has(j));
-    ctx.strokeStyle = lit ? accent : line;
-    ctx.globalAlpha = near ? (lit ? 0.9 : 0.18) : 0.55;
-    ctx.beginPath();
-    ctx.moveTo(nodes[i].x, nodes[i].y);
-    ctx.lineTo(nodes[j].x, nodes[j].y);
-    ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-
-  for (let i = 0; i < nodes.length; i++) {
-    const n = nodes[i];
-    const r = 4.5 + Math.min(8, n.deg * 0.62);
-    const dim = near && !near.has(i);
-    ctx.globalAlpha = dim ? 0.25 : 1;
-    ctx.fillStyle = n.moc ? moc : accent;
-    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill();
-    if (n.id === current) {
-      ctx.strokeStyle = fg; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(n.x, n.y, r + 3.5, 0, Math.PI * 2); ctx.stroke();
+  function setData(noteIds) {
+    const set = new Set(noteIds.filter((id) => NOTES[id]));
+    nodes = [...set].map((id) => ({
+      id,
+      moc: NOTES[id].type === "moc",
+      deg: NOTES[id].links.length + NOTES[id].backlinks.length,
+    }));
+    index = {};
+    nodes.forEach((n, i) => { index[n.id] = i; });
+    edges = [];
+    for (const n of nodes) for (const t of NOTES[n.id].links) {
+      if (index[t] !== undefined) edges.push([index[n.id], index[t]]);
     }
-    if (view.k > 0.62 || n.moc || i === hover) {
-      ctx.globalAlpha = dim ? 0.3 : 1;
-      ctx.fillStyle = fg;
-      ctx.font = `${i === hover ? 700 : 400} ${11 / Math.max(1, view.k * 0.85)}px ${css("--sans") || "sans-serif"}`;
+    seeded = false; ticks = 0;
+    view = { x: 0, y: 0, k: 1 };
+  }
+
+  function seed() {
+    const w = canvas.clientWidth || 800, h = canvas.clientHeight || 600;
+    nodes.forEach((n, i) => {
+      // Deterministic spiral seed: same layout every load, no RNG.
+      const a = i * 2.399963;
+      const r = 38 * Math.sqrt(i + 1);
+      n.x = w / 2 + r * Math.cos(a);
+      n.y = h / 2 + r * Math.sin(a);
+      n.vx = 0; n.vy = 0;
+    });
+    seeded = true;
+  }
+
+  function step() {
+    // Ideal edge length, scaled by node count so the graph keeps breathing room
+    // as the set grows rather than collapsing into a denser ball.
+    const K = 78 + Math.sqrt(Math.max(nodes.length, 4)) * 11;
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const d2 = dx * dx + dy * dy || 0.01;
+        if (d2 > 1000000) continue;
+        const f = (K * K) / d2;
+        const d = Math.sqrt(d2);
+        const fx = (dx / d) * f, fy = (dy / d) * f;
+        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      }
+    }
+    for (const [i, j] of edges) {
+      const a = nodes[i], b = nodes[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+      const f = (d - K) * 0.045;
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+    const cx = canvas.clientWidth / 2, cy = canvas.clientHeight / 2;
+    for (const n of nodes) {
+      n.vx += (cx - n.x) * 0.0022;
+      n.vy += (cy - n.y) * 0.0022;
+      n.vx *= 0.82; n.vy *= 0.82;
+      n.x += Math.max(-18, Math.min(18, n.vx));
+      n.y += Math.max(-18, Math.min(18, n.vy));
+    }
+  }
+
+  function radius(n) { return 4.5 + Math.min(8, n.deg * 0.62); }
+
+  function draw() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+      canvas.width = w * dpr; canvas.height = h * dpr;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    if (!nodes.length) {
+      ctx.fillStyle = css("--fg-faint");
+      ctx.font = `13px ${css("--sans") || "sans-serif"}`;
       ctx.textAlign = "center";
-      ctx.fillText(NOTES[n.id].title, n.x, n.y + r + 12);
+      ctx.fillText(opts.emptyText || "Nothing to show.", w / 2, h / 2);
+      return;
     }
-  }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
 
-let ticks = 0;
-function loop() {
-  if ($("#graph-view").classList.contains("on")) {
+    ctx.save();
+    ctx.translate(view.x, view.y);
+    ctx.scale(view.k, view.k);
+
+    const line = css("--line"), accent = css("--accent"), moc = css("--moc"), fg = css("--fg-dim");
+    const near = hover === null ? null : new Set([hover].concat(
+      edges.filter(([i, j]) => i === hover || j === hover).map(([i, j]) => (i === hover ? j : i))
+    ));
+
+    ctx.lineWidth = 1;
+    for (const [i, j] of edges) {
+      const lit = near && near.has(i) && near.has(j);
+      ctx.strokeStyle = lit ? accent : line;
+      ctx.globalAlpha = near ? (lit ? 0.9 : 0.18) : 0.55;
+      ctx.beginPath();
+      ctx.moveTo(nodes[i].x, nodes[i].y);
+      ctx.lineTo(nodes[j].x, nodes[j].y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const r = radius(n);
+      const dim = near && !near.has(i);
+      ctx.globalAlpha = dim ? 0.25 : 1;
+      ctx.fillStyle = n.moc ? moc : accent;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill();
+      if (n.id === current) {
+        ctx.strokeStyle = fg; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 3.5, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (view.k > 0.62 || n.moc || i === hover || nodes.length <= 40) {
+        ctx.globalAlpha = dim ? 0.3 : 1;
+        ctx.fillStyle = fg;
+        ctx.font = `${i === hover ? 700 : 400} ${11 / Math.max(1, view.k * 0.85)}px ${css("--sans") || "sans-serif"}`;
+        ctx.textAlign = "center";
+        ctx.fillText(NOTES[n.id].title, n.x, n.y + r + 12);
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  function tick(active) {
+    if (!active) return;
+    if (!seeded) seed();
     if (ticks < 700) { step(); ticks++; }
     draw();
   }
-  requestAnimationFrame(loop);
+
+  function toCoords(ev) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (ev.clientX - rect.left - view.x) / view.k,
+      y: (ev.clientY - rect.top - view.y) / view.k,
+    };
+  }
+  function pick(pt) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      const n = nodes[i], r = radius(n) + 4;
+      if ((pt.x - n.x) ** 2 + (pt.y - n.y) ** 2 < r * r) return i;
+    }
+    return null;
+  }
+
+  let dragging = false, last = null;
+  canvas.addEventListener("mousedown", (e) => { dragging = true; last = { x: e.clientX, y: e.clientY }; });
+  window.addEventListener("mouseup", () => { dragging = false; });
+  canvas.addEventListener("mousemove", (e) => {
+    if (dragging && last) {
+      view.x += e.clientX - last.x; view.y += e.clientY - last.y;
+      last = { x: e.clientX, y: e.clientY };
+    } else {
+      const h = pick(toCoords(e));
+      if (h !== hover) { hover = h; canvas.style.cursor = h === null ? "grab" : "pointer"; }
+    }
+  });
+  canvas.addEventListener("click", (e) => {
+    const i = pick(toCoords(e));
+    // Setting the hash is enough — route() switches back to the note view.
+    if (i !== null) location.hash = "#/" + nodes[i].id;
+  });
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const k = Math.max(0.25, Math.min(3, view.k * (e.deltaY < 0 ? 1.12 : 0.89)));
+    view.x = mx - (mx - view.x) * (k / view.k);
+    view.y = my - (my - view.y) * (k / view.k);
+    view.k = k;
+  }, { passive: false });
+
+  return { setData, tick, reheat: () => { seeded = false; ticks = 0; }, size: () => nodes.length };
 }
 
-function toGraphCoords(ev) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (ev.clientX - rect.left - view.x) / view.k,
-    y: (ev.clientY - rect.top - view.y) / view.k,
+const mainGraph = makeGraph($("#graph"));
+mainGraph.setData(ids);
+
+/* --------------------------------------------------------------- graphql */
+/* A small GraphQL engine over the note graph. Supports the query subset this
+   page needs: named or anonymous queries, nested selection sets, field
+   arguments, aliases, and variables declared inline. No mutations,
+   subscriptions, fragments, or directives — the schema is read-only. */
+
+const GQL = (() => {
+  const PUNCT = "{}()[]:,!$=@";
+
+  function tokenize(src) {
+    const out = [];
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i];
+      if (/\s|,/.test(c)) { i++; continue; }
+      if (c === "#") { while (i < src.length && src[i] !== "\n") i++; continue; }
+      if (c === "." && src.slice(i, i + 3) === "...") {
+        throw err("Fragments are not supported", i);
+      }
+      if (PUNCT.includes(c)) { out.push({ k: c, v: c, at: i }); i++; continue; }
+      if (c === '"') {
+        let j = i + 1, v = "";
+        while (j < src.length && src[j] !== '"') {
+          if (src[j] === "\\") { v += src[j + 1]; j += 2; } else { v += src[j++]; }
+        }
+        if (j >= src.length) throw err("Unterminated string", i);
+        out.push({ k: "String", v, at: i }); i = j + 1; continue;
+      }
+      if (/[-0-9]/.test(c)) {
+        let j = i; if (src[j] === "-") j++;
+        while (j < src.length && /[0-9.eE+-]/.test(src[j])) j++;
+        out.push({ k: "Number", v: Number(src.slice(i, j)), at: i }); i = j; continue;
+      }
+      if (/[_A-Za-z]/.test(c)) {
+        let j = i;
+        while (j < src.length && /[_0-9A-Za-z]/.test(src[j])) j++;
+        out.push({ k: "Name", v: src.slice(i, j), at: i }); i = j; continue;
+      }
+      throw err(`Unexpected character ${JSON.stringify(c)}`, i);
+    }
+    out.push({ k: "EOF", v: null, at: src.length });
+    return out;
+  }
+
+  function err(message, at) {
+    const e = new Error(message);
+    e.at = at;
+    return e;
+  }
+
+  function parse(src) {
+    const toks = tokenize(src);
+    let p = 0;
+    const peek = () => toks[p];
+    const next = () => toks[p++];
+    const expect = (k) => {
+      const t = next();
+      if (t.k !== k) throw err(`Expected ${k} but found ${t.v === null ? "end of query" : JSON.stringify(String(t.v))}`, t.at);
+      return t;
+    };
+
+    function value() {
+      const t = next();
+      if (t.k === "Number" || t.k === "String") return t.v;
+      if (t.k === "$") throw err("Variables are not supported; inline the value instead", t.at);
+      if (t.k === "[") {
+        const list = [];
+        while (peek().k !== "]") list.push(value());
+        next();
+        return list;
+      }
+      if (t.k === "Name") {
+        if (t.v === "true") return true;
+        if (t.v === "false") return false;
+        if (t.v === "null") return null;
+        return t.v; // enum value
+      }
+      throw err(`Unexpected value ${JSON.stringify(String(t.v))}`, t.at);
+    }
+
+    function args() {
+      const out = {};
+      if (peek().k !== "(") return out;
+      next();
+      while (peek().k !== ")") {
+        const name = expect("Name").v;
+        expect(":");
+        out[name] = value();
+      }
+      next();
+      return out;
+    }
+
+    function selectionSet() {
+      expect("{");
+      const sels = [];
+      while (peek().k !== "}") {
+        if (peek().k === "EOF") throw err("Unclosed '{'", peek().at);
+        let alias = null;
+        let name = expect("Name").v;
+        if (peek().k === ":") { next(); alias = name; name = expect("Name").v; }
+        const a = args();
+        const sub = peek().k === "{" ? selectionSet() : null;
+        sels.push({ name, alias: alias || name, args: a, sel: sub, at: p });
+      }
+      next();
+      if (!sels.length) throw err("Selection set is empty", peek().at);
+      return sels;
+    }
+
+    if (peek().k === "Name" && (peek().v === "query" || peek().v === "mutation")) {
+      const t = next();
+      if (t.v === "mutation") throw err("This schema is read-only; only queries are supported", t.at);
+      if (peek().k === "Name") next();               // operation name
+      if (peek().k === "(") throw err("Variable definitions are not supported", peek().at);
+    }
+    const root = selectionSet();
+    if (peek().k !== "EOF") throw err("Unexpected trailing input", peek().at);
+    return root;
+  }
+
+  /* ------------------------------------------------------------ schema */
+
+  const noteList = () => ids.map((id) => NOTES[id]);
+  const resolveNote = (id) => NOTES[id] || null;
+
+  function tagIndex() {
+    const t = {};
+    for (const id of ids) for (const tag of NOTES[id].tags || []) (t[tag] = t[tag] || []).push(id);
+    return t;
+  }
+  function repoIndex() {
+    const r = {};
+    for (const id of ids) for (const s of NOTES[id].sources) {
+      const e = (r[s.repo] = r[s.repo] || { name: s.repo, notes: new Set(), refs: new Set(), citations: 0 });
+      e.notes.add(id); e.refs.add(s.ref); e.citations++;
+    }
+    return r;
+  }
+
+  function applyFilters(list, a) {
+    let out = list;
+    if (a.type) out = out.filter((n) => n.type === String(a.type));
+    if (a.moc) out = out.filter((n) => n.moc === a.moc);
+    if (a.tag) out = out.filter((n) => (n.tags || []).includes(a.tag));
+    if (a.repo) out = out.filter((n) => n.sources.some((s) => s.repo === a.repo || s.repo.split("/")[1] === a.repo));
+    if (a.search) {
+      const q = String(a.search).toLowerCase();
+      out = out.filter((n) => n.text.includes(q));
+    }
+    if (a.linkedTo) out = out.filter((n) => n.links.includes(a.linkedTo));
+    out = out.slice().sort((x, y) => x.title.localeCompare(y.title));
+    if (a.orderBy === "degree") {
+      out = out.slice().sort((x, y) =>
+        (y.links.length + y.backlinks.length) - (x.links.length + x.backlinks.length));
+    }
+    if (a.orderBy === "citations") {
+      out = out.slice().sort((x, y) => y.sources.length - x.sources.length);
+    }
+    if (typeof a.first === "number") out = out.slice(0, a.first);
+    return out;
+  }
+
+  const TYPES = {
+    Query: {
+      notes: { type: "Note", list: true,
+        args: { type: "NoteType", moc: "ID", tag: "String", repo: "String", search: "String", linkedTo: "ID", orderBy: "NoteOrder", first: "Int" },
+        resolve: (_, a) => applyFilters(noteList(), a) },
+      note: { type: "Note", args: { id: "ID!" }, resolve: (_, a) => resolveNote(a.id) },
+      mocs: { type: "Note", list: true, resolve: () => META.mocOrder.map(resolveNote).filter(Boolean) },
+      concepts: { type: "Note", list: true, args: { first: "Int" },
+        resolve: (_, a) => applyFilters(noteList().filter((n) => n.type === "concept"), a) },
+      tags: { type: "Tag", list: true, resolve: () => {
+        const t = tagIndex();
+        return Object.keys(t).sort().map((name) => ({ name, ids: t[name] }));
+      } },
+      repositories: { type: "Repository", list: true, resolve: () => {
+        const r = repoIndex();
+        return Object.keys(r).sort().map((k) => r[k]);
+      } },
+      stats: { type: "Stats", resolve: () => META },
+    },
+
+    Note: {
+      id: { type: "ID", resolve: (n) => n.id },
+      title: { type: "String", resolve: (n) => n.title },
+      type: { type: "NoteType", resolve: (n) => n.type },
+      summary: { type: "String", resolve: (n) => n.summary },
+      tags: { type: "String", list: true, resolve: (n) => n.tags || [] },
+      updated: { type: "String", resolve: (n) => n.updated || null },
+      path: { type: "String", resolve: (n) => n.sourcePath },
+      url: { type: "String", resolve: (n) => n.sourceUrl },
+      moc: { type: "Note", resolve: (n) => resolveNote(n.moc) },
+      links: { type: "Note", list: true, args: { first: "Int" },
+        resolve: (n, a) => cut(n.links.map(resolveNote).filter(Boolean), a) },
+      backlinks: { type: "Note", list: true, args: { first: "Int" },
+        resolve: (n, a) => cut(n.backlinks.map(resolveNote).filter(Boolean), a) },
+      neighbors: { type: "Note", list: true, args: { first: "Int" },
+        resolve: (n, a) => cut([...new Set(n.links.concat(n.backlinks))].map(resolveNote).filter(Boolean), a) },
+      linkCount: { type: "Int", resolve: (n) => n.links.length },
+      backlinkCount: { type: "Int", resolve: (n) => n.backlinks.length },
+      degree: { type: "Int", resolve: (n) => n.links.length + n.backlinks.length },
+      sources: { type: "Source", list: true, resolve: (n) => n.sources },
+      sourceCount: { type: "Int", resolve: (n) => n.sources.length },
+      repositories: { type: "String", list: true,
+        resolve: (n) => [...new Set(n.sources.map((s) => s.repo))].sort() },
+    },
+
+    Source: {
+      repo: { type: "String", resolve: (s) => s.repo },
+      path: { type: "String", resolve: (s) => s.path },
+      ref: { type: "String", resolve: (s) => s.ref },
+      shortRef: { type: "String", resolve: (s) => s.shortRef },
+      lines: { type: "String", resolve: (s) => s.lines || null },
+      claim: { type: "String", resolve: (s) => s.claim },
+      url: { type: "String", resolve: (s) => s.url },
+    },
+
+    Tag: {
+      name: { type: "String", resolve: (t) => t.name },
+      count: { type: "Int", resolve: (t) => t.ids.length },
+      notes: { type: "Note", list: true, resolve: (t) => t.ids.map(resolveNote) },
+    },
+
+    Repository: {
+      name: { type: "String", resolve: (r) => r.name },
+      url: { type: "String", resolve: (r) => "https://github.com/" + r.name },
+      citationCount: { type: "Int", resolve: (r) => r.citations },
+      noteCount: { type: "Int", resolve: (r) => r.notes.size },
+      pinnedRefs: { type: "String", list: true, resolve: (r) => [...r.refs].sort() },
+      notes: { type: "Note", list: true, resolve: (r) => [...r.notes].sort().map(resolveNote) },
+    },
+
+    Stats: {
+      noteCount: { type: "Int", resolve: (m) => m.noteCount },
+      mocCount: { type: "Int", resolve: (m) => m.mocCount },
+      conceptCount: { type: "Int", resolve: (m) => m.conceptCount },
+      citationCount: { type: "Int", resolve: (m) => m.citationCount },
+      linkCount: { type: "Int", resolve: (m) => m.linkCount },
+      repositoryCount: { type: "Int", resolve: (m) => m.repos.length },
+      repositories: { type: "String", list: true, resolve: (m) => m.repos },
+      updated: { type: "String", resolve: (m) => m.updated },
+    },
   };
+
+  const SCALARS = new Set(["ID", "String", "Int", "Boolean", "NoteType", "NoteOrder"]);
+  function cut(list, a) { return typeof a.first === "number" ? list.slice(0, a.first) : list; }
+
+  /* ---------------------------------------------------------- execute */
+
+  // Notes touched while resolving, in encounter order. Tracked during execution
+  // rather than recovered from the JSON afterwards, so the result can be drawn
+  // as a graph even when the query never selects an `id`.
+  let touched = null;
+
+  function execute(src) {
+    const sels = parse(src);
+    touched = [];
+    const data = resolveSelections(sels, "Query", null);
+    return { data, notes: [...new Set(touched)] };
+  }
+
+  function resolveSelections(sels, typeName, parent) {
+    if (typeName === "Note" && parent && parent.id && touched) touched.push(parent.id);
+    const fields = TYPES[typeName];
+    const out = {};
+    for (const sel of sels) {
+      const def = fields[sel.name];
+      if (!def) {
+        throw err(`Cannot query field "${sel.name}" on type "${typeName}". ` +
+                  `Available: ${Object.keys(fields).join(", ")}`, sel.at);
+      }
+      for (const key of Object.keys(sel.args)) {
+        if (!def.args || !(key in def.args)) {
+          throw err(`Unknown argument "${key}" on field "${sel.name}". ` +
+                    `Accepts: ${def.args ? Object.keys(def.args).join(", ") : "none"}`, sel.at);
+        }
+      }
+      if (def.args) {
+        for (const [key, t] of Object.entries(def.args)) {
+          if (t.endsWith("!") && !(key in sel.args)) {
+            throw err(`Field "${sel.name}" requires argument "${key}"`, sel.at);
+          }
+        }
+      }
+      const value = def.resolve(parent, sel.args);
+      const leaf = SCALARS.has(def.type);
+      if (leaf) {
+        if (sel.sel) throw err(`Field "${sel.name}" is a scalar and has no subfields`, sel.at);
+        out[sel.alias] = value;
+        continue;
+      }
+      if (!sel.sel) throw err(`Field "${sel.name}" of type "${def.type}" needs a selection set`, sel.at);
+      if (value === null || value === undefined) { out[sel.alias] = null; continue; }
+      out[sel.alias] = def.list
+        ? value.map((v) => resolveSelections(sel.sel, def.type, v))
+        : resolveSelections(sel.sel, def.type, value);
+    }
+    return out;
+  }
+
+  /* --------------------------------------------------------------- SDL */
+
+  function sdl() {
+    const lines = ["# The zettelkasten as a graph. Read-only — queries only.", ""];
+    lines.push("enum NoteType { concept moc }");
+    lines.push("enum NoteOrder { title degree citations }", "");
+    for (const [name, fields] of Object.entries(TYPES)) {
+      lines.push(`type ${name} {`);
+      for (const [f, d] of Object.entries(fields)) {
+        const a = d.args && Object.keys(d.args).length
+          ? "(" + Object.entries(d.args).map(([k, v]) => `${k}: ${v}`).join(", ") + ")"
+          : "";
+        const t = d.list ? `[${d.type}!]!` : d.type;
+        lines.push(`  ${f}${a}: ${t}`);
+      }
+      lines.push("}", "");
+    }
+    return lines.join("\n").trim();
+  }
+
+  return { execute, sdl, TYPES };
+})();
+
+const GQL_EXAMPLES = [
+  { label: "The map of maps", q:
+`# Every Map of Content and what lives under it
+{
+  mocs {
+    title
+    summary
+    concepts: backlinks { id }
+  }
+}` },
+  { label: "One cluster", q:
+`# Every concept that calls the domain model home
+{
+  notes(moc: "moc-faction-domain-model") {
+    title
+    summary
+    degree
+  }
+}` },
+  { label: "Most connected", q:
+`# The hubs of the graph
+{
+  notes(orderBy: degree, first: 8) {
+    title
+    degree
+    linkCount
+    backlinkCount
+  }
+}` },
+  { label: "Follow the links", q:
+`# Two hops out from faction power
+{
+  note(id: "faction-power") {
+    title
+    links { title links { title } }
+    backlinks { title }
+  }
+}` },
+  { label: "Citations", q:
+`# What proves the claims about power
+{
+  note(id: "demesne-limit") {
+    title
+    sources { repo path lines claim url }
+  }
+}` },
+  { label: "By repository", q:
+`# Which repos the collection is grounded in
+{
+  repositories {
+    name
+    citationCount
+    noteCount
+    pinnedRefs
+  }
+}` },
+  { label: "Whole graph", q:
+`# Every note and its outgoing edges — draw this one
+{
+  notes {
+    id
+    title
+    type
+    links { id }
+  }
+}` },
+  { label: "Stats", q:
+`{
+  stats {
+    noteCount mocCount conceptCount
+    citationCount linkCount repositoryCount
+    updated
+  }
+}` },
+];
+
+const gqlGraph = makeGraph($("#gql-graph"), { emptyText: "Run a query that returns notes." });
+let gqlResultView = "json";
+
+function gqlRun() {
+  const src = $("#gql-editor").value;
+  const out = $("#gql-json");
+  try {
+    const { data, notes } = GQL.execute(src);
+    out.classList.remove("error");
+    out.textContent = JSON.stringify({ data }, null, 2);
+    gqlGraph.setData(notes);
+    $("#gql-count").textContent = notes.length
+      ? `${notes.length} note${notes.length === 1 ? "" : "s"} — see Graph`
+      : "no notes in result";
+  } catch (e) {
+    out.classList.add("error");
+    out.textContent = "✕ " + e.message + (e.at !== undefined ? `\n\n  at character ${e.at}` : "");
+    gqlGraph.setData([]);
+    $("#gql-count").textContent = "error";
+  }
 }
 
-function pick(pt) {
-  for (let i = nodes.length - 1; i >= 0; i--) {
-    const n = nodes[i];
-    const r = 8 + Math.min(7, n.deg * 0.65);
-    if ((pt.x - n.x) ** 2 + (pt.y - n.y) ** 2 < r * r) return i;
-  }
-  return null;
+function gqlSetResultView(v) {
+  gqlResultView = v;
+  $("#gql-json").classList.toggle("hidden", v !== "json");
+  $("#gql-graph").classList.toggle("hidden", v !== "graph");
+  document.querySelectorAll("#gql-toggle button").forEach((b) =>
+    b.classList.toggle("on", b.dataset.view === v));
+  if (v === "graph") gqlGraph.reheat();
 }
 
-let dragging = false, last = null;
-canvas.addEventListener("mousedown", (e) => { dragging = true; last = { x: e.clientX, y: e.clientY }; });
-window.addEventListener("mouseup", () => { dragging = false; });
-canvas.addEventListener("mousemove", (e) => {
-  if (dragging && last) {
-    view.x += e.clientX - last.x; view.y += e.clientY - last.y;
-    last = { x: e.clientX, y: e.clientY };
-  } else {
-    const h = pick(toGraphCoords(e));
-    if (h !== hover) { hover = h; canvas.style.cursor = h === null ? "grab" : "pointer"; }
-  }
-});
-canvas.addEventListener("click", (e) => {
-  const i = pick(toGraphCoords(e));
-  // Setting the hash is enough — route() switches back to the note view.
-  if (i !== null) location.hash = "#/" + nodes[i].id;
-});
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  const k = Math.max(0.25, Math.min(3, view.k * (e.deltaY < 0 ? 1.12 : 0.89)));
-  view.x = mx - (mx - view.x) * (k / view.k);
-  view.y = my - (my - view.y) * (k / view.k);
-  view.k = k;
-}, { passive: false });
+function gqlInit() {
+  $("#gql-schema").textContent = GQL.sdl();
+  $("#gql-examples").innerHTML = GQL_EXAMPLES
+    .map((e, i) => `<button class="gql-ex" data-ex="${i}">${esc(e.label)}</button>`).join("");
+  $("#gql-examples").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-ex]");
+    if (!b) return;
+    $("#gql-editor").value = GQL_EXAMPLES[+b.dataset.ex].q;
+    gqlRun();
+  });
+  $("#gql-run").onclick = gqlRun;
+  $("#gql-toggle").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-view]");
+    if (b) gqlSetResultView(b.dataset.view);
+  });
+  $("#gql-editor").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); gqlRun(); }
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const el = e.target, p = el.selectionStart;
+      el.value = el.value.slice(0, p) + "  " + el.value.slice(el.selectionEnd);
+      el.selectionStart = el.selectionEnd = p + 2;
+    }
+  });
+  $("#gql-editor").value = GQL_EXAMPLES[0].q;
+  gqlRun();
+}
 
 /* ----------------------------------------------------------------- tabs */
-function showNotes() {
-  $("#graph-view").classList.remove("on");
-  $("#content").classList.remove("hidden");
-  $("#tab-notes").classList.add("on"); $("#tab-graph").classList.remove("on");
+let tab = "notes";
+function showTab(which) {
+  tab = which;
+  $("#content").classList.toggle("hidden", which !== "notes");
+  $("#graph-view").classList.toggle("on", which === "graph");
+  $("#gql-view").classList.toggle("on", which === "gql");
+  // Both full-width views reclaim the right rail's space.
+  document.querySelector("main").classList.toggle("wide", which !== "notes");
+  for (const [id, name] of [["#tab-notes", "notes"], ["#tab-graph", "graph"], ["#tab-gql", "gql"]]) {
+    $(id).classList.toggle("on", which === name);
+  }
+  if (which === "graph") mainGraph.reheat();
+  if (which === "gql") { gqlInitOnce(); gqlGraph.reheat(); }
 }
-function showGraph() {
-  $("#content").classList.add("hidden");
-  $("#graph-view").classList.add("on");
-  $("#tab-graph").classList.add("on"); $("#tab-notes").classList.remove("on");
-  if (!graphReady) { seedLayout(canvas.clientWidth, canvas.clientHeight); graphReady = true; }
-}
+const showNotes = () => showTab("notes");
+const showGraph = () => showTab("graph");
+
+let gqlReady = false;
+function gqlInitOnce() { if (!gqlReady) { gqlReady = true; gqlInit(); } }
+
 $("#tab-notes").onclick = showNotes;
 $("#tab-graph").onclick = showGraph;
+$("#tab-gql").onclick = () => showTab("gql");
 
 /* --------------------------------------------------------------- wiring */
 function route() {
@@ -492,8 +1082,9 @@ function route() {
   const id = hash.split("#")[0] || META.home;
   const anchor = hash.split("#")[1];
   if (NOTES[id]) {
-    if (id !== current) renderNote(id);
-    showNotes();
+    const changed = id !== current;
+    if (changed) renderNote(id);
+    if (changed || tab === "notes") showNotes();
     if (anchor) {
       const el = document.getElementById(anchor);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -506,9 +1097,13 @@ window.addEventListener("hashchange", route);
 
 $("#search").addEventListener("input", (e) => renderNav(e.target.value));
 document.addEventListener("keydown", (e) => {
-  if (e.key === "/" && document.activeElement !== $("#search")) { e.preventDefault(); $("#search").focus(); }
+  const typing = ["INPUT", "TEXTAREA"].includes((document.activeElement || {}).tagName);
+  if (e.key === "/" && !typing) { e.preventDefault(); $("#search").focus(); }
   if (e.key === "Escape") { $("#search").value = ""; $("#search").blur(); renderNav(""); }
-  if (e.key === "g" && document.activeElement !== $("#search")) showGraph();
+  if (typing) return;
+  if (e.key === "g") showGraph();
+  if (e.key === "q") showTab("gql");
+  if (e.key === "n") showNotes();
 });
 document.addEventListener("click", (e) => {
   const tag = e.target.closest("[data-tag]");
@@ -520,12 +1115,20 @@ $("#theme").onclick = () => {
   document.documentElement.setAttribute("data-theme", light ? "dark" : "light");
   try { localStorage.setItem("zk-theme", light ? "dark" : "light"); } catch (_) {}
 };
+// Dark is the default regardless of the OS preference; only an explicit choice
+// made with the toggle overrides it.
 try {
   const saved = localStorage.getItem("zk-theme");
-  if (saved) document.documentElement.setAttribute("data-theme", saved);
-  else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches)
-    document.documentElement.setAttribute("data-theme", "light");
-} catch (_) {}
+  document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+} catch (_) {
+  document.documentElement.setAttribute("data-theme", "dark");
+}
+
+function loop() {
+  mainGraph.tick(tab === "graph");
+  gqlGraph.tick(tab === "gql" && gqlResultView === "graph");
+  requestAnimationFrame(loop);
+}
 
 renderStats();
 renderNote(location.hash.replace(/^#\/?/, "").split("#")[0] || META.home);

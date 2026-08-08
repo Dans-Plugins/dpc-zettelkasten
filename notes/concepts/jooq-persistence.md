@@ -2,6 +2,7 @@
 id: jooq-persistence
 title: jOOQ Persistence
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, persistence]
 summary: Storage is jOOQ over a Hikari pool, with Flyway migrations and a configurable SQL dialect — H2 by default, MySQL or PostgreSQL optionally.
 created: 2026-08-07

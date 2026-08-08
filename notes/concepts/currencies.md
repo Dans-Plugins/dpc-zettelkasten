@@ -2,6 +2,7 @@
 id: currencies
 title: Currencies
 type: concept
+moc: moc-plugin-ecosystem
 tags: [currencies, expansion, ecosystem, economy]
 summary: An expansion letting factions mint physical local currencies as item stacks, and the reference example of a modern Medieval Factions expansion.
 created: 2026-08-07

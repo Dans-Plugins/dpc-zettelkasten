@@ -2,6 +2,7 @@
 id: release-automation
 title: Release Automation
 type: concept
+moc: moc-conventions-and-process
 tags: [dpc, conventions, ci]
 summary: Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.
 created: 2026-08-07

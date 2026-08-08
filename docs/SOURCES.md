@@ -18,7 +18,7 @@ rather than incidentally.
 | [Dans-Plugins/Mailboxes](https://github.com/Dans-Plugins/Mailboxes) | [`3f8fb186bb`](https://github.com/Dans-Plugins/Mailboxes/tree/3f8fb186bbdd067ae893d911b26d065d8f3fdaf8) | 2 | 1 |
 | [Dans-Plugins/Medieval-Factions](https://github.com/Dans-Plugins/Medieval-Factions) | [`3a51c55366`](https://github.com/Dans-Plugins/Medieval-Factions/tree/3a51c55366b544d31429fae8bcb64efaf1878e15) | 45 | 30 |
 | [Dans-Plugins/Ponder](https://github.com/Dans-Plugins/Ponder) | [`ff5276ae2f`](https://github.com/Dans-Plugins/Ponder/tree/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f) | 3 | 1 |
-| [Dans-Plugins/dansplugins-dot-com](https://github.com/Dans-Plugins/dansplugins-dot-com) | [`21faae72f8`](https://github.com/Dans-Plugins/dansplugins-dot-com/tree/21faae72f893a5267d4d754a0fd97d1c183f3aba) | 2 | 1 |
+| [Dans-Plugins/dansplugins-dot-com](https://github.com/Dans-Plugins/dansplugins-dot-com) | [`e5eb6d69c4`](https://github.com/Dans-Plugins/dansplugins-dot-com/tree/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b) | 2 | 1 |
 | [Dans-Plugins/dpc-conventions](https://github.com/Dans-Plugins/dpc-conventions) | [`9dc9aa37e9`](https://github.com/Dans-Plugins/dpc-conventions/tree/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec) | 5 | 7 |
 | [Dans-Plugins/dpc-mc-server](https://github.com/Dans-Plugins/dpc-mc-server) | [`d42e0ec06f`](https://github.com/Dans-Plugins/dpc-mc-server/tree/d42e0ec06f9b29baaa043442d24ef2dd81edfa49) | 2 | 2 |
 
@@ -117,10 +117,10 @@ At `ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f`:
 
 ### Dans-Plugins/dansplugins-dot-com
 
-At `21faae72f893a5267d4d754a0fd97d1c183f3aba`:
+At `e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b`:
 
-- [`README.md`](https://github.com/Dans-Plugins/dansplugins-dot-com/blob/21faae72f893a5267d4d754a0fd97d1c183f3aba/README.md)
-- [`utils/apiBase.ts`](https://github.com/Dans-Plugins/dansplugins-dot-com/blob/21faae72f893a5267d4d754a0fd97d1c183f3aba/utils/apiBase.ts)
+- [`README.md`](https://github.com/Dans-Plugins/dansplugins-dot-com/blob/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b/README.md)
+- [`utils/apiBase.ts`](https://github.com/Dans-Plugins/dansplugins-dot-com/blob/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b/utils/apiBase.ts)
 
 ### Dans-Plugins/dpc-conventions
 

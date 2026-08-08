@@ -2,6 +2,7 @@
 id: faction-relationship
 title: Faction Relationship
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, diplomacy]
 summary: Diplomacy is stored as directed edges between factions, typed as ally, at war, vassal, or liege.
 created: 2026-08-07

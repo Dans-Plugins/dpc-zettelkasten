@@ -2,6 +2,7 @@
 id: value-class-identifier
 title: Value Class Identifier
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, kotlin]
 summary: Every record's id is a Kotlin inline value class wrapping a UUID string, making identifiers type-safe at compile time and free at runtime.
 created: 2026-08-07

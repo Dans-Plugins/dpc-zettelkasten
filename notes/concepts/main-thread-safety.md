@@ -2,6 +2,7 @@
 id: main-thread-safety
 title: Main Thread Safety
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, concurrency]
 summary: Bukkit state may only be read on the server's main thread, so anything doing I/O snapshots first and sends afterwards.
 created: 2026-08-07

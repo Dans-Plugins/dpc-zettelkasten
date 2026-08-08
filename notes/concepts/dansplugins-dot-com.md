@@ -2,6 +2,7 @@
 id: dansplugins-dot-com
 title: dansplugins.com
 type: concept
+moc: moc-web-and-infrastructure
 tags: [dpc, web]
 summary: The community's Next.js website — plugin directory, guides, and player accounts — backed by a separate dpc-api service.
 created: 2026-08-07
@@ -9,11 +10,11 @@ updated: 2026-08-07
 sources:
   - repo: Dans-Plugins/dansplugins-dot-com
     path: README.md
-    ref: 21faae72f893a5267d4d754a0fd97d1c183f3aba
+    ref: e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b
     claim: The site is a Next.js application serving as the central hub for the community at dansplugins.com, showcasing plugins and linking to documentation and support.
   - repo: Dans-Plugins/dansplugins-dot-com
     path: utils/apiBase.ts
-    ref: 21faae72f893a5267d4d754a0fd97d1c183f3aba
+    ref: e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b
     claim: The site resolves a separate dpc-api backend from the NEXT_PUBLIC_API_URL environment variable, defaulting to a local dev-portal origin.
 ---
 

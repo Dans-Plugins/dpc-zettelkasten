@@ -2,6 +2,7 @@
 id: dpc-mc-server
 title: DPC Minecraft Server
 type: concept
+moc: moc-web-and-infrastructure
 tags: [dpc, infrastructure, testing]
 summary: An infrastructure-as-code Spigot server that pins a curated set of DPC plugin jars into a Docker image, each toggleable by environment variable.
 created: 2026-08-07

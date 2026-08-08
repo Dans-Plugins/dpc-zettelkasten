@@ -2,6 +2,7 @@
 id: faction-flag
 title: Faction Flag
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, governance]
 summary: Per-faction toggles that change how the simulation treats a faction — land access for allies, friendly fire, mob protection, and map colour.
 created: 2026-08-07

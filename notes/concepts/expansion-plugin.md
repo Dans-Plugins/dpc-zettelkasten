@@ -2,6 +2,7 @@
 id: expansion-plugin
 title: Expansion Plugin
 type: concept
+moc: moc-plugin-ecosystem
 tags: [medieval-factions, ecosystem, architecture]
 summary: A plugin that hard-depends on Medieval Factions and extends the simulation — declaring the dependency in plugin.yml and reusing the flagship's identifiers, events, and permission model.
 created: 2026-08-07

@@ -2,6 +2,7 @@
 id: law
 title: Law
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, roleplay]
 summary: Numbered lines of text a faction publishes to its members — enforced socially, not mechanically.
 created: 2026-08-07

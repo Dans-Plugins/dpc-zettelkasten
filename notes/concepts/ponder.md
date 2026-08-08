@@ -2,6 +2,7 @@
 id: ponder
 title: Ponder
 type: concept
+moc: moc-plugin-ecosystem
 tags: [ponder, library, ecosystem]
 summary: The community's shared Java/Kotlin library — a multi-module Gradle build providing command abstraction, caching, and Bukkit helpers.
 created: 2026-08-07

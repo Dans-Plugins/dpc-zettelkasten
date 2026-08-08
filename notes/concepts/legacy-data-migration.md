@@ -2,6 +2,7 @@
 id: legacy-data-migration
 title: Legacy Data Migration
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, persistence]
 summary: Version 4's flat JSON files are backed up and read once into the database, behind a deliberate server shutdown that forces the operator to configure storage first.
 created: 2026-08-07

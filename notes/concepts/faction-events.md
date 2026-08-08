@@ -2,6 +2,7 @@
 id: faction-events
 title: Faction Events
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, extensibility]
 summary: The plugin fires cancellable Bukkit events for every meaningful faction change, and derives which to fire by diffing the record it is about to save.
 created: 2026-08-07

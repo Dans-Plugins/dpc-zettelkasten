@@ -2,6 +2,7 @@
 id: vassalage
 title: Vassalage
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, diplomacy]
 summary: The feudal hierarchy — a liege draws power from its vassals, but only while its own members remain strong.
 created: 2026-08-07

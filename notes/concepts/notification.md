@@ -2,6 +2,7 @@
 id: notification
 title: Notification
 type: concept
+moc: moc-plugin-architecture
 tags: [medieval-factions, architecture, integration]
 summary: A one-method interface for reaching an offline player, with implementations chosen at startup based on which plugins are installed.
 created: 2026-08-07

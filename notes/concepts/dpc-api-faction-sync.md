@@ -2,6 +2,7 @@
 id: dpc-api-faction-sync
 title: DPC API Faction Sync
 type: concept
+moc: moc-web-and-infrastructure
 tags: [medieval-factions, integration, web, dpc]
 summary: A running server can push its faction roster to the community API on a timer — the one code path where a Minecraft server writes to shared public data.
 created: 2026-08-07

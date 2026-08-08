@@ -91,6 +91,30 @@ def main():
                 "Dans-Plugins repository" % note.rel_path
             )
 
+        if note.type == "concept":
+            if not note.moc:
+                problems.append(
+                    "%s: concept notes must declare a home MOC with 'moc: <id>'"
+                    % note.rel_path
+                )
+            elif note.moc not in by_id:
+                problems.append(
+                    "%s: moc %r does not resolve to any note" % (note.rel_path, note.moc)
+                )
+            elif by_id[note.moc].type != "moc":
+                problems.append(
+                    "%s: moc %r is not a note of type 'moc'" % (note.rel_path, note.moc)
+                )
+            elif note.id not in by_id[note.moc].links:
+                problems.append(
+                    "%s: home MOC %r does not link back to this note; a note's home "
+                    "must list it" % (note.rel_path, note.moc)
+                )
+        elif note.moc:
+            problems.append(
+                "%s: only concept notes may declare a home MOC" % note.rel_path
+            )
+
         for i, source in enumerate(note.sources):
             validate_source(note, i, source, problems)
 
@@ -107,6 +131,21 @@ def main():
     # have no inbound links yet, but a MOC should always adopt it eventually.
     back = zklib.backlink_map(notes)
     orphans = [n.id for n in notes if not back.get(n.id) and n.type != "moc"]
+
+    # A MOC that no other MOC links to and that holds no concepts is unreachable
+    # from the root map, which means nobody browsing will ever find it.
+    moc_ids = set(n.id for n in notes if n.type == "moc")
+    homed = {}
+    for n in notes:
+        if n.moc:
+            homed.setdefault(n.moc, []).append(n.id)
+    for moc in sorted(moc_ids):
+        linked_from_moc = any(moc in by_id[m].links for m in moc_ids if m != moc)
+        if not linked_from_moc and not homed.get(moc) and moc != "moc-dans-plugins-community":
+            problems.append(
+                "notes/moc/%s.md: MOC is unreachable — no other MOC links it and no "
+                "note calls it home" % moc
+            )
 
     for problem in problems:
         print("FAIL %s" % problem)
@@ -129,6 +168,9 @@ def main():
             len(problems),
         )
     )
+    print("home MOCs:")
+    for moc in sorted(moc_ids):
+        print("  %-32s %2d concept(s)" % (moc, len(homed.get(moc, []))))
     return 1 if problems else 0
 
 

@@ -2,6 +2,7 @@
 id: locked-block
 title: Locked Block
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, protection]
 summary: Per-player protection on a single block, with an explicit accessor list — independent of faction land ownership.
 created: 2026-08-07

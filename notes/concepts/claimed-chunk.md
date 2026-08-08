@@ -2,6 +2,7 @@
 id: claimed-chunk
 title: Claimed Chunk
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, territory]
 summary: Territory is recorded one 16×16 Minecraft chunk at a time, as a row pointing from world coordinates to a faction.
 created: 2026-08-07

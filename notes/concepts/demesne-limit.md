@@ -2,6 +2,7 @@
 id: demesne-limit
 title: Demesne Limit
 type: concept
+moc: moc-faction-domain-model
 tags: [medieval-factions, domain-model, territory, power]
 summary: The rule binding land to power — a faction may hold at most one chunk per point of faction power.
 created: 2026-08-07
