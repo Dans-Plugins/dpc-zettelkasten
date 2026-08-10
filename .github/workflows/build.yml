@@ -124,6 +124,31 @@ jobs:
             console.log('served dataset parses —', data.stats.noteCount, 'notes');
           "
 
+          # The engine is published for browser consumers, and it is worth
+          # nothing if it is not the file this repository tests.
+          curl -sf http://127.0.0.1:18080/lib/zk-graphql.js > /tmp/served-engine.js
+          diff -q /tmp/served-engine.js lib/zk-graphql.js \
+            || { echo "::error::served zk-graphql.js differs from the committed one"; exit 1; }
+
+          # CORS: a cross-origin consumer needs both the header on the GET and a
+          # correct preflight, and neither is visible from a same-origin test.
+          for path in dataset.json lib/zk-graphql.js; do
+            curl -sf -D- -o /dev/null -H 'Origin: https://dansplugins.com' \
+              "http://127.0.0.1:18080/$path" | grep -qi '^access-control-allow-origin: \*' \
+              || { echo "::error::$path is missing Access-Control-Allow-Origin"; exit 1; }
+
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X OPTIONS \
+              -H 'Origin: https://dansplugins.com' -H 'Access-Control-Request-Method: GET' \
+              "http://127.0.0.1:18080/$path")
+            test "$code" = "204" || { echo "::error::preflight for $path returned $code, expected 204"; exit 1; }
+          done
+
+          # The headers the server block sets must survive in the CORS location:
+          # nginx drops inherited add_header as soon as a nested level sets one.
+          curl -sf -D- -o /dev/null http://127.0.0.1:18080/dataset.json \
+            | grep -qi '^cache-control: public' \
+            || { echo "::error::dataset.json lost Cache-Control in the CORS location"; exit 1; }
+
           # Compare against the expected uid rather than "not root": a failed
           # exec returns an empty string, which passes any "!= 0" test.
           uid="$(docker exec zk id -u)"

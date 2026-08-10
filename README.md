@@ -144,6 +144,26 @@ engine.execute("{ notes(orderBy: degree, first: 5) { title degree } }");
 exactly this, exposing the collection to any MCP client so an agent can query
 the graph and read the citations behind a claim.
 
+### From a browser, on another origin
+
+The container serves `dataset.json` and `lib/zk-graphql.js` with
+`Access-Control-Allow-Origin: *`, so any page can run the same engine over the
+same data without a build step. The module is UMD, so a plain script tag is
+enough:
+
+```html
+<script src="https://zettel.dansplugins.com/lib/zk-graphql.js"></script>
+<script>
+  const data = await (await fetch("https://zettel.dansplugins.com/dataset.json")).json();
+  const engine = ZKGraphQL.createEngine(data);
+  engine.execute("{ stats { noteCount citationCount } }");
+</script>
+```
+
+The open policy is deliberate: both files are public artifacts of a public
+repository and are served without credentials, so there is nothing an allowlist
+would protect. The reasoning is recorded in `docker/nginx.conf`.
+
 ## Skills
 
 Two [Claude Code](https://claude.com/claude-code) skills live in `.claude/skills/`
