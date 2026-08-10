@@ -71,3 +71,61 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/check_sources.py
+
+  # The gateway builds this service from the Dockerfile in this repository, so a
+  # broken image is only discovered at deploy time unless it is built here.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the image
+        run: docker build -t dpc-zettelkasten:ci .
+
+      # An unusual host port on purpose: a check that silently talks to
+      # something already listening proves nothing, and that failure looks
+      # exactly like a broken image.
+      - name: Serve the explorer and check what comes back
+        run: |
+          docker run -d --name zk -p 18080:8080 dpc-zettelkasten:ci
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:18080/healthz > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:18080/healthz > /dev/null \
+            || { echo "::error::container never became ready"; docker logs zk; exit 1; }
+
+          # Content type is what a static server gets wrong, and the graph and
+          # GraphQL tabs fail silently when it does.
+          curl -sf -o /dev/null -w '%{http_code} %{content_type}\n' http://127.0.0.1:18080/ \
+            | grep -q '^200 text/html' || { echo "::error::/ is not served as text/html"; exit 1; }
+          curl -sf -o /dev/null -w '%{http_code} %{content_type}\n' http://127.0.0.1:18080/dataset.json \
+            | grep -q '^200 application/json' || { echo "::error::/dataset.json is not served as application/json"; exit 1; }
+
+          # The dataset must survive the trip intact — the engine parses it.
+          curl -sf http://127.0.0.1:18080/dataset.json > /tmp/served.json
+          diff -q /tmp/served.json site/dataset.json \
+            || { echo "::error::served dataset.json differs from the committed one"; exit 1; }
+
+          # And gzip must not corrupt it, since that is how a browser asks.
+          curl -sf --compressed http://127.0.0.1:18080/dataset.json > /tmp/served.gz.json
+          diff -q /tmp/served.gz.json site/dataset.json \
+            || { echo "::error::gzipped dataset.json does not decode to the committed one"; exit 1; }
+
+          node -e "
+            const { createEngine } = require('./lib/zk-graphql.js');
+            const e = createEngine(require('/tmp/served.json'));
+            const { data } = e.execute('{ stats { noteCount } }');
+            if (data.stats.noteCount < 1) throw new Error('served dataset is empty');
+            console.log('served dataset parses —', data.stats.noteCount, 'notes');
+          "
+
+          # Compare against the expected uid rather than "not root": a failed
+          # exec returns an empty string, which passes any "!= 0" test.
+          uid="$(docker exec zk id -u)"
+          test "$uid" = "101" || { echo "::error::expected uid 101, got '${uid:-<exec failed>}'"; exit 1; }
+          docker rm -f zk

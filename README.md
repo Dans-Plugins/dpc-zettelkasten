@@ -27,6 +27,16 @@ no network — the whole collection is embedded in one self-contained file.
 | **GraphQL** | Query the note graph and draw the result — press `q` |
 | **Search** | Full-text across titles, summaries, and bodies — press `/` |
 
+To serve it instead of opening the file — the same image the gateway deploys:
+
+```bash
+docker build -t dpc-zettelkasten .
+docker run --rm -p 8080:8080 dpc-zettelkasten
+```
+
+The explorer is then at <http://localhost:8080>, with `dataset.json` alongside
+it and a `/healthz` endpoint for the container healthcheck.
+
 ### Querying the graph
 
 The **GraphQL** tab is a real query engine over the collection — schema,
