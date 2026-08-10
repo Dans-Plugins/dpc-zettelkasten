@@ -13,6 +13,12 @@ FROM nginxinc/nginx-unprivileged:1.27-alpine
 # wanted here, so neither is overridden below.
 
 COPY site/ /usr/share/nginx/html/
+
+# The GraphQL engine is published alongside the dataset so another origin can
+# run the same queries against the same data with no build step. It is a UMD
+# module, so a browser gets it as window.ZKGraphQL from a plain script tag.
+COPY lib/zk-graphql.js /usr/share/nginx/html/lib/zk-graphql.js
+
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080

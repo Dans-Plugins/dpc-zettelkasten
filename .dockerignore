@@ -1,5 +1,6 @@
-# The image needs site/ and docker/ and nothing else. Everything that produces
-# site/ — the notes, the toolchain, the history — stays out of the context.
+# The image needs site/, lib/, and docker/ and nothing else. Everything that
+# produces site/ — the notes, the toolchain, the history — stays out.
 *
 !site/
+!lib/
 !docker/
