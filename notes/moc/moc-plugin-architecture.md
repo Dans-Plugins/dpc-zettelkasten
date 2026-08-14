@@ -33,6 +33,10 @@ service, and a command.
   the supported extension point for other plugins.
 - **[[legacy-data-migration]]** — flat files from version 4 are read once and
   written into the database.
+- **[[spatial-value-types]]** — the `area` package's world-UUID records, which
+  are what makes a position storable and safe to carry off the main thread.
+- **[[player-interaction-status]]** — the per-player mode that lets a command
+  take a *block* as an argument, by consuming the player's next click.
 
 ## Where to attach
 
