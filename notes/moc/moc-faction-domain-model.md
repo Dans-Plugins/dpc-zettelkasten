@@ -42,6 +42,11 @@ is clear: [[law]] (a faction's written rules), [[gate]] (redstone-triggered
 walls), and [[locked-block]] (per-player container locks that operate
 independently of faction land).
 
+Two more sit at the edge of the model, where the simulation touches the players
+directly rather than the factions: [[faction-chat-channel]] (three private
+audiences computed from the diplomacy graph at send time) and [[duel]] (a
+consented fight nobody dies in, and the one record here with no faction on it).
+
 ## What ties it together
 
 Nothing in this map is stored as an object graph — every one of these concepts

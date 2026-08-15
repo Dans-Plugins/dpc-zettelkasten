@@ -42,6 +42,7 @@ What the game is *about*. Almost all of it hangs off one number.
 - **Internal governance** — [[faction-role]] · [[faction-permission]] ·
   [[faction-flag]]
 - **Props for roleplay** — [[law]] · [[gate]] · [[locked-block]]
+- **Player to player** — [[faction-chat-channel]] · [[duel]]
 
 *Start with [[demesne-limit]]. It is one inequality, and the rest of the
 simulation is arranged around it.*
@@ -53,7 +54,8 @@ The shape every feature in the codebase takes.
 - **The three layers** — [[service-layer]] · [[repository-pattern]] ·
   [[jooq-persistence]]
 - **Cross-cutting concerns** — [[optimistic-locking]] ·
-  [[value-class-identifier]] · [[main-thread-safety]]
+  [[value-class-identifier]] · [[main-thread-safety]] · [[spatial-value-types]]
+- **Input** — [[player-interaction-status]]
 - **Seams other software attaches to** — [[faction-events]] ·
   [[notification]] · [[map-integration]]
 - **History still in the tree** — [[legacy-data-migration]]
