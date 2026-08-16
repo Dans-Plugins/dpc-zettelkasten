@@ -56,8 +56,8 @@ label a note can claim unilaterally.
 
 The point is that the collection has a shape rather than being 42 concept notes
 in a heap. The home MOC is what the sidebar groups by and what the root map
-routes through. A note may of course be linked from several MOCs — cross-links are the
-whole idea — but exactly one of them is where it *lives*.
+routes through. A note may of course be linked from several MOCs — cross-links
+are the whole idea — but exactly one of them is where it *lives*.
 
 Maps of Content do not declare a home. They are placed by being linked from
 another MOC, and the root map
