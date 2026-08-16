@@ -54,9 +54,9 @@ moc: moc-faction-domain-model
 and **that MOC links back to this note**. A home is a mutual relationship, not a
 label a note can claim unilaterally.
 
-The point is that the collection has a shape rather than being 38 notes in a
-heap. The home MOC is what the sidebar groups by and what the root map routes
-through. A note may of course be linked from several MOCs — cross-links are the
+The point is that the collection has a shape rather than being 42 concept notes
+in a heap. The home MOC is what the sidebar groups by and what the root map
+routes through. A note may of course be linked from several MOCs — cross-links are the
 whole idea — but exactly one of them is where it *lives*.
 
 Maps of Content do not declare a home. They are placed by being linked from
@@ -154,5 +154,5 @@ more than one idea.
 python3 tools/validate.py        # format, ids, home MOCs, wikilinks, citations
 python3 tools/check_sources.py   # citations resolve on GitHub; drift report
 python3 tools/sources_index.py   # regenerate docs/SOURCES.md
-python3 tools/build.py           # regenerate site/index.html
+python3 tools/build.py           # regenerate site/index.html and site/dataset.json
 ```
