@@ -64,7 +64,7 @@ natively. GitHub renders them as ordinary Markdown too.
 
 ## What's in it
 
-45 notes: 7 Maps of Content and 38 concept notes, carrying 90 citations across 9
+49 notes: 7 Maps of Content and 42 concept notes, carrying 116 citations across 9
 repositories.
 
 The collection is a hierarchy, not a heap. [Dan's Plugins
@@ -74,9 +74,9 @@ and `validate.py` fails the build if that MOC does not link back.
 
 ```
 Dan's Plugins Community          the root map — an index of indexes
-├── Medieval Factions Map        the flagship, which needs two maps of its own
-│   ├── Faction Domain Model     14 notes — what the simulation is
-│   └── Plugin Architecture      10 notes — how the code is arranged
+├── Medieval Factions Map         1 note  — the flagship, and two maps of its own
+│   ├── Faction Domain Model     16 notes — what the simulation is
+│   └── Plugin Architecture      12 notes — how the code is arranged
 ├── Plugin Ecosystem              6 notes — library, expansions, neighbours
 ├── Conventions and Process       4 notes — the organization's standards
 └── Web and Infrastructure        3 notes — the site, the server, the pipe
@@ -117,11 +117,13 @@ Nothing to install — the toolchain is standard library only.
 python3 tools/validate.py       # frontmatter, ids, wikilinks, citation presence
 python3 tools/check_sources.py  # citations resolve on GitHub; report drift  (needs `gh`)
 python3 tools/sources_index.py  # regenerate docs/SOURCES.md
-python3 tools/build.py          # regenerate site/index.html
+python3 tools/build.py          # regenerate site/index.html and site/dataset.json
 ```
 
-`validate.py` and `build.py` run offline and are what CI enforces.
-`check_sources.py` needs an authenticated [`gh`](https://cli.github.com/).
+`validate.py`, `sources_index.py`, and `build.py` run offline and are what CI
+enforces. `check_sources.py` needs an authenticated
+[`gh`](https://cli.github.com/) and runs in CI as its own job, where drift is
+reported but only an invalid citation fails the build.
 
 **After changing any note, rebuild and commit `site/index.html` and
 `site/dataset.json`.** Both are generated files kept in the repository so the

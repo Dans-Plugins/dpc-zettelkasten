@@ -63,8 +63,8 @@ python3 tools/sources_index.py
 python3 tools/build.py
 ```
 
-`site/index.html` and `docs/SOURCES.md` are generated files that are kept in the
-repository. Commit them alongside your note.
+`site/index.html`, `site/dataset.json`, and `docs/SOURCES.md` are generated files
+that are kept in the repository. Commit them alongside your note.
 
 ## Fixing a note
 
@@ -107,5 +107,16 @@ One coherent change per pull request: a cluster of related notes, a correction,
 or a tooling change — not all three. Say in the description what you checked and
 what you could not.
 
-CI runs `validate.py`, `sources_index.py --check`, and `build.py`, and verifies
-that the committed `site/index.html` matches the notes.
+CI has three jobs:
+
+- **`validate`** runs `validate.py` and `sources_index.py --check`, re-runs
+  `build.py` and fails if the committed `site/index.html` or `site/dataset.json`
+  differs from the result, and loads `lib/zk-graphql.js` under Node to confirm
+  the engine still runs headless.
+- **`citations`** runs `check_sources.py` against the live GitHub API. Drift is
+  reported but never fails the build; only an invalid citation — a file missing
+  at the pinned commit, or a line range past the end of the file — is a failure.
+- **`image`** builds the `Dockerfile`, serves the explorer, and checks what comes
+  back: `/healthz`, content types, that the served `dataset.json` and
+  `lib/zk-graphql.js` are byte-identical to the committed ones (gzipped included),
+  the CORS headers and preflight, and that the container runs as uid 101.
