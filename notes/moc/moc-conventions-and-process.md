@@ -22,6 +22,8 @@ documents point back at.
 - [[two-tier-documentation]] — which docs live in the repo and which live in the
   wiki, and why the split exists.
 - [[release-automation]] — a release triggers a build that attaches a JAR.
+- [[release-channel]] — whether a server gets published releases or a rolling
+  build of `main`, chosen per plugin.
 - [[testing-and-ci]] — Gradle for unit tests, Docker Compose for a real server.
 
 ## The shape of a repository

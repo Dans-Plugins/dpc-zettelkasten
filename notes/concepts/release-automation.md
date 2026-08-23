@@ -6,7 +6,7 @@ moc: moc-conventions-and-process
 tags: [dpc, conventions, ci]
 summary: Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-23
 sources:
   - repo: Dans-Plugins/dpc-conventions
     path: docs/RELEASE_AUTOMATION.md
@@ -56,6 +56,13 @@ builds it from source first.
 That is worth knowing before copying the convention's workflow verbatim into a
 plugin that depends on Ponder — the template alone will not resolve the
 dependency.
+
+## The other half
+
+This convention covers releases a maintainer cuts deliberately. Repositories also
+publish a rolling `dev` prerelease on every merge to `main`, which is what the
+experimental [[release-channel]] serves — the same automation, on a trigger that
+fires continuously rather than on a human decision.
 
 ## Related
 

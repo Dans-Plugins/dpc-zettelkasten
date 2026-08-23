@@ -13,7 +13,7 @@ rather than incidentally.
 | Repository | Pinned commit | Files cited | Notes |
 |---|---|---|---|
 | [Dans-Plugins/Currencies](https://github.com/Dans-Plugins/Currencies) | [`41597bea08`](https://github.com/Dans-Plugins/Currencies/tree/41597bea085d536b59bfd564aa58f8739b4ffd92) | 5 | 2 |
-| [Dans-Plugins/Dans-Plugin-Manager](https://github.com/Dans-Plugins/Dans-Plugin-Manager) | [`7b302f2820`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/tree/7b302f2820a017373558a50f752697226f9ec975) | 2 | 1 |
+| [Dans-Plugins/Dans-Plugin-Manager](https://github.com/Dans-Plugins/Dans-Plugin-Manager) | [`3733eb51df`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/tree/3733eb51df6be11ac0239d7cffcfb2ef72e756a9) | 4 | 2 |
 | [Dans-Plugins/Fiefs](https://github.com/Dans-Plugins/Fiefs) | [`4c66e09aa5`](https://github.com/Dans-Plugins/Fiefs/tree/4c66e09aa50f467921ce1519f0b7236a5f23f7a2) | 2 | 1 |
 | [Dans-Plugins/Mailboxes](https://github.com/Dans-Plugins/Mailboxes) | [`3f8fb186bb`](https://github.com/Dans-Plugins/Mailboxes/tree/3f8fb186bbdd067ae893d911b26d065d8f3fdaf8) | 2 | 1 |
 | [Dans-Plugins/Medieval-Factions](https://github.com/Dans-Plugins/Medieval-Factions) | [`3a51c55366`](https://github.com/Dans-Plugins/Medieval-Factions/tree/3a51c55366b544d31429fae8bcb64efaf1878e15) | 60 | 34 |
@@ -22,7 +22,7 @@ rather than incidentally.
 | [Dans-Plugins/dpc-conventions](https://github.com/Dans-Plugins/dpc-conventions) | [`9dc9aa37e9`](https://github.com/Dans-Plugins/dpc-conventions/tree/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec) | 5 | 7 |
 | [Dans-Plugins/dpc-mc-server](https://github.com/Dans-Plugins/dpc-mc-server) | [`d42e0ec06f`](https://github.com/Dans-Plugins/dpc-mc-server/tree/d42e0ec06f9b29baaa043442d24ef2dd81edfa49) | 2 | 2 |
 
-9 repositories, 9 pinned commits, 116 citations across 46 notes.
+9 repositories, 9 pinned commits, 119 citations across 47 notes.
 
 ## Cited files by repository
 
@@ -38,10 +38,12 @@ At `41597bea085d536b59bfd564aa58f8739b4ffd92`:
 
 ### Dans-Plugins/Dans-Plugin-Manager
 
-At `7b302f2820a017373558a50f752697226f9ec975`:
+At `3733eb51df6be11ac0239d7cffcfb2ef72e756a9`:
 
-- [`COMMANDS.md`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/7b302f2820a017373558a50f752697226f9ec975/COMMANDS.md)
-- [`README.md`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/7b302f2820a017373558a50f752697226f9ec975/README.md)
+- [`COMMANDS.md`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/COMMANDS.md)
+- [`README.md`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/README.md)
+- [`USER_GUIDE.md`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/USER_GUIDE.md)
+- [`src/main/java/dansplugins/dpm/objects/ReleaseChannel.java`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/src/main/java/dansplugins/dpm/objects/ReleaseChannel.java)
 
 ### Dans-Plugins/Fiefs
 
