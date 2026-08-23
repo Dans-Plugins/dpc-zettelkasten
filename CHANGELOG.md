@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+- `check_sources.py` read every failed API call as proof that the cited file was
+  missing, so a GitHub timeout was reported as an `INVALID` citation and failed
+  the build — which is what had left `main` red. Only a definitive 404 is now an
+  invalid citation; anything the API declined to answer is `unknown`, transient
+  statuses are retried, and a run that could not check everything says so on
+  stderr instead of passing quietly.
+
 ## [0.2.0] - 2026-08-08
 
 ### Added
