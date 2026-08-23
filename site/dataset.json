@@ -1,6 +1,6 @@
 {
  "meta": {
-  "citationCount": 116,
+  "citationCount": 119,
   "clusters": [
    {
     "moc": "moc-medieval-factions",
@@ -66,6 +66,7 @@
     "notes": [
      "dpc-conventions",
      "release-automation",
+     "release-channel",
      "testing-and-ci",
      "two-tier-documentation"
     ],
@@ -81,9 +82,9 @@
     "title": "Web and Infrastructure"
    }
   ],
-  "conceptCount": 42,
+  "conceptCount": 43,
   "home": "moc-dans-plugins-community",
-  "linkCount": 333,
+  "linkCount": 338,
   "mocCount": 7,
   "mocOrder": [
    "moc-dans-plugins-community",
@@ -94,7 +95,7 @@
    "moc-conventions-and-process",
    "moc-web-and-infrastructure"
   ],
-  "noteCount": 49,
+  "noteCount": 50,
   "repos": [
    "Dans-Plugins/Currencies",
    "Dans-Plugins/Dans-Plugin-Manager",
@@ -106,7 +107,7 @@
    "Dans-Plugins/dpc-conventions",
    "Dans-Plugins/dpc-mc-server"
   ],
-  "updated": "2026-08-14"
+  "updated": "2026-08-23"
  },
  "notes": {
   "approval-request": {
@@ -284,11 +285,13 @@
     "moc-dans-plugins-community",
     "moc-plugin-ecosystem",
     "moc-web-and-infrastructure",
-    "release-automation"
+    "release-automation",
+    "release-channel"
    ],
-   "body": "\nDPM is a package manager for the community's own plugins, run from inside a\nMinecraft server. `/dpm get medieval-factions` downloads the latest release jar\ninto the plugins folder.\n\n## A package manager's vocabulary\n\nThe command set is the giveaway: `list`, `get`, `update`, `remove`, `search`,\n`info`, `clean`. These are apt and dnf commands, ported to a game console.\n\n`/dpm info` is the most useful of them — it reports the GitHub owner and repo,\nthe latest release tag and publish date, whether the plugin is installed, and\n**whether its dependencies are satisfied**. That last field matters in an\necosystem where [[expansion-plugin|expansions]] hard-depend on\n[[medieval-factions]] and simply fail to load without it.\n\n`/dpm clean` addresses the failure mode that follows from downloading jars: two\nversions of the same plugin left in the folder. Like `remove`, it previews by\ndefault and requires `--confirm` to actually delete — a good default for a\ncommand that removes files from a live server.\n\n## GitHub releases as the registry\n\nThere is no separate package index. DPM reads GitHub releases directly, which is\nwhy [[release-automation]] matters operationally rather than merely\ncosmetically: a release without an attached jar is invisible to DPM. A\nconfigurable `githubToken` exists for rate limits.\n\n## Related\n\nDPM solves plugin distribution for an operator's own server;\n[[dpc-mc-server]] solves it by pinning jars into a Docker image instead. The two\nanswer the same question with opposite trade-offs — live and current, versus\nreproducible and fixed.\n",
+   "body": "\nDPM is a package manager for the community's own plugins, run from inside a\nMinecraft server. `/dpm get medieval-factions` downloads the latest release jar\ninto the plugins folder.\n\n## A package manager's vocabulary\n\nThe command set is the giveaway: `list`, `get`, `update`, `remove`, `search`,\n`info`, `clean`. These are apt and dnf commands, ported to a game console.\n\n`/dpm info` is the most useful of them — it reports the GitHub owner and repo,\nwhich [[release-channel|channel]] the plugin is on and the latest build on that\nchannel, its publish date, whether the plugin is installed, and **whether its\ndependencies are satisfied**. That last field matters in an\necosystem where [[expansion-plugin|expansions]] hard-depend on\n[[medieval-factions]] and simply fail to load without it.\n\nDPM does not only choose *which plugin* to install but *which build* of it: each\nmanaged plugin tracks a [[release-channel]], either published releases or a\nrolling build of `main`, and the choice sticks until it is changed.\n\n`/dpm clean` addresses the failure mode that follows from downloading jars: two\nversions of the same plugin left in the folder. Like `remove`, it previews by\ndefault and requires `--confirm` to actually delete — a good default for a\ncommand that removes files from a live server.\n\n## GitHub releases as the registry\n\nThere is no separate package index. DPM reads GitHub releases directly, which is\nwhy [[release-automation]] matters operationally rather than merely\ncosmetically: a release without an attached jar is invisible to DPM. A\nconfigurable `githubToken` exists for rate limits.\n\n## Related\n\nDPM solves plugin distribution for an operator's own server;\n[[dpc-mc-server]] solves it by pinning jars into a Docker image instead. The two\nanswer the same question with opposite trade-offs — live and current, versus\nreproducible and fixed.\n",
    "id": "dans-plugin-manager",
    "links": [
+    "release-channel",
     "expansion-plugin",
     "medieval-factions",
     "release-automation",
@@ -303,20 +306,20 @@
      "label": "Dans-Plugin-Manager/README.md",
      "lines": "",
      "path": "README.md",
-     "ref": "7b302f2820a017373558a50f752697226f9ec975",
+     "ref": "3733eb51df6be11ac0239d7cffcfb2ef72e756a9",
      "repo": "Dans-Plugins/Dans-Plugin-Manager",
-     "shortRef": "7b302f2",
-     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/7b302f2820a017373558a50f752697226f9ec975/README.md"
+     "shortRef": "3733eb5",
+     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/README.md"
     },
     {
-     "claim": "The command set covers list, get, update, remove, clean, search, info, stats and reload, with info reporting the GitHub owner, repo, latest release tag, publish date, install status and dependency status.",
+     "claim": "The command set covers list, get, update, remove, clean, search, info, stats and reload, with info reporting the description, GitHub owner, repo, release channel, latest build on that channel, publish date, install status and dependency status.",
      "label": "Dans-Plugin-Manager/COMMANDS.md",
      "lines": "",
      "path": "COMMANDS.md",
-     "ref": "7b302f2820a017373558a50f752697226f9ec975",
+     "ref": "3733eb51df6be11ac0239d7cffcfb2ef72e756a9",
      "repo": "Dans-Plugins/Dans-Plugin-Manager",
-     "shortRef": "7b302f2",
-     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/7b302f2820a017373558a50f752697226f9ec975/COMMANDS.md"
+     "shortRef": "3733eb5",
+     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/COMMANDS.md"
     }
    ],
    "summary": "A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.",
@@ -325,10 +328,10 @@
     "ecosystem",
     "tooling"
    ],
-   "text": "dan's plugin manager a plugin that installs other dpc plugins from in-game or the console, pulling releases straight from github. \ndpm is a package manager for the community's own plugins, run from inside a\nminecraft server. `/dpm get medieval-factions` downloads the latest release jar\ninto the plugins folder.\n\n## a package manager's vocabulary\n\nthe command set is the giveaway: `list`, `get`, `update`, `remove`, `search`,\n`info`, `clean`. these are apt and dnf commands, ported to a game console.\n\n`/dpm info` is the most useful of them — it reports the github owner and repo,\nthe latest release tag and publish date, whether the plugin is installed, and\n**whether its dependencies are satisfied**. that last field matters in an\necosystem where [[expansion-plugin|expansions]] hard-depend on\n[[medieval-factions]] and simply fail to load without it.\n\n`/dpm clean` addresses the failure mode that follows from downloading jars: two\nversions of the same plugin left in the folder. like `remove`, it previews by\ndefault and requires `--confirm` to actually delete — a good default for a\ncommand that removes files from a live server.\n\n## github releases as the registry\n\nthere is no separate package index. dpm reads github releases directly, which is\nwhy [[release-automation]] matters operationally rather than merely\ncosmetically: a release without an attached jar is invisible to dpm. a\nconfigurable `githubtoken` exists for rate limits.\n\n## related\n\ndpm solves plugin distribution for an operator's own server;\n[[dpc-mc-server]] solves it by pinning jars into a docker image instead. the two\nanswer the same question with opposite trade-offs — live and current, versus\nreproducible and fixed.\n",
+   "text": "dan's plugin manager a plugin that installs other dpc plugins from in-game or the console, pulling releases straight from github. \ndpm is a package manager for the community's own plugins, run from inside a\nminecraft server. `/dpm get medieval-factions` downloads the latest release jar\ninto the plugins folder.\n\n## a package manager's vocabulary\n\nthe command set is the giveaway: `list`, `get`, `update`, `remove`, `search`,\n`info`, `clean`. these are apt and dnf commands, ported to a game console.\n\n`/dpm info` is the most useful of them — it reports the github owner and repo,\nwhich [[release-channel|channel]] the plugin is on and the latest build on that\nchannel, its publish date, whether the plugin is installed, and **whether its\ndependencies are satisfied**. that last field matters in an\necosystem where [[expansion-plugin|expansions]] hard-depend on\n[[medieval-factions]] and simply fail to load without it.\n\ndpm does not only choose *which plugin* to install but *which build* of it: each\nmanaged plugin tracks a [[release-channel]], either published releases or a\nrolling build of `main`, and the choice sticks until it is changed.\n\n`/dpm clean` addresses the failure mode that follows from downloading jars: two\nversions of the same plugin left in the folder. like `remove`, it previews by\ndefault and requires `--confirm` to actually delete — a good default for a\ncommand that removes files from a live server.\n\n## github releases as the registry\n\nthere is no separate package index. dpm reads github releases directly, which is\nwhy [[release-automation]] matters operationally rather than merely\ncosmetically: a release without an attached jar is invisible to dpm. a\nconfigurable `githubtoken` exists for rate limits.\n\n## related\n\ndpm solves plugin distribution for an operator's own server;\n[[dpc-mc-server]] solves it by pinning jars into a docker image instead. the two\nanswer the same question with opposite trade-offs — live and current, versus\nreproducible and fixed.\n",
    "title": "Dan's Plugin Manager",
    "type": "concept",
-   "updated": "2026-08-07"
+   "updated": "2026-08-23"
   },
   "dansplugins-dot-com": {
    "backlinks": [
@@ -1940,13 +1943,14 @@
    "backlinks": [
     "moc-dans-plugins-community"
    ],
-   "body": "\nThe organization writes its standards down. [[dpc-conventions]] is the repository\nthat holds them, and [[medieval-factions]] is the worked example most of those\ndocuments point back at.\n\n## The documents\n\n- [[two-tier-documentation]] — which docs live in the repo and which live in the\n  wiki, and why the split exists.\n- [[release-automation]] — a release triggers a build that attaches a JAR.\n- [[testing-and-ci]] — Gradle for unit tests, Docker Compose for a real server.\n\n## The shape of a repository\n\nA repository that follows the conventions has, in its root: `README.md`,\n`CONTRIBUTING.md`, `USER_GUIDE.md`, `COMMANDS.md`, `CONFIG.md`, usually\n`CHANGELOG.md`, and a `.github/copilot-instructions.md` giving coding agents\ncontext about the plugin. The presence or absence of those files is the quickest\naudit of whether a repository has been brought into line.\n\n## Why it is centralised\n\nStandards written into one repository can be cited. A note in this zettelkasten\nthat says \"DPC plugins document their commands in `COMMANDS.md`\" is a claim, and\nit needs a source — [[dpc-conventions]] is that source. Standards held only in\na maintainer's head cannot be cited, verified, or handed to a new contributor.\n",
+   "body": "\nThe organization writes its standards down. [[dpc-conventions]] is the repository\nthat holds them, and [[medieval-factions]] is the worked example most of those\ndocuments point back at.\n\n## The documents\n\n- [[two-tier-documentation]] — which docs live in the repo and which live in the\n  wiki, and why the split exists.\n- [[release-automation]] — a release triggers a build that attaches a JAR.\n- [[release-channel]] — whether a server gets published releases or a rolling\n  build of `main`, chosen per plugin.\n- [[testing-and-ci]] — Gradle for unit tests, Docker Compose for a real server.\n\n## The shape of a repository\n\nA repository that follows the conventions has, in its root: `README.md`,\n`CONTRIBUTING.md`, `USER_GUIDE.md`, `COMMANDS.md`, `CONFIG.md`, usually\n`CHANGELOG.md`, and a `.github/copilot-instructions.md` giving coding agents\ncontext about the plugin. The presence or absence of those files is the quickest\naudit of whether a repository has been brought into line.\n\n## Why it is centralised\n\nStandards written into one repository can be cited. A note in this zettelkasten\nthat says \"DPC plugins document their commands in `COMMANDS.md`\" is a claim, and\nit needs a source — [[dpc-conventions]] is that source. Standards held only in\na maintainer's head cannot be cited, verified, or handed to a new contributor.\n",
    "id": "moc-conventions-and-process",
    "links": [
     "dpc-conventions",
     "medieval-factions",
     "two-tier-documentation",
     "release-automation",
+    "release-channel",
     "testing-and-ci"
    ],
    "moc": "",
@@ -1970,7 +1974,7 @@
     "dpc",
     "conventions"
    ],
-   "text": "conventions and process the standards every dpc repository is held to — documentation layout, testing, ci, and release automation. \nthe organization writes its standards down. [[dpc-conventions]] is the repository\nthat holds them, and [[medieval-factions]] is the worked example most of those\ndocuments point back at.\n\n## the documents\n\n- [[two-tier-documentation]] — which docs live in the repo and which live in the\n  wiki, and why the split exists.\n- [[release-automation]] — a release triggers a build that attaches a jar.\n- [[testing-and-ci]] — gradle for unit tests, docker compose for a real server.\n\n## the shape of a repository\n\na repository that follows the conventions has, in its root: `readme.md`,\n`contributing.md`, `user_guide.md`, `commands.md`, `config.md`, usually\n`changelog.md`, and a `.github/copilot-instructions.md` giving coding agents\ncontext about the plugin. the presence or absence of those files is the quickest\naudit of whether a repository has been brought into line.\n\n## why it is centralised\n\nstandards written into one repository can be cited. a note in this zettelkasten\nthat says \"dpc plugins document their commands in `commands.md`\" is a claim, and\nit needs a source — [[dpc-conventions]] is that source. standards held only in\na maintainer's head cannot be cited, verified, or handed to a new contributor.\n",
+   "text": "conventions and process the standards every dpc repository is held to — documentation layout, testing, ci, and release automation. \nthe organization writes its standards down. [[dpc-conventions]] is the repository\nthat holds them, and [[medieval-factions]] is the worked example most of those\ndocuments point back at.\n\n## the documents\n\n- [[two-tier-documentation]] — which docs live in the repo and which live in the\n  wiki, and why the split exists.\n- [[release-automation]] — a release triggers a build that attaches a jar.\n- [[release-channel]] — whether a server gets published releases or a rolling\n  build of `main`, chosen per plugin.\n- [[testing-and-ci]] — gradle for unit tests, docker compose for a real server.\n\n## the shape of a repository\n\na repository that follows the conventions has, in its root: `readme.md`,\n`contributing.md`, `user_guide.md`, `commands.md`, `config.md`, usually\n`changelog.md`, and a `.github/copilot-instructions.md` giving coding agents\ncontext about the plugin. the presence or absence of those files is the quickest\naudit of whether a repository has been brought into line.\n\n## why it is centralised\n\nstandards written into one repository can be cited. a note in this zettelkasten\nthat says \"dpc plugins document their commands in `commands.md`\" is a claim, and\nit needs a source — [[dpc-conventions]] is that source. standards held only in\na maintainer's head cannot be cited, verified, or handed to a new contributor.\n",
    "title": "Conventions and Process",
    "type": "moc",
    "updated": "2026-08-07"
@@ -2579,14 +2583,16 @@
     "dpc-conventions",
     "moc-conventions-and-process",
     "moc-dans-plugins-community",
+    "release-channel",
     "testing-and-ci"
    ],
-   "body": "\nEvery DPC plugin should build and attach its own jar when a release is created.\nThe convention specifies the workflow file down to the steps.\n\n## The workflow\n\n`.github/workflows/release.yml`, triggered `on: release: types: [created]`, with\n`permissions: contents: write`. It checks out, sets up JDK 17 (Temurin), makes\n`gradlew` executable, runs `./gradlew clean build`, and uploads `build/libs/*.jar`\nto the release.\n\n## Why drafts matter\n\nThe trigger fires on release *creation*, including drafts. That is deliberate: a\nmaintainer can create a draft release, let CI build and attach the jar, and hand\nthat artifact to users as an experimental build before deciding to publish.\nTesting a release candidate needs no separate pipeline.\n\n## Why it is a convention and not a nicety\n\nManual jar uploads fail in two ways that automation removes. They can be\nforgotten — leaving a release with notes and no download. And they can be built\nfrom a dirty working tree, so the published jar does not correspond to the tag.\nBuilding in CI from a clean checkout makes the artifact a function of the commit.\n\nThere is also a consumer that depends on it: [[dans-plugin-manager]] installs\nplugins by reading GitHub releases. A release without an attached jar is a\nrelease DPM cannot install.\n\n## The flagship deviates, for a reason\n\n[[medieval-factions]] follows the template but inserts a step before the build:\nit clones [[ponder]] at tag `2.0.0` and runs `publishToMavenLocal`. The library\nversion it needs is not resolvable from a public repository at build time, so CI\nbuilds it from source first.\n\nThat is worth knowing before copying the convention's workflow verbatim into a\nplugin that depends on Ponder — the template alone will not resolve the\ndependency.\n\n## Related\n\n[[testing-and-ci]] covers the build and test side. Both live in\n[[dpc-conventions]].\n",
+   "body": "\nEvery DPC plugin should build and attach its own jar when a release is created.\nThe convention specifies the workflow file down to the steps.\n\n## The workflow\n\n`.github/workflows/release.yml`, triggered `on: release: types: [created]`, with\n`permissions: contents: write`. It checks out, sets up JDK 17 (Temurin), makes\n`gradlew` executable, runs `./gradlew clean build`, and uploads `build/libs/*.jar`\nto the release.\n\n## Why drafts matter\n\nThe trigger fires on release *creation*, including drafts. That is deliberate: a\nmaintainer can create a draft release, let CI build and attach the jar, and hand\nthat artifact to users as an experimental build before deciding to publish.\nTesting a release candidate needs no separate pipeline.\n\n## Why it is a convention and not a nicety\n\nManual jar uploads fail in two ways that automation removes. They can be\nforgotten — leaving a release with notes and no download. And they can be built\nfrom a dirty working tree, so the published jar does not correspond to the tag.\nBuilding in CI from a clean checkout makes the artifact a function of the commit.\n\nThere is also a consumer that depends on it: [[dans-plugin-manager]] installs\nplugins by reading GitHub releases. A release without an attached jar is a\nrelease DPM cannot install.\n\n## The flagship deviates, for a reason\n\n[[medieval-factions]] follows the template but inserts a step before the build:\nit clones [[ponder]] at tag `2.0.0` and runs `publishToMavenLocal`. The library\nversion it needs is not resolvable from a public repository at build time, so CI\nbuilds it from source first.\n\nThat is worth knowing before copying the convention's workflow verbatim into a\nplugin that depends on Ponder — the template alone will not resolve the\ndependency.\n\n## The other half\n\nThis convention covers releases a maintainer cuts deliberately. Repositories also\npublish a rolling `dev` prerelease on every merge to `main`, which is what the\nexperimental [[release-channel]] serves — the same automation, on a trigger that\nfires continuously rather than on a human decision.\n\n## Related\n\n[[testing-and-ci]] covers the build and test side. Both live in\n[[dpc-conventions]].\n",
    "id": "release-automation",
    "links": [
     "dans-plugin-manager",
     "medieval-factions",
     "ponder",
+    "release-channel",
     "testing-and-ci",
     "dpc-conventions"
    ],
@@ -2621,10 +2627,69 @@
     "conventions",
     "ci"
    ],
-   "text": "release automation creating a github release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact. \nevery dpc plugin should build and attach its own jar when a release is created.\nthe convention specifies the workflow file down to the steps.\n\n## the workflow\n\n`.github/workflows/release.yml`, triggered `on: release: types: [created]`, with\n`permissions: contents: write`. it checks out, sets up jdk 17 (temurin), makes\n`gradlew` executable, runs `./gradlew clean build`, and uploads `build/libs/*.jar`\nto the release.\n\n## why drafts matter\n\nthe trigger fires on release *creation*, including drafts. that is deliberate: a\nmaintainer can create a draft release, let ci build and attach the jar, and hand\nthat artifact to users as an experimental build before deciding to publish.\ntesting a release candidate needs no separate pipeline.\n\n## why it is a convention and not a nicety\n\nmanual jar uploads fail in two ways that automation removes. they can be\nforgotten — leaving a release with notes and no download. and they can be built\nfrom a dirty working tree, so the published jar does not correspond to the tag.\nbuilding in ci from a clean checkout makes the artifact a function of the commit.\n\nthere is also a consumer that depends on it: [[dans-plugin-manager]] installs\nplugins by reading github releases. a release without an attached jar is a\nrelease dpm cannot install.\n\n## the flagship deviates, for a reason\n\n[[medieval-factions]] follows the template but inserts a step before the build:\nit clones [[ponder]] at tag `2.0.0` and runs `publishtomavenlocal`. the library\nversion it needs is not resolvable from a public repository at build time, so ci\nbuilds it from source first.\n\nthat is worth knowing before copying the convention's workflow verbatim into a\nplugin that depends on ponder — the template alone will not resolve the\ndependency.\n\n## related\n\n[[testing-and-ci]] covers the build and test side. both live in\n[[dpc-conventions]].\n",
+   "text": "release automation creating a github release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact. \nevery dpc plugin should build and attach its own jar when a release is created.\nthe convention specifies the workflow file down to the steps.\n\n## the workflow\n\n`.github/workflows/release.yml`, triggered `on: release: types: [created]`, with\n`permissions: contents: write`. it checks out, sets up jdk 17 (temurin), makes\n`gradlew` executable, runs `./gradlew clean build`, and uploads `build/libs/*.jar`\nto the release.\n\n## why drafts matter\n\nthe trigger fires on release *creation*, including drafts. that is deliberate: a\nmaintainer can create a draft release, let ci build and attach the jar, and hand\nthat artifact to users as an experimental build before deciding to publish.\ntesting a release candidate needs no separate pipeline.\n\n## why it is a convention and not a nicety\n\nmanual jar uploads fail in two ways that automation removes. they can be\nforgotten — leaving a release with notes and no download. and they can be built\nfrom a dirty working tree, so the published jar does not correspond to the tag.\nbuilding in ci from a clean checkout makes the artifact a function of the commit.\n\nthere is also a consumer that depends on it: [[dans-plugin-manager]] installs\nplugins by reading github releases. a release without an attached jar is a\nrelease dpm cannot install.\n\n## the flagship deviates, for a reason\n\n[[medieval-factions]] follows the template but inserts a step before the build:\nit clones [[ponder]] at tag `2.0.0` and runs `publishtomavenlocal`. the library\nversion it needs is not resolvable from a public repository at build time, so ci\nbuilds it from source first.\n\nthat is worth knowing before copying the convention's workflow verbatim into a\nplugin that depends on ponder — the template alone will not resolve the\ndependency.\n\n## the other half\n\nthis convention covers releases a maintainer cuts deliberately. repositories also\npublish a rolling `dev` prerelease on every merge to `main`, which is what the\nexperimental [[release-channel]] serves — the same automation, on a trigger that\nfires continuously rather than on a human decision.\n\n## related\n\n[[testing-and-ci]] covers the build and test side. both live in\n[[dpc-conventions]].\n",
    "title": "Release Automation",
    "type": "concept",
-   "updated": "2026-08-07"
+   "updated": "2026-08-23"
+  },
+  "release-channel": {
+   "backlinks": [
+    "dans-plugin-manager",
+    "moc-conventions-and-process",
+    "release-automation"
+   ],
+   "body": "\nA channel is the answer to \"which build of this plugin should the server get?\"\n[[dans-plugin-manager]] gives each managed plugin one of two, and there are\nexactly two — the enum has no third value and unknown names fall back to stable.\n\n| Channel | What it fetches | Who publishes it |\n|---|---|---|\n| `stable` (default) | The latest published GitHub release | A maintainer, when they cut one |\n| `experimental` | A build of `main`, refreshed on every merge | The repository's CI, as a rolling `dev` prerelease |\n\n## The rolling `dev` prerelease\n\nThe experimental channel is not a different way of reading the release list. It\nreads *one specific release* — a prerelease tagged `dev` that each repository's\nCI overwrites every time a change is merged to `main`. This is the piece that is\nhard to guess\nfrom the outside: \"the dev build\" is a GitHub release like any other, it simply\nnever changes its tag.\n\nThat has a consequence DPM has to work around. Every experimental build carries\nthe same `dev` tag, so tag equality would report \"already up to date\" forever.\nDPM records the version as `dev-<commit>` instead, which is what `/dpm list` and\n`/dpm info` show.\n\nIt also means the stable channel cannot reach these builds even in principle:\nstable resolves through GitHub's `releases/latest`, which excludes prereleases\nby design.\n\n## The choice is sticky\n\n`/dpm get <plugin> --experimental` is not a one-off download. The channel is\nremembered per plugin, so plain `/dpm get` and `/dpm update` keep that plugin on\nexperimental builds until `--stable` is passed. This is the behaviour of a\npackage manager pinning a package to a channel, which is of a piece with the\nrest of DPM's [[dans-plugin-manager|apt-shaped vocabulary]].\n\nThree edges follow from stickiness, and each guards a specific failure:\n\n- **Dependencies keep their own channel.** A dependency pulled in automatically\n  arrives from whatever channel *it* is set to, not the channel of the plugin\n  that required it.\n- **A plugin pinned to experimental stays pinned** even if its repository stops\n  publishing a rolling build. `/dpm update` reports and skips it rather than\n  silently reverting it to releases — a quiet downgrade would be worse than a\n  visible stall.\n- **Removing a plugin resets it to stable**, so a later reinstall does not\n  silently return to unreleased code.\n\n## Why this is the honest default for a community\n\n[[release-automation]] describes the stable path: a maintainer creates a release,\nCI builds it and attaches the jar. That path is deliberate and slow, which is\nright for the servers people actually play on.\n\nThe experimental channel exists because the gap between \"merged\" and \"released\"\nis where most of the useful feedback lives, and a server operator willing to run\nmain-branch code is the best tester the community has. The guide is blunt about\nthe trade — unreleased, unreviewed code that can stop a server from starting —\nand DPM repeats the warning on every switch rather than burying it in docs.\n\nWorth noting for anyone reading DPM's own version numbers: the channel feature\nitself lives on `main` and is in no published DPM release, and DPM publishes no\nrolling build of itself. A jar with the flags has to be built from source.\n",
+   "id": "release-channel",
+   "links": [
+    "dans-plugin-manager",
+    "release-automation"
+   ],
+   "moc": "moc-conventions-and-process",
+   "sourcePath": "notes/concepts/release-channel.md",
+   "sourceUrl": "https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/release-channel.md",
+   "sources": [
+    {
+     "claim": "Every managed plugin tracks one of two channels — stable, the latest published GitHub release, or experimental, a build of the plugin's main branch published automatically by the repository's CI as a rolling dev prerelease.",
+     "label": "Dans-Plugin-Manager/USER_GUIDE.md",
+     "lines": "",
+     "path": "USER_GUIDE.md",
+     "ref": "3733eb51df6be11ac0239d7cffcfb2ef72e756a9",
+     "repo": "Dans-Plugins/Dans-Plugin-Manager",
+     "shortRef": "3733eb5",
+     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/USER_GUIDE.md"
+    },
+    {
+     "claim": "/dpm get takes --experimental or --stable to switch the named plugins between channels, while /dpm update takes no channel flags and follows whatever channel each plugin is already set to.",
+     "label": "Dans-Plugin-Manager/COMMANDS.md",
+     "lines": "",
+     "path": "COMMANDS.md",
+     "ref": "3733eb51df6be11ac0239d7cffcfb2ef72e756a9",
+     "repo": "Dans-Plugins/Dans-Plugin-Manager",
+     "shortRef": "3733eb5",
+     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/COMMANDS.md"
+    },
+    {
+     "claim": "The channel model is an enum of exactly two values, STABLE and EXPERIMENTAL, with unrecognised stored values falling back to STABLE.",
+     "label": "Dans-Plugin-Manager/ReleaseChannel.java",
+     "lines": "",
+     "path": "src/main/java/dansplugins/dpm/objects/ReleaseChannel.java",
+     "ref": "3733eb51df6be11ac0239d7cffcfb2ef72e756a9",
+     "repo": "Dans-Plugins/Dans-Plugin-Manager",
+     "shortRef": "3733eb5",
+     "url": "https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/src/main/java/dansplugins/dpm/objects/ReleaseChannel.java"
+    }
+   ],
+   "summary": "Each managed plugin tracks either published releases or a rolling build of its main branch, and Dan's Plugin Manager remembers the choice per plugin.",
+   "tags": [
+    "dpm",
+    "ecosystem",
+    "ci",
+    "conventions"
+   ],
+   "text": "release channel each managed plugin tracks either published releases or a rolling build of its main branch, and dan's plugin manager remembers the choice per plugin. \na channel is the answer to \"which build of this plugin should the server get?\"\n[[dans-plugin-manager]] gives each managed plugin one of two, and there are\nexactly two — the enum has no third value and unknown names fall back to stable.\n\n| channel | what it fetches | who publishes it |\n|---|---|---|\n| `stable` (default) | the latest published github release | a maintainer, when they cut one |\n| `experimental` | a build of `main`, refreshed on every merge | the repository's ci, as a rolling `dev` prerelease |\n\n## the rolling `dev` prerelease\n\nthe experimental channel is not a different way of reading the release list. it\nreads *one specific release* — a prerelease tagged `dev` that each repository's\nci overwrites every time a change is merged to `main`. this is the piece that is\nhard to guess\nfrom the outside: \"the dev build\" is a github release like any other, it simply\nnever changes its tag.\n\nthat has a consequence dpm has to work around. every experimental build carries\nthe same `dev` tag, so tag equality would report \"already up to date\" forever.\ndpm records the version as `dev-<commit>` instead, which is what `/dpm list` and\n`/dpm info` show.\n\nit also means the stable channel cannot reach these builds even in principle:\nstable resolves through github's `releases/latest`, which excludes prereleases\nby design.\n\n## the choice is sticky\n\n`/dpm get <plugin> --experimental` is not a one-off download. the channel is\nremembered per plugin, so plain `/dpm get` and `/dpm update` keep that plugin on\nexperimental builds until `--stable` is passed. this is the behaviour of a\npackage manager pinning a package to a channel, which is of a piece with the\nrest of dpm's [[dans-plugin-manager|apt-shaped vocabulary]].\n\nthree edges follow from stickiness, and each guards a specific failure:\n\n- **dependencies keep their own channel.** a dependency pulled in automatically\n  arrives from whatever channel *it* is set to, not the channel of the plugin\n  that required it.\n- **a plugin pinned to experimental stays pinned** even if its repository stops\n  publishing a rolling build. `/dpm update` reports and skips it rather than\n  silently reverting it to releases — a quiet downgrade would be worse than a\n  visible stall.\n- **removing a plugin resets it to stable**, so a later reinstall does not\n  silently return to unreleased code.\n\n## why this is the honest default for a community\n\n[[release-automation]] describes the stable path: a maintainer creates a release,\nci builds it and attaches the jar. that path is deliberate and slow, which is\nright for the servers people actually play on.\n\nthe experimental channel exists because the gap between \"merged\" and \"released\"\nis where most of the useful feedback lives, and a server operator willing to run\nmain-branch code is the best tester the community has. the guide is blunt about\nthe trade — unreleased, unreviewed code that can stop a server from starting —\nand dpm repeats the warning on every switch rather than burying it in docs.\n\nworth noting for anyone reading dpm's own version numbers: the channel feature\nitself lives on `main` and is in no published dpm release, and dpm publishes no\nrolling build of itself. a jar with the flags has to be built from source.\n",
+   "title": "Release Channel",
+   "type": "concept",
+   "updated": "2026-08-23"
   },
   "repository-pattern": {
    "backlinks": [
