@@ -15,7 +15,7 @@ sources:
   - repo: Dans-Plugins/Dans-Plugin-Manager
     path: COMMANDS.md
     ref: 3733eb51df6be11ac0239d7cffcfb2ef72e756a9
-    claim: The command set covers list, get, update, remove, clean, search, info, stats and reload, with info reporting the GitHub owner, repo, latest release tag, publish date, install status and dependency status.
+    claim: The command set covers list, get, update, remove, clean, search, info, stats and reload, with info reporting the description, GitHub owner, repo, release channel, latest build on that channel, publish date, install status and dependency status.
 ---
 
 DPM is a package manager for the community's own plugins, run from inside a
@@ -28,8 +28,9 @@ The command set is the giveaway: `list`, `get`, `update`, `remove`, `search`,
 `info`, `clean`. These are apt and dnf commands, ported to a game console.
 
 `/dpm info` is the most useful of them — it reports the GitHub owner and repo,
-the latest release tag and publish date, whether the plugin is installed, and
-**whether its dependencies are satisfied**. That last field matters in an
+which [[release-channel|channel]] the plugin is on and the latest build on that
+channel, its publish date, whether the plugin is installed, and **whether its
+dependencies are satisfied**. That last field matters in an
 ecosystem where [[expansion-plugin|expansions]] hard-depend on
 [[medieval-factions]] and simply fail to load without it.
 

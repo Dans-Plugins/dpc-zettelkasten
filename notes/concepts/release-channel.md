@@ -35,7 +35,8 @@ exactly two — the enum has no third value and unknown names fall back to stabl
 
 The experimental channel is not a different way of reading the release list. It
 reads *one specific release* — a prerelease tagged `dev` that each repository's
-CI overwrites on every push to `main`. This is the piece that is hard to guess
+CI overwrites every time a change is merged to `main`. This is the piece that is
+hard to guess
 from the outside: "the dev build" is a GitHub release like any other, it simply
 never changes its tag.
 
