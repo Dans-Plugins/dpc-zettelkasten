@@ -11,6 +11,13 @@ For each `sources:` entry this answers two separate questions:
      it is the signal that a human or the zettelkasten-verify skill should
      re-read the note and decide whether its claim still holds.
 
+A citation for which neither question could be answered — GitHub timed out or
+rate-limited, `gh` is not authenticated, the network is down — is reported
+`unknown`, which is deliberately not the same as `invalid`. A pinned commit
+cannot rot, so an invalid citation means the note was wrong when it was
+written; an unanswered call establishes nothing either way and must never be
+recorded as a broken citation, nor counted as a passing one.
+
 Requires the GitHub CLI (`gh`) to be installed and authenticated.
 
 Usage:
@@ -23,8 +30,10 @@ Usage:
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -33,57 +42,107 @@ import zklib  # noqa: E402
 _head_cache = {}
 _blob_cache = {}
 
+# Statuses worth asking again about. A 504 in particular is routine against the
+# contents API and usually succeeds on the next attempt. 403 is left out: bad
+# credentials will never come good, and a secondary rate limit outlasts any
+# backoff short enough to sit inside a CI job.
+_RETRY_STATUS = (429, 500, 502, 503, 504)
+_ATTEMPTS = 3
+_BACKOFF_SECONDS = 1.0
+
+
+def http_status(stderr):
+    """The HTTP status `gh` reported, or None if it never reached an endpoint.
+
+    `gh` writes failures as `gh: Not Found (HTTP 404)`. Output without that
+    suffix — no credentials, DNS failure, connection reset — means the request
+    was never answered, which is not the same as being answered "no".
+    """
+    match = re.search(r"\(HTTP (\d{3})\)", stderr)
+    return int(match.group(1)) if match else None
+
 
 def gh_api(path):
-    try:
-        out = subprocess.run(
-            ["gh", "api", path],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-        )
-    except FileNotFoundError:
-        zklib.fail("the GitHub CLI (`gh`) is required; see https://cli.github.com/")
-    if out.returncode != 0:
-        return None, out.stderr.decode("utf-8", "replace").strip()
-    return json.loads(out.stdout.decode("utf-8")), None
+    """Call the API, retrying while the failure looks transient.
+
+    Returns `(data, err, missing)`. `missing` is True only for a 404 — the one
+    reply that proves the thing asked about is genuinely not there. Every other
+    failure leaves the question unanswered, and callers must report that
+    difference rather than collapsing it into an absence.
+    """
+    for attempt in range(_ATTEMPTS):
+        try:
+            out = subprocess.run(
+                ["gh", "api", path],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+        except FileNotFoundError:
+            zklib.fail("the GitHub CLI (`gh`) is required; see https://cli.github.com/")
+        if out.returncode == 0:
+            return json.loads(out.stdout.decode("utf-8")), None, False
+        err = out.stderr.decode("utf-8", "replace").strip()
+        status = http_status(err)
+        if status == 404:
+            return None, err, True
+        if status not in _RETRY_STATUS or attempt == _ATTEMPTS - 1:
+            return None, err, False
+        time.sleep(_BACKOFF_SECONDS * (2 ** attempt))
+    # Unreachable while _ATTEMPTS is at least 1. Kept explicit so that a
+    # misconfigured attempt count degrades to "unanswered" rather than to a
+    # tuple-unpacking error three frames away from the cause.
+    return None, "no attempt was made", False
 
 
 def head_sha(repo):
     if repo not in _head_cache:
-        data, err = gh_api("repos/%s" % repo)
+        data, err, _ = gh_api("repos/%s" % repo)
         if data is None:
             _head_cache[repo] = (None, err)
         else:
             branch = data.get("default_branch", "main")
-            commit, err2 = gh_api("repos/%s/commits/%s" % (repo, branch))
+            commit, err2, _ = gh_api("repos/%s/commits/%s" % (repo, branch))
             _head_cache[repo] = ((commit or {}).get("sha"), err2) if commit else (None, err2)
     return _head_cache[repo]
 
 
 def blob_sha(repo, ref, path):
-    """Git blob id for a file at a ref — cheap identity check without content."""
+    """Git blob id for a file at a ref — cheap identity check without content.
+
+    Returns `(sha, size, err, missing)`. `missing` separates "the API says this
+    file is not there" from "the API did not say", which the caller reports as
+    two different statuses.
+    """
     key = (repo, ref, path)
     if key not in _blob_cache:
         parent = os.path.dirname(path)
-        data, err = gh_api("repos/%s/contents/%s?ref=%s" % (repo, parent, ref) if parent
-                           else "repos/%s/contents?ref=%s" % (repo, ref))
+        data, err, absent = gh_api("repos/%s/contents/%s?ref=%s" % (repo, parent, ref) if parent
+                                   else "repos/%s/contents?ref=%s" % (repo, ref))
         if data is None:
-            _blob_cache[key] = (None, None, err)
+            _blob_cache[key] = (None, None, err, absent)
         else:
             entry = next((e for e in data if e.get("path") == path), None)
             _blob_cache[key] = (
-                (entry.get("sha"), entry.get("size"), None) if entry
-                else (None, None, "not found at %s" % ref[:7])
+                (entry.get("sha"), entry.get("size"), None, False) if entry
+                else (None, None, "not found at %s" % ref[:7], True)
             )
     return _blob_cache[key]
 
 
 def line_count(repo, ref, path):
-    data, err = gh_api("repos/%s/contents/%s?ref=%s" % (repo, path, ref))
-    if data is None or "content" not in data:
-        return None
+    """Line count of a file at a ref.
+
+    Returns `(count, unanswered, err)`. A None count with `unanswered` False is
+    not a failure: GitHub omits inline content for a blob too large to return
+    that way, which simply leaves the bounds check unperformed.
+    """
+    data, err, absent = gh_api("repos/%s/contents/%s?ref=%s" % (repo, path, ref))
+    if data is None:
+        return None, not absent, err
+    if "content" not in data:
+        return None, False, None
     import base64
     raw = base64.b64decode(data["content"]).decode("utf-8", "replace")
-    return len(raw.split("\n"))
+    return len(raw.split("\n")), False, None
 
 
 def check(note, source, want_lines):
@@ -100,14 +159,25 @@ def check(note, source, want_lines):
         "detail": "",
     }
 
-    pinned_sha, size, err = blob_sha(repo, ref, path)
+    pinned_sha, size, err, missing = blob_sha(repo, ref, path)
     if pinned_sha is None:
-        record["status"] = "invalid"
-        record["detail"] = "file not found at pinned commit (%s)" % (err or "unknown error")
+        # Only a definitive absence is a broken citation. A pinned commit does
+        # not rot, so "not found" means the note was wrong when written —
+        # whereas an unanswered call means nothing has been established.
+        record["status"] = "invalid" if missing else "unknown"
+        record["detail"] = "%s (%s)" % (
+            "file not found at pinned commit" if missing
+            else "could not check the pinned commit",
+            err or "unknown error",
+        )
         return record
 
     if want_lines and source.get("lines"):
-        total = line_count(repo, ref, path)
+        total, unanswered, err = line_count(repo, ref, path)
+        if unanswered:
+            record["status"] = "unknown"
+            record["detail"] = "could not check the cited line range (%s)" % (err or "unknown error")
+            return record
         if total is not None:
             end = int(source["lines"].split("-")[-1])
             if end > total:
@@ -126,8 +196,11 @@ def check(note, source, want_lines):
         record["detail"] = "pinned at current HEAD"
         return record
 
-    current_sha, _, err = blob_sha(repo, current_ref, path)
-    if current_sha is None:
+    current_sha, _, err, missing = blob_sha(repo, current_ref, path)
+    if current_sha is None and not missing:
+        record["status"] = "unknown"
+        record["detail"] = "could not check the current HEAD (%s)" % (err or "unknown error")
+    elif current_sha is None:
         record["status"] = "drifted"
         record["detail"] = "file has been deleted or moved since the pinned commit"
     elif current_sha != pinned_sha:
@@ -188,6 +261,17 @@ def main():
             len(results),
             ", ".join("%d %s" % (v, k) for k, v in sorted(counts.items())) or "none",
         ))
+
+    # An unanswered call does not fail the build — a GitHub outage is not a
+    # defect in the collection — but it must not pass quietly either, or a green
+    # run reads as a verification that never happened. Written to stderr so it
+    # survives `--json` without corrupting the document on stdout.
+    unchecked = sum(1 for r in results if r["status"] == "unknown")
+    if unchecked:
+        sys.stderr.write(
+            "warning: %d of %d citations could not be checked and are NOT verified; "
+            "re-run when GitHub is reachable\n" % (unchecked, len(results))
+        )
 
     return 1 if any(r["status"] == "invalid" for r in results) else 0
 

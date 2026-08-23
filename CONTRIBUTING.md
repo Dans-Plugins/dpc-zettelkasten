@@ -116,6 +116,10 @@ CI has three jobs:
 - **`citations`** runs `check_sources.py` against the live GitHub API. Drift is
   reported but never fails the build; only an invalid citation — a file missing
   at the pinned commit, or a line range past the end of the file — is a failure.
+  A citation the API declined to answer for (a timeout, a rate limit, no
+  credentials) is reported `unknown` rather than invalid and does not fail the
+  build either, but it is counted in a warning on stderr: an outage is not a
+  defect in the collection, and it is not a verification of it either.
 - **`image`** builds the `Dockerfile`, serves the explorer, and checks what comes
   back: `/healthz`, content types, that the served `dataset.json` and
   `lib/zk-graphql.js` are byte-identical to the committed ones (gzipped included),
