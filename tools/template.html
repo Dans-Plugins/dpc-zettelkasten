@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DPC Zettelkasten</title>
 <style>
   :root {
@@ -17,6 +17,7 @@
     --accent-dim: #7c5cf0;
     --moc: #f0a868;
     --code-bg: #12131a;
+    --header-h: 46px;
     --radius: 6px;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
@@ -33,12 +34,15 @@
     font: 15px/1.65 var(--sans);
     display: grid; grid-template-rows: auto 1fr;
     overflow: hidden;
+    /* dvh, not vh: a phone's URL bar collapses and vh does not follow it. */
+    height: 100%; height: 100dvh;
+    -webkit-text-size-adjust: 100%;
   }
 
   /* ---------- top bar ---------- */
   header {
     display: flex; align-items: center; gap: 14px;
-    padding: 0 14px; height: 46px;
+    padding: 0 14px; height: var(--header-h); flex: none; z-index: 70;
     background: var(--bg-2); border-bottom: 1px solid var(--line);
   }
   .brand { font-weight: 650; letter-spacing: -0.2px; white-space: nowrap; }
@@ -57,13 +61,15 @@
   }
   #search:focus { outline: none; border-color: var(--accent-dim); }
   .icon-btn {
-    background: none; border: 1px solid var(--line); border-radius: var(--radius);
-    color: var(--fg-dim); cursor: pointer; font-size: 13px; padding: 4px 9px;
+    align-items: center; background: none; border: 1px solid var(--line);
+    border-radius: var(--radius); color: var(--fg-dim); cursor: pointer;
+    display: inline-flex; flex: none; font: inherit; font-size: 13px;
+    justify-content: center; min-height: 30px; padding: 4px 9px;
   }
   .icon-btn:hover { color: var(--fg); border-color: var(--fg-faint); }
 
   /* ---------- layout ---------- */
-  main { display: grid; grid-template-columns: 262px minmax(0,1fr) 274px; min-height: 0; }
+  main { display: grid; grid-template-columns: 262px minmax(0,1fr) 274px; min-height: 0; position: relative; }
   main.wide { grid-template-columns: 262px minmax(0,1fr); }
   main.wide aside.right { display: none; }
   aside { background: var(--bg-2); overflow-y: auto; padding: 14px 0 40px; }
@@ -146,6 +152,8 @@
     letter-spacing: 0.09em; text-transform: uppercase; margin: 20px 0 8px;
   }
   .rail-h:first-child { margin-top: 0; }
+  .rail-sec .rail-h { margin-top: 0; }
+  .rail-sec + .rail-sec { margin-top: 22px; }
   .rail-list { list-style: none; margin: 0; padding: 0; }
   .rail-list li { margin-bottom: 5px; }
   .rail-list a { color: var(--fg-dim); font-size: 13px; text-decoration: none; }
@@ -171,7 +179,7 @@
   /* ---------- graph ---------- */
   #graph-view { display: none; height: 100%; position: relative; }
   #graph-view.on { display: block; }
-  #graph { display: block; height: 100%; width: 100%; cursor: grab; }
+  #graph { display: block; height: 100%; width: 100%; cursor: grab; touch-action: none; }
   #graph:active { cursor: grabbing; }
   .graph-legend {
     background: color-mix(in srgb, var(--bg-2) 92%, transparent);
@@ -179,8 +187,9 @@
     font-size: 12px; left: 16px; padding: 10px 12px; position: absolute; top: 16px;
   }
   .graph-legend .row { align-items: center; display: flex; gap: 7px; margin-bottom: 4px; }
-  .graph-legend .row:last-child { margin: 0; color: var(--fg-faint); }
-  @media (max-width: 900px) { #gql-view.on { grid-template-columns: 1fr; } .gql-right { display: none; } }
+  .graph-legend .row.hint { margin: 6px 0 0; color: var(--fg-faint); }
+  .graph-legend .row:last-child { margin-bottom: 0; }
+  #graph-fit { font-size: 11.5px; padding: 5px 12px; width: 100%; }
   .dot { border-radius: 50%; height: 9px; width: 9px; }
   #content.hidden { display: none; }
 
@@ -229,18 +238,167 @@
     margin: 0; min-height: 0; overflow: auto; padding: 14px; white-space: pre;
   }
   #gql-json.error { color: #e06c75; }
-  #gql-graph { display: block; flex: 1; min-height: 0; width: 100%; cursor: grab; }
+  #gql-graph { display: block; flex: 1; min-height: 0; width: 100%; cursor: grab; touch-action: none; }
   .hidden { display: none !important; }
 
   .stats { color: var(--fg-faint); font-size: 12px; padding: 14px 16px 0; line-height: 1.7; }
   .stats b { color: var(--fg-dim); font-weight: 600; }
 
-  @media (max-width: 1100px) { aside.right { display: none; } main { grid-template-columns: 240px 1fr; } }
-  @media (max-width: 760px) { aside.left { display: none; } main { grid-template-columns: 1fr; } #search { width: 150px; } }
+  /* ---------- responsive chrome ---------- */
+  /* Off-canvas nav, the bottom tab bar and the mobile-only controls are all
+     inert until a media query below turns them on. */
+  .nav-toggle, .search-toggle, .drawer-head, .gql-panes, .toc-mobile { display: none; }
+  #scrim { display: none; }
+  /* `contents` so the search box is a direct flex child of the bar it sits in,
+     wherever relayout() has parked it. */
+  .search-slot { display: contents; }
+
+  /* The right rail is a column on a wide screen and a section of the note on a
+     narrow one. Hiding it would take the citations, backlinks and links out —
+     the only way to walk the graph without the sidebar — with it. */
+  aside.right.inline {
+    background: none; border-left: 0; overflow: visible; width: 100%;
+    max-width: 760px; margin: 0 auto; padding: 0 40px 90px;
+  }
+  aside.right.inline .rail-sec {
+    border-top: 1px solid var(--line); margin-top: 0; padding-top: 16px;
+  }
+  aside.right.inline .rail-sec + .rail-sec { margin-top: 22px; }
+  /* A table of contents printed below the prose it indexes is a dead control. */
+  aside.right.inline .rail-sec[data-sec="toc"] { display: none; }
+  #content.rail-inline article { padding-bottom: 12px; }
+
+  @media (min-width: 761px) {
+    aside.right.inline { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 30px; }
+    aside.right.inline .rail-sec { margin-top: 0; }
+    aside.right.inline .rail-sec + .rail-sec { margin-top: 0; }
+    aside.right.inline .rail-sec[data-sec="sources"] { grid-column: 1 / -1; }
+  }
+
+  /* --- tablet: the rail moves inline, the sidebar stays --- */
+  @media (max-width: 1100px) {
+    main, main.wide, main.inline-rail { grid-template-columns: 240px minmax(0,1fr); }
+  }
+
+  /* --- stacked GraphQL: the result pane used to be display:none here --- */
+  @media (max-width: 900px) {
+    #gql-view.on { grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); }
+    .gql-panes {
+      background: var(--bg-2); border-bottom: 1px solid var(--line);
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .gql-panes button {
+      background: none; border: 0; border-bottom: 2px solid transparent; color: var(--fg-dim);
+      cursor: pointer; font: inherit; font-size: 13px; padding: 12px 4px;
+    }
+    .gql-panes button.on { border-bottom-color: var(--accent); color: var(--fg); }
+    .gql-left { border-right: 0; }
+    #gql-view.pane-query .gql-right { display: none; }
+    #gql-view.pane-result .gql-left { display: none; }
+  }
+
+  /* --- phone --- */
+  @media (max-width: 760px) {
+    :root { --header-h: 50px; }
+    main, main.wide, main.inline-rail { grid-template-columns: minmax(0,1fr); }
+    /* Room for the fixed tab bar, so nothing ever scrolls under it. */
+    main { padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)); }
+
+    header { gap: 8px; padding: 0 max(8px, env(safe-area-inset-left)) 0 max(8px, env(safe-area-inset-right)); }
+    .brand { font-size: 15px; }
+    .nav-toggle, .search-toggle { display: inline-flex; font-size: 17px; min-width: 42px; min-height: 38px; }
+    #theme { min-width: 42px; min-height: 38px; font-size: 16px; }
+
+    /* Tabs become a thumb-reachable bottom bar rather than competing with the
+       brand and the search box for a 360px-wide top bar. */
+    header nav {
+      background: var(--bg-2); border-top: 1px solid var(--line);
+      bottom: 0; display: grid; gap: 0; grid-template-columns: repeat(3, 1fr);
+      left: 0; padding-bottom: env(safe-area-inset-bottom, 0px); position: fixed;
+      right: 0; z-index: 40;
+    }
+    .tab { border-radius: 0; font-size: 12.5px; padding: 13px 4px; }
+    .tab:hover { background: none; }
+    .tab.on { background: none; box-shadow: inset 0 2px 0 var(--accent); color: var(--accent); }
+
+    /* Sidebar as an off-canvas drawer: the whole index used to be display:none
+       here, which left search filtering a list nobody could see. */
+    aside.left {
+      border-right: 1px solid var(--line); bottom: 0; left: 0;
+      box-shadow: 2px 0 22px rgba(0, 0, 0, 0.4);
+      padding: 0 0 calc(60px + env(safe-area-inset-bottom, 0px));
+      position: fixed; top: var(--header-h); transform: translateX(-100%);
+      transition: transform 0.22s ease; width: min(88vw, 330px); z-index: 60;
+    }
+    body.nav-open aside.left { transform: none; }
+    #scrim {
+      background: rgba(0, 0, 0, 0.5); display: block; inset: var(--header-h) 0 0 0;
+      opacity: 0; pointer-events: none; position: fixed;
+      transition: opacity 0.22s ease; z-index: 50;
+    }
+    body.nav-open #scrim { opacity: 1; pointer-events: auto; }
+    .drawer-head {
+      align-items: center; border-bottom: 1px solid var(--line); display: flex;
+      gap: 10px; padding: 10px 12px 10px 16px;
+    }
+    .drawer-head .sec-title { flex: 1; padding: 0; }
+    /* Overrides the `contents` the header slot needs, so this one can box. */
+    #slot-drawer { display: block; padding: 12px 14px 4px; }
+    #slot-drawer:empty { display: none; }
+    #slot-drawer #search { width: 100%; }
+    /* 16px or iOS Safari zooms the whole page on focus. */
+    #search { font-size: 16px; padding: 9px 12px; }
+
+    aside.left li a { font-size: 15px; padding: 11px 16px 11px 20px; }
+    .sec-title { font-size: 11.5px; padding: 16px 16px 6px; }
+    .count { font-size: 12px; }
+    .stats { font-size: 12.5px; padding: 18px 16px 0; }
+
+    article { padding: 20px 16px 26px; }
+    article h1 { font-size: 25px; letter-spacing: -0.3px; }
+    .summary { font-size: 15px; }
+    .chips { margin-bottom: 18px; }
+    .chip { font-size: 12.5px; padding: 4px 11px; }
+    .prose { padding-top: 18px; }
+    .prose h2 { font-size: 19px; margin-top: 26px; }
+    .prose h3 { font-size: 16px; }
+    .prose pre code { font-size: 12px; }
+    .prose code { overflow-wrap: anywhere; }
+    aside.right.inline { padding: 0 16px 30px; }
+    .rail-list a, .toc a { font-size: 14.5px; }
+    .rail-list li { margin-bottom: 9px; }
+    .src { padding: 11px 13px; }
+    .src .claim { font-size: 13.5px; }
+
+    /* A jump list is only useful above the prose, so the inline rail drops its
+       copy and the article carries a collapsed one instead. */
+    .toc-mobile {
+      background: var(--bg-2); border: 1px solid var(--line);
+      border-radius: var(--radius); display: block; margin: 0 0 18px;
+    }
+    .toc-mobile > summary {
+      color: var(--fg-dim); cursor: pointer; font-size: 13.5px;
+      list-style: none; padding: 11px 13px;
+    }
+    .toc-mobile > summary::-webkit-details-marker { display: none; }
+    .toc-mobile > summary::after { content: "▾"; float: right; }
+    .toc-mobile[open] > summary::after { content: "▴"; }
+    .toc-mobile ul.toc { padding: 0 13px 10px; }
+    .toc-mobile .toc a { display: block; padding: 7px 0; }
+
+    #gql-editor { font-size: 16px; min-height: 168px; }
+    #gql-json { font-size: 12.5px; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .gql-ex { font-size: 13px; padding: 6px 13px; }
+    #gql-run { font-size: 14px; padding: 10px 18px; width: 100%; }
+
+    .graph-legend { font-size: 11.5px; left: 10px; padding: 9px 11px; top: 10px; }
+  }
 </style>
 </head>
 <body>
 <header>
+  <button class="icon-btn nav-toggle" id="nav-toggle" aria-label="Browse notes"
+          aria-expanded="false" aria-controls="sidebar">☰</button>
   <div class="brand">DPC <span>Zettelkasten</span></div>
   <nav>
     <button class="tab on" id="tab-notes">Notes</button>
@@ -248,12 +406,22 @@
     <button class="tab" id="tab-gql">GraphQL</button>
   </nav>
   <div class="spacer"></div>
-  <input id="search" type="search" placeholder="Search notes…  (/)" autocomplete="off">
-  <button class="icon-btn" id="theme">◐</button>
+  <div class="search-slot" id="slot-header">
+    <input id="search" type="search" placeholder="Search notes…  (/)" autocomplete="off">
+  </div>
+  <button class="icon-btn search-toggle" id="search-toggle" aria-label="Search notes">⌕</button>
+  <button class="icon-btn" id="theme" aria-label="Switch theme">◐</button>
 </header>
 
+<div id="scrim"></div>
+
 <main>
-  <aside class="left">
+  <aside class="left" id="sidebar">
+    <div class="drawer-head">
+      <div class="sec-title">Browse</div>
+      <button class="icon-btn" id="nav-close" aria-label="Close navigation">✕</button>
+    </div>
+    <div class="search-slot" id="slot-drawer"></div>
     <div id="nav"></div>
     <div class="stats" id="stats"></div>
   </aside>
@@ -265,11 +433,16 @@
     <div class="graph-legend">
       <div class="row"><span class="dot" style="background:var(--moc)"></span> Map of Content</div>
       <div class="row"><span class="dot" style="background:var(--accent)"></span> Concept note</div>
-      <div class="row">drag to pan · scroll to zoom · click a node</div>
+      <div class="row hint" id="graph-hint">drag to pan · scroll to zoom · click a node</div>
+      <div class="row"><button class="icon-btn" id="graph-fit">Fit to screen</button></div>
     </div>
   </div>
 
-  <div id="gql-view">
+  <div id="gql-view" class="pane-query">
+    <div class="gql-panes" id="gql-panes">
+      <button class="on" data-pane="query">Query</button>
+      <button data-pane="result">Result</button>
+    </div>
     <div class="gql-left">
       <div class="pane-h">Query <span class="hint">⌘/Ctrl + ⏎</span></div>
       <textarea id="gql-editor" spellcheck="false" autocomplete="off"></textarea>
@@ -363,11 +536,22 @@ function renderNote(id) {
     .concat((n.tags || []).map((t) => `<a class="chip" href="#" data-tag="${esc(t)}">#${esc(t)}</a>`))
     .join("");
 
+  const toc = n.toc.filter((h) => h.level <= 3);
+  const tocItems = toc
+    .map((h) => `<li class="lvl-${h.level}"><a href="#${h.slug}">${esc(h.text)}</a></li>`)
+    .join("");
+
   $("#note").innerHTML =
     `<div class="kicker">${esc(n.id)}</div>` +
     `<h1>${esc(n.title)}</h1>` +
     (n.summary ? `<p class="summary">${esc(n.summary)}</p>` : "") +
     `<div class="chips">${chips}</div>` +
+    // Phone-only: the rail's jump list is no use once it has been pushed below
+    // the prose, so the article carries a collapsed copy above it instead.
+    (toc.length > 1
+      ? `<details class="toc-mobile"><summary>On this page · ${toc.length}</summary>` +
+        `<ul class="toc">${tocItems}</ul></details>`
+      : "") +
     `<div class="prose">${n.html}</div>`;
 
   const sources = n.sources.length
@@ -386,13 +570,19 @@ function renderNote(id) {
       }).join("")}</ul>`
     : `<div class="rail-empty">None.</div>`;
 
-  const toc = n.toc.filter((h) => h.level <= 3);
+  // Sectioned rather than a flat run of headings: when the rail is inlined
+  // under the note on a narrow screen, each section needs its own box, and the
+  // jump list needs to be droppable on its own.
+  const railSec = (key, head, body) =>
+    `<section class="rail-sec" data-sec="${key}"><div class="rail-h">${head}</div>${body}</section>`;
+
   $("#rail").innerHTML =
-    `<div class="rail-h">Sources of truth <span class="count">${n.sources.length}</span></div>${sources}` +
-    (toc.length > 1 ? `<div class="rail-h">On this page</div><ul class="toc">${toc.map((h) => `<li class="lvl-${h.level}"><a href="#${h.slug}">${esc(h.text)}</a></li>`).join("")}</ul>` : "") +
-    `<div class="rail-h">Backlinks <span class="count">${n.backlinks.length}</span></div>${linkList(n.backlinks)}` +
-    `<div class="rail-h">Links out <span class="count">${n.links.length}</span></div>${linkList(n.links)}` +
-    `<div class="rail-h">Source file</div><ul class="rail-list"><li><a href="${esc(n.sourceUrl)}" target="_blank" rel="noopener">${esc(n.sourcePath)}</a></li></ul>`;
+    railSec("sources", `Sources of truth <span class="count">${n.sources.length}</span>`, sources) +
+    (toc.length > 1 ? railSec("toc", "On this page", `<ul class="toc">${tocItems}</ul>`) : "") +
+    railSec("backlinks", `Backlinks <span class="count">${n.backlinks.length}</span>`, linkList(n.backlinks)) +
+    railSec("links", `Links out <span class="count">${n.links.length}</span>`, linkList(n.links)) +
+    railSec("file", "Source file",
+      `<ul class="rail-list"><li><a href="${esc(n.sourceUrl)}" target="_blank" rel="noopener">${esc(n.sourcePath)}</a></li></ul>`);
 
   $("#content").scrollTop = 0;
   renderNav($("#search").value);
@@ -408,7 +598,10 @@ function makeGraph(canvas, opts) {
   const ctx = canvas.getContext("2d");
   let nodes = [], edges = [], index = {};
   let view = { x: 0, y: 0, k: 1 };
-  let hover = null, ticks = 0, seeded = false;
+  // Wider than the old 0.25–3: a 50-node graph on a phone has to zoom further
+  // out than that before it fits at all.
+  const clampK = (k) => Math.max(0.1, Math.min(4, k));
+  let hover = null, ticks = 0, seeded = false, autoFit = true;
 
   function setData(noteIds) {
     const set = new Set(noteIds.filter((id) => NOTES[id]));
@@ -423,7 +616,7 @@ function makeGraph(canvas, opts) {
     for (const n of nodes) for (const t of NOTES[n.id].links) {
       if (index[t] !== undefined) edges.push([index[n.id], index[t]]);
     }
-    seeded = false; ticks = 0;
+    seeded = false; ticks = 0; autoFit = true;
     view = { x: 0, y: 0, k: 1 };
   }
 
@@ -539,10 +732,36 @@ function makeGraph(canvas, opts) {
     ctx.restore();
   }
 
+  /* Fit every node into the canvas. Without this the layout is sized in
+     absolute pixels around the canvas centre, so on a phone most of the graph
+     settles outside the viewport and the view looks empty or half-drawn. */
+  function fit() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!nodes.length || !w || !h) return;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const n of nodes) {
+      const r = radius(n) + 34; // the label sits below the node, inside this
+      if (n.x - r < minX) minX = n.x - r;
+      if (n.x + r > maxX) maxX = n.x + r;
+      if (n.y - r < minY) minY = n.y - r;
+      if (n.y + r > maxY) maxY = n.y + r;
+    }
+    const m = 14;
+    const k = clampK(Math.min((w - m * 2) / (maxX - minX || 1), (h - m * 2) / (maxY - minY || 1)));
+    view.k = k;
+    view.x = (w - (maxX - minX) * k) / 2 - minX * k;
+    view.y = (h - (maxY - minY) * k) / 2 - minY * k;
+  }
+
   function tick(active) {
     if (!active) return;
     if (!seeded) seed();
-    if (ticks < 700) { step(); ticks++; }
+    if (ticks < 700) {
+      step(); ticks++;
+      // Re-frame while the simulation is still spreading out, but stop the
+      // moment the reader pans or zooms — their view wins from then on.
+      if (autoFit && (ticks % 12 === 0 || ticks === 700)) fit();
+    }
     draw();
   }
 
@@ -561,34 +780,101 @@ function makeGraph(canvas, opts) {
     return null;
   }
 
-  let dragging = false, last = null;
-  canvas.addEventListener("mousedown", (e) => { dragging = true; last = { x: e.clientX, y: e.clientY }; });
-  window.addEventListener("mouseup", () => { dragging = false; });
-  canvas.addEventListener("mousemove", (e) => {
+  /* Pointer events, not mouse events: a phone fires neither mousedown nor
+     wheel, which left the graph a picture you could not pan, zoom or aim at. */
+  const pointers = new Map();
+  let dragging = false, last = null, moved = 0, pinch = null, penType = "mouse";
+
+  function zoomAt(k, sx, sy) {
+    k = clampK(k);
+    const rect = canvas.getBoundingClientRect();
+    const mx = sx - rect.left, my = sy - rect.top;
+    view.x = mx - (mx - view.x) * (k / view.k);
+    view.y = my - (my - view.y) * (k / view.k);
+    view.k = k;
+    autoFit = false;
+  }
+
+  function pinchState() {
+    const [a, b] = [...pointers.values()];
+    if (!a || !b) return null;
+    return {
+      dist: Math.hypot(b.x - a.x, b.y - a.y) || 1,
+      cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2,
+    };
+  }
+
+  canvas.addEventListener("pointerdown", (e) => {
+    penType = e.pointerType;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) { dragging = true; moved = 0; last = { x: e.clientX, y: e.clientY }; }
+    else { dragging = false; pinch = pinchState(); }
+  });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size >= 2) {
+      const now = pinchState();
+      if (pinch && now) {
+        // Scale about the midpoint, then follow the midpoint itself so a
+        // two-finger drag pans at the same time.
+        zoomAt(view.k * (now.dist / pinch.dist), pinch.cx, pinch.cy);
+        view.x += now.cx - pinch.cx;
+        view.y += now.cy - pinch.cy;
+        moved += 20;
+      }
+      pinch = now;
+      return;
+    }
+
     if (dragging && last) {
-      view.x += e.clientX - last.x; view.y += e.clientY - last.y;
+      const dx = e.clientX - last.x, dy = e.clientY - last.y;
+      view.x += dx; view.y += dy;
+      moved += Math.abs(dx) + Math.abs(dy);
+      if (moved > 6) autoFit = false;
       last = { x: e.clientX, y: e.clientY };
-    } else {
+    } else if (e.pointerType === "mouse") {
       const h = pick(toCoords(e));
       if (h !== hover) { hover = h; canvas.style.cursor = h === null ? "grab" : "pointer"; }
     }
   });
+
+  function release(e) {
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = null;
+    if (!pointers.size) { dragging = false; last = null; }
+  }
+  canvas.addEventListener("pointerup", release);
+  canvas.addEventListener("pointercancel", release);
+
   canvas.addEventListener("click", (e) => {
+    if (moved > 8) return; // the tail of a pan, not a tap
     const i = pick(toCoords(e));
+    if (penType !== "mouse") {
+      // Touch has no hover, so a blind tap would open a node whose label may
+      // not even be drawn. First tap names it and lights its edges, second
+      // tap opens it.
+      if (i === null) { hover = null; return; }
+      if (hover !== i) { hover = i; return; }
+    }
     // Setting the hash is enough — route() switches back to the note view.
     if (i !== null) location.hash = "#/" + nodes[i].id;
   });
+
   canvas.addEventListener("wheel", (e) => {
     e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const k = Math.max(0.25, Math.min(3, view.k * (e.deltaY < 0 ? 1.12 : 0.89)));
-    view.x = mx - (mx - view.x) * (k / view.k);
-    view.y = my - (my - view.y) * (k / view.k);
-    view.k = k;
+    zoomAt(view.k * (e.deltaY < 0 ? 1.12 : 0.89), e.clientX, e.clientY);
   }, { passive: false });
 
-  return { setData, tick, reheat: () => { seeded = false; ticks = 0; }, size: () => nodes.length };
+  return {
+    setData, tick,
+    reheat: () => { seeded = false; ticks = 0; autoFit = true; },
+    refit: () => { if (autoFit) fit(); },
+    fitNow: () => { autoFit = true; hover = null; fit(); },
+    size: () => nodes.length,
+  };
 }
 
 const mainGraph = makeGraph($("#graph"));
@@ -681,7 +967,7 @@ const GQL_EXAMPLES = [
 const gqlGraph = makeGraph($("#gql-graph"), { emptyText: "Run a query that returns notes." });
 let gqlResultView = "json";
 
-function gqlRun() {
+function gqlRun(fromUser) {
   const src = $("#gql-editor").value;
   const out = $("#gql-json");
   try {
@@ -698,6 +984,20 @@ function gqlRun() {
     gqlGraph.setData([]);
     $("#gql-count").textContent = "error";
   }
+  // Stacked layout: running a query and staying on the editor would hide the
+  // result the reader just asked for.
+  if (fromUser && MQ_GQL.matches) gqlSetPane("result");
+}
+
+/* Which of the two stacked panes is showing. Inert on a wide screen, where
+   both are side by side and the classes match nothing. */
+function gqlSetPane(pane) {
+  const view = $("#gql-view");
+  view.classList.toggle("pane-query", pane === "query");
+  view.classList.toggle("pane-result", pane === "result");
+  document.querySelectorAll("#gql-panes button").forEach((b) =>
+    b.classList.toggle("on", b.dataset.pane === pane));
+  if (pane === "result" && gqlResultView === "graph") gqlGraph.reheat();
 }
 
 function gqlSetResultView(v) {
@@ -717,15 +1017,19 @@ function gqlInit() {
     const b = e.target.closest("[data-ex]");
     if (!b) return;
     $("#gql-editor").value = GQL_EXAMPLES[+b.dataset.ex].q;
-    gqlRun();
+    gqlRun(true);
   });
-  $("#gql-run").onclick = gqlRun;
+  $("#gql-run").onclick = () => gqlRun(true);
+  $("#gql-panes").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pane]");
+    if (b) gqlSetPane(b.dataset.pane);
+  });
   $("#gql-toggle").addEventListener("click", (e) => {
     const b = e.target.closest("[data-view]");
     if (b) gqlSetResultView(b.dataset.view);
   });
   $("#gql-editor").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); gqlRun(); }
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); gqlRun(true); }
     if (e.key === "Tab") {
       e.preventDefault();
       const el = e.target, p = el.selectionStart;
@@ -736,6 +1040,47 @@ function gqlInit() {
   $("#gql-editor").value = GQL_EXAMPLES[0].q;
   gqlRun();
 }
+
+/* ----------------------------------------------------- responsive layout */
+/* Two controls have no room of their own on a phone, so they are moved rather
+   than hidden: the search box lives in the drawer, and the right rail becomes
+   a section of the note. Both used to be display:none below their breakpoint,
+   which is what made the collection unnavigable on a phone — search filtered
+   an invisible list, and citations and backlinks simply vanished. */
+const MQ_PHONE = window.matchMedia("(max-width: 760px)");
+const MQ_RAIL = window.matchMedia("(max-width: 1100px)");
+const MQ_GQL = window.matchMedia("(max-width: 900px)");
+
+function relayout() {
+  const search = $("#search");
+  const slot = MQ_PHONE.matches ? $("#slot-drawer") : $("#slot-header");
+  if (search.parentNode !== slot) slot.appendChild(search);
+  if (!MQ_PHONE.matches) closeNav();
+
+  const rail = $("#rail"), content = $("#content"), main = document.querySelector("main");
+  const home = MQ_RAIL.matches ? content : main;
+  if (rail.parentNode !== home) home.appendChild(rail);
+  rail.classList.toggle("inline", MQ_RAIL.matches);
+  content.classList.toggle("rail-inline", MQ_RAIL.matches);
+  main.classList.toggle("inline-rail", MQ_RAIL.matches);
+
+  if (!MQ_GQL.matches) gqlSetPane("query");
+}
+
+/* ---------------------------------------------------------------- drawer */
+function setNav(open) {
+  document.body.classList.toggle("nav-open", open);
+  $("#nav-toggle").setAttribute("aria-expanded", open ? "true" : "false");
+}
+const openNav = () => setNav(true);
+const closeNav = () => setNav(false);
+
+$("#nav-toggle").onclick = () => setNav(!document.body.classList.contains("nav-open"));
+$("#nav-close").onclick = closeNav;
+$("#scrim").onclick = closeNav;
+$("#search-toggle").onclick = () => { openNav(); $("#search").focus(); };
+// Re-picking the note already open changes no hash, so route() never fires.
+$("#nav").addEventListener("click", (e) => { if (e.target.closest("a")) closeNav(); });
 
 /* ----------------------------------------------------------------- tabs */
 let tab = "notes";
@@ -764,6 +1109,7 @@ $("#tab-gql").onclick = () => showTab("gql");
 
 /* --------------------------------------------------------------- wiring */
 function route() {
+  closeNav();
   const hash = location.hash.replace(/^#\/?/, "");
   const id = hash.split("#")[0] || META.home;
   const anchor = hash.split("#")[1];
@@ -782,10 +1128,18 @@ function route() {
 window.addEventListener("hashchange", route);
 
 $("#search").addEventListener("input", (e) => renderNav(e.target.value));
+// The results render inside the drawer, so searching has to open it.
+$("#search").addEventListener("focus", () => { if (MQ_PHONE.matches) openNav(); });
+// A jump list that stays open after the jump just covers the heading it moved to.
+$("#note").addEventListener("click", (e) => {
+  const link = e.target.closest(".toc-mobile a");
+  if (link) link.closest("details").open = false;
+});
+$("#graph-fit").onclick = () => mainGraph.fitNow();
 document.addEventListener("keydown", (e) => {
   const typing = ["INPUT", "TEXTAREA"].includes((document.activeElement || {}).tagName);
   if (e.key === "/" && !typing) { e.preventDefault(); $("#search").focus(); }
-  if (e.key === "Escape") { $("#search").value = ""; $("#search").blur(); renderNav(""); }
+  if (e.key === "Escape") { closeNav(); $("#search").value = ""; $("#search").blur(); renderNav(""); }
   if (typing) return;
   if (e.key === "g") showGraph();
   if (e.key === "q") showTab("gql");
@@ -795,6 +1149,19 @@ document.addEventListener("click", (e) => {
   const tag = e.target.closest("[data-tag]");
   if (tag) { e.preventDefault(); $("#search").value = tag.dataset.tag; renderNav(tag.dataset.tag); showNotes(); }
 });
+
+for (const mq of [MQ_PHONE, MQ_RAIL, MQ_GQL]) {
+  const on = mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq);
+  on(relayout);
+}
+// A rotation or a keyboard opening changes the canvas size, and a graph framed
+// for the old one is off-centre in the new.
+window.addEventListener("resize", () => { mainGraph.refit(); gqlGraph.refit(); });
+
+// Touch devices get no hover and no wheel, so the legend must not promise them.
+if (window.matchMedia("(hover: none)").matches) {
+  $("#graph-hint").textContent = "drag to pan · pinch to zoom · tap a node twice";
+}
 
 $("#theme").onclick = () => {
   const light = document.documentElement.getAttribute("data-theme") === "light";
@@ -817,6 +1184,7 @@ function loop() {
 }
 
 renderStats();
+relayout();
 renderNote(location.hash.replace(/^#\/?/, "").split("#")[0] || META.home);
 route();
 loop();
