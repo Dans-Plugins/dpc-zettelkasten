@@ -3,9 +3,9 @@ id: moc-plugin-ecosystem
 title: Plugin Ecosystem
 type: moc
 tags: [moc, dpc, ecosystem]
-summary: The plugins around the flagship — the shared library, the official expansions, and the plugins Medieval Factions talks to at runtime.
+summary: The plugins around the flagship — the shared library, the official expansions, the plugins Medieval Factions talks to at runtime, and the standalone plugins that stand apart from it entirely.
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-24
 sources:
   - repo: Dans-Plugins/dpc-mc-server
     path: README.md
@@ -42,9 +42,28 @@ Plugins the flagship detects and uses if they happen to be installed:
 - [[dpc-mc-server]] — infrastructure-as-code server that runs a curated set of
   the plugins together, and therefore doubles as the integration test bed.
 
+## The standalone plugins
+
+Not everything here orbits the flagship. These are the most-downloaded plugins
+that depend on nothing in the organization but [[ponder]], and each earns a note
+by holding an idea the collection did not otherwise have:
+
+- [[medieval-roleplay-engine]] — chat whose audience is a radius measured in
+  blocks rather than a membership list, which is the exact counterpoint to
+  [[faction-chat-channel]] resolving one from the diplomacy graph.
+- [[wild-pets]] — taming generalised into a per-entity-type table of required
+  item, quantity and success chance, so any mob becomes a pet.
+- [[simple-skills]] — progression in which a level buys a rising *probability*
+  of a perk rather than unlocking one.
+- [[food-spoilage]] — the clearest case in the organization of a plugin with no
+  persistence layer at all, because the item stack itself is the database. Worth
+  reading directly against [[repository-pattern]] and [[jooq-persistence]].
+- [[alternate-account-finder]] — deterministic encryption chosen so that an
+  equality join still works over ciphertext, and the privacy cost that buys.
+
 ## The rest
 
-Many repositories in the organization are small standalone plugins with no
-dependency on the flagship. They matter to this collection mainly as subjects of
+The remaining repositories are small standalone plugins that do one obvious
+thing each. They matter to this collection mainly as subjects of
 [[dpc-conventions]] — the standards effort exists precisely to bring them up to
 the flagship's level.
