@@ -12,19 +12,33 @@ rather than incidentally.
 
 | Repository | Pinned commit | Files cited | Notes |
 |---|---|---|---|
+| [Dans-Plugins/AlternateAccountFinder](https://github.com/Dans-Plugins/AlternateAccountFinder) | [`88353003ae`](https://github.com/Dans-Plugins/AlternateAccountFinder/tree/88353003ae38472975ddd042b830b4447fdbf18a) | 4 | 1 |
 | [Dans-Plugins/Currencies](https://github.com/Dans-Plugins/Currencies) | [`41597bea08`](https://github.com/Dans-Plugins/Currencies/tree/41597bea085d536b59bfd564aa58f8739b4ffd92) | 5 | 2 |
 | [Dans-Plugins/Dans-Plugin-Manager](https://github.com/Dans-Plugins/Dans-Plugin-Manager) | [`3733eb51df`](https://github.com/Dans-Plugins/Dans-Plugin-Manager/tree/3733eb51df6be11ac0239d7cffcfb2ef72e756a9) | 4 | 2 |
 | [Dans-Plugins/Fiefs](https://github.com/Dans-Plugins/Fiefs) | [`4c66e09aa5`](https://github.com/Dans-Plugins/Fiefs/tree/4c66e09aa50f467921ce1519f0b7236a5f23f7a2) | 2 | 1 |
+| [Dans-Plugins/FoodSpoilage](https://github.com/Dans-Plugins/FoodSpoilage) | [`f5fbff6bea`](https://github.com/Dans-Plugins/FoodSpoilage/tree/f5fbff6bea0703194652af264a6fe94326e7b7f7) | 4 | 1 |
 | [Dans-Plugins/Mailboxes](https://github.com/Dans-Plugins/Mailboxes) | [`3f8fb186bb`](https://github.com/Dans-Plugins/Mailboxes/tree/3f8fb186bbdd067ae893d911b26d065d8f3fdaf8) | 2 | 1 |
 | [Dans-Plugins/Medieval-Factions](https://github.com/Dans-Plugins/Medieval-Factions) | [`3a51c55366`](https://github.com/Dans-Plugins/Medieval-Factions/tree/3a51c55366b544d31429fae8bcb64efaf1878e15) | 60 | 34 |
+| [Dans-Plugins/Medieval-Roleplay-Engine](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine) | [`283dfca2c7`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/tree/283dfca2c786b76bf3259a474daa6d5378b13d07) | 5 | 1 |
 | [Dans-Plugins/Ponder](https://github.com/Dans-Plugins/Ponder) | [`ff5276ae2f`](https://github.com/Dans-Plugins/Ponder/tree/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f) | 3 | 1 |
+| [Dans-Plugins/SimpleSkills](https://github.com/Dans-Plugins/SimpleSkills) | [`3350aa18ae`](https://github.com/Dans-Plugins/SimpleSkills/tree/3350aa18ae484114fb6c21d130d32174050ee1dd) | 5 | 1 |
+| [Dans-Plugins/Wild-Pets](https://github.com/Dans-Plugins/Wild-Pets) | [`374065a04f`](https://github.com/Dans-Plugins/Wild-Pets/tree/374065a04fdb5865fc782a1424b82e3b951881b3) | 3 | 1 |
 | [Dans-Plugins/dansplugins-dot-com](https://github.com/Dans-Plugins/dansplugins-dot-com) | [`e5eb6d69c4`](https://github.com/Dans-Plugins/dansplugins-dot-com/tree/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b) | 2 | 1 |
 | [Dans-Plugins/dpc-conventions](https://github.com/Dans-Plugins/dpc-conventions) | [`9dc9aa37e9`](https://github.com/Dans-Plugins/dpc-conventions/tree/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec) | 5 | 7 |
 | [Dans-Plugins/dpc-mc-server](https://github.com/Dans-Plugins/dpc-mc-server) | [`d42e0ec06f`](https://github.com/Dans-Plugins/dpc-mc-server/tree/d42e0ec06f9b29baaa043442d24ef2dd81edfa49) | 2 | 2 |
 
-9 repositories, 9 pinned commits, 119 citations across 47 notes.
+14 repositories, 14 pinned commits, 144 citations across 52 notes.
 
 ## Cited files by repository
+
+### Dans-Plugins/AlternateAccountFinder
+
+At `88353003ae38472975ddd042b830b4447fdbf18a`:
+
+- [`src/main/java/com/dansplugins/detectionsystem/encryption/IpEncryption.java`](https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/encryption/IpEncryption.java)
+- [`src/main/java/com/dansplugins/detectionsystem/listeners/PlayerJoinListener.java`](https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/listeners/PlayerJoinListener.java)
+- [`src/main/java/com/dansplugins/detectionsystem/logins/LoginRepository.java`](https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/logins/LoginRepository.java)
+- [`src/main/resources/com/dansplugins/detectionsystem/db/migration/V1__Initial_version.sql`](https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/resources/com/dansplugins/detectionsystem/db/migration/V1__Initial_version.sql)
 
 ### Dans-Plugins/Currencies
 
@@ -51,6 +65,15 @@ At `4c66e09aa50f467921ce1519f0b7236a5f23f7a2`:
 
 - [`README.md`](https://github.com/Dans-Plugins/Fiefs/blob/4c66e09aa50f467921ce1519f0b7236a5f23f7a2/README.md)
 - [`src/main/java/dansplugins/fiefs/Fiefs.java`](https://github.com/Dans-Plugins/Fiefs/blob/4c66e09aa50f467921ce1519f0b7236a5f23f7a2/src/main/java/dansplugins/fiefs/Fiefs.java)
+
+### Dans-Plugins/FoodSpoilage
+
+At `f5fbff6bea0703194652af264a6fe94326e7b7f7`:
+
+- [`src/main/java/spoilagesystem/FoodSpoilage.java`](https://github.com/Dans-Plugins/FoodSpoilage/blob/f5fbff6bea0703194652af264a6fe94326e7b7f7/src/main/java/spoilagesystem/FoodSpoilage.java)
+- [`src/main/java/spoilagesystem/listeners/BlockCookListener.java`](https://github.com/Dans-Plugins/FoodSpoilage/blob/f5fbff6bea0703194652af264a6fe94326e7b7f7/src/main/java/spoilagesystem/listeners/BlockCookListener.java)
+- [`src/main/java/spoilagesystem/listeners/PlayerInteractListener.java`](https://github.com/Dans-Plugins/FoodSpoilage/blob/f5fbff6bea0703194652af264a6fe94326e7b7f7/src/main/java/spoilagesystem/listeners/PlayerInteractListener.java)
+- [`src/main/java/spoilagesystem/timestamp/LocalTimeStampService.java`](https://github.com/Dans-Plugins/FoodSpoilage/blob/f5fbff6bea0703194652af264a6fe94326e7b7f7/src/main/java/spoilagesystem/timestamp/LocalTimeStampService.java)
 
 ### Dans-Plugins/Mailboxes
 
@@ -124,6 +147,16 @@ At `3a51c55366b544d31429fae8bcb64efaf1878e15`:
 - [`src/main/kotlin/com/dansplugins/factionsystem/service/Services.kt`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/service/Services.kt)
 - [`src/main/resources/config.yml`](https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/resources/config.yml)
 
+### Dans-Plugins/Medieval-Roleplay-Engine
+
+At `283dfca2c786b76bf3259a474daa6d5378b13d07`:
+
+- [`USER_GUIDE.md`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/USER_GUIDE.md)
+- [`src/main/java/dansplugins/rpsystem/commands/global/GlobalChatCommand.java`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/commands/global/GlobalChatCommand.java)
+- [`src/main/java/dansplugins/rpsystem/config/ConfigService.java`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/config/ConfigService.java)
+- [`src/main/java/dansplugins/rpsystem/listeners/ChatListener.java`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/listeners/ChatListener.java)
+- [`src/main/java/dansplugins/rpsystem/utils/Messenger.java`](https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/utils/Messenger.java)
+
 ### Dans-Plugins/Ponder
 
 At `ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f`:
@@ -131,6 +164,24 @@ At `ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f`:
 - [`README.md`](https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/README.md)
 - [`ponder-cache/src/main/java/preponderous/ponder/cache/Cache.java`](https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/ponder-cache/src/main/java/preponderous/ponder/cache/Cache.java)
 - [`settings.gradle`](https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/settings.gradle)
+
+### Dans-Plugins/SimpleSkills
+
+At `3350aa18ae484114fb6c21d130d32174050ee1dd`:
+
+- [`src/main/java/dansplugins/simpleskills/SimpleSkills.java`](https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/SimpleSkills.java)
+- [`src/main/java/dansplugins/simpleskills/chance/ChanceCalculator.java`](https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/chance/ChanceCalculator.java)
+- [`src/main/java/dansplugins/simpleskills/experience/ExperienceCalculator.java`](https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/experience/ExperienceCalculator.java)
+- [`src/main/java/dansplugins/simpleskills/listeners/PlacedBlockListener.java`](https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/listeners/PlacedBlockListener.java)
+- [`src/main/java/dansplugins/simpleskills/playerrecord/PlayerRecord.java`](https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/playerrecord/PlayerRecord.java)
+
+### Dans-Plugins/Wild-Pets
+
+At `374065a04fdb5865fc782a1424b82e3b951881b3`:
+
+- [`src/main/java/dansplugins/wildpets/config/EntityConfig.java`](https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfig.java)
+- [`src/main/java/dansplugins/wildpets/config/EntityConfigService.java`](https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfigService.java)
+- [`src/main/java/dansplugins/wildpets/listeners/InteractionHandler.java`](https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/listeners/InteractionHandler.java)
 
 ### Dans-Plugins/dansplugins-dot-com
 
