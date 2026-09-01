@@ -124,9 +124,8 @@ python3 tools/build.py          # regenerate site/index.html and site/dataset.js
 `validate.py`, `sources_index.py`, and `build.py` run offline and are what CI
 enforces — with `--check-readme`, so the numbers under "What's in it" are
 asserted against the collection rather than trusted. `check_sources.py` needs an
-authenticated
-[`gh`](https://cli.github.com/) and runs in CI as its own job, where drift is
-reported but only an invalid citation fails the build.
+authenticated [`gh`](https://cli.github.com/) and runs in CI as its own job,
+where drift is reported but only an invalid citation fails the build.
 
 **After changing any note, rebuild and commit `site/index.html` and
 `site/dataset.json`.** Both are generated files kept in the repository so the

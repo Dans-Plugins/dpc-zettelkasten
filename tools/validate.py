@@ -25,7 +25,8 @@ import zklib  # noqa: E402
 REQUIRED_KEYS = ("id", "title", "type", "summary")
 
 # The root map is a map of maps: it holds no claims and homes no concept note,
-# so the "unreachable MOC" rule and the README cluster tree both exempt it.
+# so the "unreachable MOC" rule exempts it and the README cluster tree heads
+# itself with it, uncounted.
 ROOT_MOC_ID = "moc-dans-plugins-community"
 
 README_PATH = os.path.join(zklib.REPO_ROOT, "README.md")
@@ -162,14 +163,17 @@ def check_readme(notes, homed, problems):
             stated_rows[row.group("label").strip()] = int(row.group("count"))
 
     for note in notes:
-        if note.type != "moc" or note.id == ROOT_MOC_ID:
+        if note.type != "moc":
             continue
         count = len(homed.get(note.id, []))
         if note.title not in stated_rows:
-            problems.append(
-                "README.md: cluster tree has no row for MOC %r (homes %d note(s))"
-                % (note.title, count)
-            )
+            # The root map heads the tree without a count, since it homes no
+            # concept note; every other MOC owes the tree a row.
+            if note.id != ROOT_MOC_ID:
+                problems.append(
+                    "README.md: cluster tree has no row for MOC %r (homes %d note(s))"
+                    % (note.title, count)
+                )
         elif stated_rows[note.title] != count:
             problems.append(
                 "README.md: cluster tree says %r homes %d note(s), it homes %d"
