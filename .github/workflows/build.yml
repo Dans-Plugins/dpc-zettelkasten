@@ -15,8 +15,11 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Validate notes
-        run: python3 tools/validate.py
+      # --check-readme asserts the collection's size against the counts README.md
+      # states in prose. Without it a note can be added with a green build and a
+      # README that has quietly become wrong.
+      - name: Validate notes and the counts README.md states
+        run: python3 tools/validate.py --check-readme
 
       - name: Check docs/SOURCES.md is current
         run: python3 tools/sources_index.py --check

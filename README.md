@@ -64,8 +64,8 @@ natively. GitHub renders them as ordinary Markdown too.
 
 ## What's in it
 
-49 notes: 7 Maps of Content and 42 concept notes, carrying 116 citations across 9
-repositories.
+55 notes: 7 Maps of Content and 48 concept notes, carrying 144 citations across
+14 repositories.
 
 The collection is a hierarchy, not a heap. [Dan's Plugins
 Community](notes/moc/moc-dans-plugins-community.md) is a **map of maps** — it
@@ -77,8 +77,8 @@ Dan's Plugins Community          the root map — an index of indexes
 ├── Medieval Factions Map         1 note  — the flagship, and two maps of its own
 │   ├── Faction Domain Model     16 notes — what the simulation is
 │   └── Plugin Architecture      12 notes — how the code is arranged
-├── Plugin Ecosystem              6 notes — library, expansions, neighbours
-├── Conventions and Process       4 notes — the organization's standards
+├── Plugin Ecosystem             11 notes — library, expansions, neighbours
+├── Conventions and Process       5 notes — the organization's standards
 └── Web and Infrastructure        3 notes — the site, the server, the pipe
 ```
 
@@ -115,13 +115,16 @@ Nothing to install — the toolchain is standard library only.
 
 ```bash
 python3 tools/validate.py       # frontmatter, ids, wikilinks, citation presence
+python3 tools/validate.py --check-readme   # the same, plus this file's counts
 python3 tools/check_sources.py  # citations resolve on GitHub; report drift  (needs `gh`)
 python3 tools/sources_index.py  # regenerate docs/SOURCES.md
 python3 tools/build.py          # regenerate site/index.html and site/dataset.json
 ```
 
 `validate.py`, `sources_index.py`, and `build.py` run offline and are what CI
-enforces. `check_sources.py` needs an authenticated
+enforces — with `--check-readme`, so the numbers under "What's in it" are
+asserted against the collection rather than trusted. `check_sources.py` needs an
+authenticated
 [`gh`](https://cli.github.com/) and runs in CI as its own job, where drift is
 reported but only an invalid citation fails the build.
 

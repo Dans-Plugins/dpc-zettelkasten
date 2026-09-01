@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+- `validate.py --check-readme` asserts the size the `README.md` prose claims —
+  the "What's in it" totals and the per-cluster tree — against the collection,
+  and CI runs it. Those numbers had drifted twice, because the validator
+  computed every one of them and printed them as output rather than comparing
+  them, so adding a note left the README wrong with a green build.
+
 ### Fixed
 - `check_sources.py` read every failed API call as proof that the cited file was
   missing, so a GitHub timeout was reported as an `INVALID` citation and failed

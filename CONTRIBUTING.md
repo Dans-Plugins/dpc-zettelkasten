@@ -57,7 +57,7 @@ Two things follow that are easy to get wrong:
 5. Run the checks and commit the rebuilt site:
 
 ```bash
-python3 tools/validate.py
+python3 tools/validate.py --check-readme
 python3 tools/check_sources.py --note <id>
 python3 tools/sources_index.py
 python3 tools/build.py
@@ -65,6 +65,10 @@ python3 tools/build.py
 
 `site/index.html`, `site/dataset.json`, and `docs/SOURCES.md` are generated files
 that are kept in the repository. Commit them alongside your note.
+
+A new note also changes the counts `README.md` states in prose — the "What's in
+it" sentence and the per-cluster tree below it. `--check-readme` fails until they
+are updated, and CI runs it.
 
 ## Fixing a note
 
@@ -109,7 +113,7 @@ what you could not.
 
 CI has three jobs:
 
-- **`validate`** runs `validate.py` and `sources_index.py --check`, re-runs
+- **`validate`** runs `validate.py --check-readme` and `sources_index.py --check`, re-runs
   `build.py` and fails if the committed `site/index.html` or `site/dataset.json`
   differs from the result, and loads `lib/zk-graphql.js` under Node to confirm
   the engine still runs headless.
