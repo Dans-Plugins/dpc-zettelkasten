@@ -152,6 +152,7 @@ more than one idea.
 
 ```bash
 python3 tools/validate.py        # format, ids, home MOCs, wikilinks, citations
+python3 tools/validate.py --check-readme  # the same, plus README.md's stated counts
 python3 tools/check_sources.py   # citations resolve on GitHub; drift report
 python3 tools/sources_index.py   # regenerate docs/SOURCES.md
 python3 tools/build.py           # regenerate site/index.html and site/dataset.json

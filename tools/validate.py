@@ -10,9 +10,12 @@ drifted since?) live in tools/check_sources.py.
 
 Usage:
     python3 tools/validate.py
+    python3 tools/validate.py --check-readme   # also assert README.md's counts
 """
 
+import argparse
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -20,6 +23,26 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import zklib  # noqa: E402
 
 REQUIRED_KEYS = ("id", "title", "type", "summary")
+
+# The root map is a map of maps: it holds no claims and homes no concept note,
+# so the "unreachable MOC" rule exempts it and the README cluster tree heads
+# itself with it, uncounted.
+ROOT_MOC_ID = "moc-dans-plugins-community"
+
+README_PATH = os.path.join(zklib.REPO_ROOT, "README.md")
+
+# "49 notes: 7 Maps of Content and 42 concept notes, carrying 116 citations
+# across 9 repositories." — matched across line breaks, since the sentence is
+# wrapped in the file.
+README_SUMMARY_RE = re.compile(
+    r"(?P<notes>\d+)\s+notes:\s+(?P<mocs>\d+)\s+Maps\s+of\s+Content\s+and\s+"
+    r"(?P<concepts>\d+)\s+concept\s+notes,\s+carrying\s+(?P<citations>\d+)\s+"
+    r"citations\s+across\s+(?P<repos>\d+)\s+repositories"
+)
+
+# "│   ├── Faction Domain Model     16 notes — what the simulation is". The
+# label is separated from its count by the column padding.
+README_TREE_ROW_RE = re.compile(r"^[^A-Za-z0-9]*(?P<label>.+?)\s{2,}(?P<count>\d+)\s+notes?\b")
 
 
 def validate_source(note, index, source, problems):
@@ -50,7 +73,130 @@ def validate_source(note, index, source, problems):
             problems.append("%s: lines %r has start after end" % (where, lines))
 
 
+def fenced_blocks(text):
+    """Every fenced code block's contents, so the cluster tree can be located by
+    the root map's title rather than by line number. Paired by walking the
+    fences: a regex cannot tell an opening fence from a closing one."""
+    blocks = []
+    current = None
+    for line in text.split("\n"):
+        if line.startswith("```"):
+            if current is None:
+                current = []
+            else:
+                blocks.append("\n".join(current))
+                current = None
+            continue
+        if current is not None:
+            current.append(line)
+    return blocks
+
+
+def check_readme(notes, homed, problems):
+    """Assert that the size README.md claims is the size the collection has.
+
+    validate.py already computes every number the README states; without this
+    the numbers are printed and never compared, so a note can be added with a
+    green build and a README that has quietly become wrong.
+    """
+    try:
+        with open(README_PATH, "r", encoding="utf-8") as handle:
+            readme = handle.read()
+    except IOError as exc:
+        problems.append("README.md: cannot be read (%s)" % exc)
+        return
+
+    expected = {
+        "notes": len(notes),
+        "mocs": sum(1 for n in notes if n.type == "moc"),
+        "concepts": sum(1 for n in notes if n.type == "concept"),
+        "citations": sum(len(n.sources) for n in notes),
+        "repos": len(set(s["repo"] for n in notes for s in n.sources)),
+    }
+
+    match = README_SUMMARY_RE.search(readme)
+    if not match:
+        problems.append(
+            "README.md: no summary sentence of the form '%d notes: %d Maps of "
+            "Content and %d concept notes, carrying %d citations across %d "
+            "repositories' — the collection's size is stated there and must stay "
+            "checkable"
+            % (expected["notes"], expected["mocs"], expected["concepts"],
+               expected["citations"], expected["repos"])
+        )
+    else:
+        labels = (
+            ("notes", "notes"),
+            ("mocs", "Maps of Content"),
+            ("concepts", "concept notes"),
+            ("citations", "citations"),
+            ("repos", "cited repositories"),
+        )
+        for name, label in labels:
+            stated = int(match.group(name))
+            if stated != expected[name]:
+                problems.append(
+                    "README.md: summary says %d %s, the collection has %d"
+                    % (stated, label, expected[name])
+                )
+
+    tree = None
+    root_title = None
+    for note in notes:
+        if note.id == ROOT_MOC_ID:
+            root_title = note.title
+    for block in fenced_blocks(readme):
+        if root_title and root_title in block:
+            tree = block
+            break
+    if tree is None:
+        problems.append(
+            "README.md: no cluster tree — expected a fenced block containing %r"
+            % (root_title or ROOT_MOC_ID)
+        )
+        return
+
+    stated_rows = {}
+    for line in tree.split("\n"):
+        row = README_TREE_ROW_RE.match(line)
+        if row:
+            stated_rows[row.group("label").strip()] = int(row.group("count"))
+
+    for note in notes:
+        if note.type != "moc":
+            continue
+        count = len(homed.get(note.id, []))
+        if note.title not in stated_rows:
+            # The root map heads the tree without a count, since it homes no
+            # concept note; every other MOC owes the tree a row.
+            if note.id != ROOT_MOC_ID:
+                problems.append(
+                    "README.md: cluster tree has no row for MOC %r (homes %d note(s))"
+                    % (note.title, count)
+                )
+        elif stated_rows[note.title] != count:
+            problems.append(
+                "README.md: cluster tree says %r homes %d note(s), it homes %d"
+                % (note.title, stated_rows[note.title], count)
+            )
+
+    titles = set(n.title for n in notes if n.type == "moc")
+    for label in sorted(stated_rows):
+        if label not in titles:
+            problems.append(
+                "README.md: cluster tree row %r does not name a MOC" % label
+            )
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check-readme",
+        action="store_true",
+        help="also fail when the counts stated in README.md disagree with the collection",
+    )
+    args = parser.parse_args()
+
     try:
         notes = zklib.load_notes()
     except zklib.NoteError as exc:
@@ -141,11 +287,14 @@ def main():
             homed.setdefault(n.moc, []).append(n.id)
     for moc in sorted(moc_ids):
         linked_from_moc = any(moc in by_id[m].links for m in moc_ids if m != moc)
-        if not linked_from_moc and not homed.get(moc) and moc != "moc-dans-plugins-community":
+        if not linked_from_moc and not homed.get(moc) and moc != ROOT_MOC_ID:
             problems.append(
                 "notes/moc/%s.md: MOC is unreachable — no other MOC links it and no "
                 "note calls it home" % moc
             )
+
+    if args.check_readme:
+        check_readme(notes, homed, problems)
 
     for problem in problems:
         print("FAIL %s" % problem)
