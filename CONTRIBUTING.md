@@ -48,12 +48,16 @@ Two things follow that are easy to get wrong:
 
 1. Create `notes/concepts/<id>.md`. The filename without `.md` **is** the id,
    lowercase kebab-case.
-2. Fill in the frontmatter: `id`, `title`, `type: concept`, `summary`, `tags`,
-   `created`, `updated`, and `sources`.
+2. Fill in the frontmatter: `id`, `title`, `type: concept`, `moc` (the id of
+   the note's home Map of Content), `summary`, `tags`, `created`, `updated`,
+   and `sources`.
 3. Write the note. One idea. Under about 400 words. Link out generously with
    `[[other-note]]`.
-4. Add it to a Map of Content in `notes/moc/` — a note nothing links to is a
-   note nobody will find. `validate.py` warns about these.
+4. Add it to its home Map of Content in `notes/moc/`. A home is mutual:
+   `validate.py` fails the build unless the MOC named in `moc:` links back to
+   the note. Links from anywhere else are welcome but optional — a note with
+   no inbound links at all is a note nobody will find, and `validate.py` warns
+   about those.
 5. Run the checks and commit the rebuilt site:
 
 ```bash
