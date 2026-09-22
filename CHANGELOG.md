@@ -5,6 +5,12 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- `validate.py` enforces the `YYYY-MM-DD` form `docs/NOTE_FORMAT.md` states for
+  `created` and `updated`: the value must be a zero-padded, real calendar date,
+  and `updated` may not precede `created`. The rule was stated but never checked,
+  and it is load-bearing — `build.py` picks the collection-wide `meta.updated`
+  by string comparison, which is only chronological while every value has
+  exactly that shape.
 - `validate.py --check-readme` asserts the size the `README.md` prose claims —
   the "What's in it" totals and the per-cluster tree — against the collection,
   and CI runs it. Those numbers had drifted repeatedly, including once more

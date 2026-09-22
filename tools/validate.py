@@ -2,8 +2,9 @@
 """Validate every note in the zettelkasten.
 
 Checks the rules in docs/NOTE_FORMAT.md that can be checked without network
-access: frontmatter shape, id/filename agreement, wikilink resolution, and the
-requirement that every concept note carries at least one pinned citation.
+access: frontmatter shape, id/filename agreement, the YYYY-MM-DD form of
+created/updated, wikilink resolution, and the requirement that every concept
+note carries at least one pinned citation.
 
 Network-dependent checks (does the cited file still exist at that SHA? has it
 drifted since?) live in tools/check_sources.py.
@@ -14,6 +15,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import os
 import re
 import sys
@@ -23,6 +25,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import zklib  # noqa: E402
 
 REQUIRED_KEYS = ("id", "title", "type", "summary")
+
+# Optional, but when present they must be zero-padded ISO dates: build.py picks
+# the collection-wide meta.updated with a plain string max(), which is only
+# chronological while every value has exactly this shape.
+DATE_KEYS = ("created", "updated")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 # The root map is a map of maps: it holds no claims and homes no concept note,
 # so the "unreachable MOC" rule exempts it and the README cluster tree heads
@@ -71,6 +79,33 @@ def validate_source(note, index, source, problems):
         start, end = lines.split("-")
         if int(start) > int(end):
             problems.append("%s: lines %r has start after end" % (where, lines))
+
+
+def validate_dates(note, problems):
+    dates = {}
+    for key in DATE_KEYS:
+        value = note.meta.get(key)
+        if value is None:
+            continue
+        if not isinstance(value, str) or not DATE_RE.match(value):
+            # A bare `created:` parses as an empty list; report it as the empty
+            # value the author wrote rather than as the parser's representation.
+            shown = value if isinstance(value, str) else ""
+            problems.append(
+                "%s: %s %r must be a YYYY-MM-DD date" % (note.rel_path, key, shown)
+            )
+            continue
+        try:
+            dates[key] = datetime.date.fromisoformat(value)
+        except ValueError:
+            problems.append(
+                "%s: %s %r is not a real calendar date" % (note.rel_path, key, value)
+            )
+    if "created" in dates and "updated" in dates and dates["updated"] < dates["created"]:
+        problems.append(
+            "%s: updated %s is earlier than created %s; a note cannot change before "
+            "it is written" % (note.rel_path, dates["updated"], dates["created"])
+        )
 
 
 def fenced_blocks(text):
@@ -230,6 +265,8 @@ def main():
                 "%s: type %r must be one of %s"
                 % (note.rel_path, note.type, ", ".join(zklib.VALID_TYPES))
             )
+
+        validate_dates(note, problems)
 
         if note.type == "concept" and not note.sources:
             problems.append(
