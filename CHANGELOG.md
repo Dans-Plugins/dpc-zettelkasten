@@ -5,6 +5,8 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- A small footer line at the bottom of the sidebar linking to
+  [danielstephenson.dev](https://danielstephenson.dev).
 - `validate.py --check-readme` asserts the size the `README.md` prose claims —
   the "What's in it" totals and the per-cluster tree — against the collection,
   and CI runs it. Those numbers had drifted repeatedly, including once more
