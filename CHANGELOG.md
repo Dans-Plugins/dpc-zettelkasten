@@ -5,6 +5,8 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- A small footer line at the bottom of the sidebar linking to
+  [danielstephenson.dev](https://danielstephenson.dev).
 - `validate.py` enforces the `YYYY-MM-DD` form `docs/NOTE_FORMAT.md` states for
   `created` and `updated`: the value must be a zero-padded, real calendar date,
   and `updated` may not precede `created`. The rule was stated but never checked,
