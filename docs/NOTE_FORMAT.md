@@ -38,7 +38,7 @@ Prose. Link to other notes with [[claimed-chunk]] or [[claimed-chunk|claims]].
 | `moc` | yes for `concept` | Id of the note's **home** Map of Content. See below. |
 | `summary` | yes | One sentence. Appears under the title and feeds search. |
 | `tags` | no | Inline list, e.g. `[medieval-factions, persistence]`. |
-| `created` / `updated` | no | `YYYY-MM-DD`. |
+| `created` / `updated` | no | `YYYY-MM-DD`, zero-padded, a real calendar date. `validate.py` rejects any other form, and rejects an `updated` earlier than `created`. |
 | `sources` | yes for `concept` | List of citations — see below. |
 
 ## Home MOCs
