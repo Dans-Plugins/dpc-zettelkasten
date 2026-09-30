@@ -54,8 +54,8 @@ moc: moc-faction-domain-model
 and **that MOC links back to this note**. A home is a mutual relationship, not a
 label a note can claim unilaterally.
 
-The point is that the collection has a shape rather than being 42 concept notes
-in a heap. The home MOC is what the sidebar groups by and what the root map
+The point is that the collection has a shape rather than being a heap of concept
+notes. The home MOC is what the sidebar groups by and what the root map
 routes through. A note may of course be linked from several MOCs — cross-links
 are the whole idea — but exactly one of them is where it *lives*.
 
