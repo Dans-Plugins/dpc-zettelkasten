@@ -1,5 +1,5 @@
-# The explorer is two generated-but-committed files, site/index.html and
-# site/dataset.json. Both are self-contained — no external requests, no build
+# The explorer is generated-but-committed files: site/index.html,
+# site/dataset.json and site/version.json. Both are self-contained — no external requests, no build
 # step, no server-side logic — so this image is a static server and a copy.
 #
 # The committed artifacts are served as they are, rather than rebuilt during

@@ -5,6 +5,13 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- `version.txt` at the repository root holds the collection's version (0.2.0,
+  the latest release in this file). `build.py` writes it to the
+  generated-but-committed `site/version.json` as `{"version": "..."}`, and the
+  container serves that at `/version.json` with `Content-Type:
+  application/json` and `Cache-Control: no-store`, so a deploy can be verified
+  by the version it reports. CI checks the committed file is current and that
+  the image serves it with that contract.
 - A small footer line at the bottom of the sidebar linking to
   [danielstephenson.dev](https://danielstephenson.dev).
 - `validate.py` enforces the `YYYY-MM-DD` form `docs/NOTE_FORMAT.md` states for

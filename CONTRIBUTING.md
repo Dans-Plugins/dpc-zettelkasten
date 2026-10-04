@@ -67,7 +67,7 @@ python3 tools/sources_index.py
 python3 tools/build.py
 ```
 
-`site/index.html`, `site/dataset.json`, and `docs/SOURCES.md` are generated files
+`site/index.html`, `site/dataset.json`, `site/version.json`, and `docs/SOURCES.md` are generated files
 that are kept in the repository. Commit them alongside your note.
 
 A new note also changes the counts `README.md` states in prose — the "What's in
@@ -118,8 +118,8 @@ what you could not.
 CI has three jobs:
 
 - **`validate`** runs `validate.py --check-readme` and `sources_index.py --check`, re-runs
-  `build.py` and fails if the committed `site/index.html` or `site/dataset.json`
-  differs from the result, and loads `lib/zk-graphql.js` under Node to confirm
+  `build.py` and fails if the committed `site/index.html`, `site/dataset.json` or
+  `site/version.json` differs from the result, and loads `lib/zk-graphql.js` under Node to confirm
   the engine still runs headless.
 - **`citations`** runs `check_sources.py` against the live GitHub API. Drift is
   reported but never fails the build; only an invalid citation — a file missing
@@ -131,4 +131,5 @@ CI has three jobs:
 - **`image`** builds the `Dockerfile`, serves the explorer, and checks what comes
   back: `/healthz`, content types, that the served `dataset.json` and
   `lib/zk-graphql.js` are byte-identical to the committed ones (gzipped included),
-  the CORS headers and preflight, and that the container runs as uid 101.
+  the CORS headers and preflight, `/version.json` (status, `application/json`,
+  `Cache-Control: no-store`, and the version in `version.txt`), and that the container runs as uid 101.

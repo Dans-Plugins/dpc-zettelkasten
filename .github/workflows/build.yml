@@ -28,15 +28,16 @@ jobs:
         run: |
           cp site/index.html /tmp/committed.html
           cp site/dataset.json /tmp/committed.json
+          cp site/version.json /tmp/committed-version.json
           python3 tools/build.py
-          for f in index.html:/tmp/committed.html dataset.json:/tmp/committed.json; do
+          for f in index.html:/tmp/committed.html dataset.json:/tmp/committed.json version.json:/tmp/committed-version.json; do
             name="${f%%:*}"; old="${f##*:}"
             if ! diff -q "$old" "site/$name" > /dev/null; then
               echo "::error::site/$name is out of date — run 'python3 tools/build.py' and commit the result"
               exit 1
             fi
           done
-          echo "site/index.html and site/dataset.json are up to date"
+          echo "site/index.html, site/dataset.json and site/version.json are up to date"
 
       # dpc-mcp-server consumes lib/zk-graphql.js directly. If it stops loading
       # outside a browser, that server breaks without this repo's tests failing.
@@ -151,6 +152,25 @@ jobs:
           curl -sf -D- -o /dev/null http://127.0.0.1:18080/dataset.json \
             | grep -qi '^cache-control: public' \
             || { echo "::error::dataset.json lost Cache-Control in the CORS location"; exit 1; }
+
+          # /version.json lets a deploy be verified by the version it reports:
+          # exactly {"version": <version.txt>}, JSON, and never cached.
+          curl -sf -D /tmp/version.headers -o /tmp/served-version.json http://127.0.0.1:18080/version.json \
+            || { echo "::error::/version.json did not answer 200"; exit 1; }
+          grep -qi '^content-type: application/json' /tmp/version.headers \
+            || { echo "::error::/version.json is not served as application/json"; exit 1; }
+          grep -qi '^cache-control: no-store' /tmp/version.headers \
+            || { echo "::error::/version.json is not served with Cache-Control: no-store"; exit 1; }
+          test "$(grep -ci '^cache-control:' /tmp/version.headers)" = "1" \
+            || { echo "::error::/version.json carries more than one Cache-Control header"; exit 1; }
+          node -e "
+            const fs = require('fs');
+            const served = JSON.parse(fs.readFileSync('/tmp/served-version.json', 'utf8'));
+            const expected = fs.readFileSync('version.txt', 'utf8').trim();
+            if (JSON.stringify(served) !== JSON.stringify({ version: expected }))
+              throw new Error('/version.json is ' + JSON.stringify(served) + ', expected version ' + expected);
+            console.log('/version.json reports', served.version);
+          "
 
           # Compare against the expected uid rather than "not root": a failed
           # exec returns an empty string, which passes any "!= 0" test.
