@@ -5,6 +5,10 @@ Renders every note to HTML and embeds the whole graph in a single
 self-contained `site/index.html` that works from the filesystem with no server,
 no network, and no build dependencies.
 
+Also writes `site/dataset.json` (the graph as data) and `site/version.json`
+(`{"version": ...}` from the repository's `version.txt`), so a deploy can be
+verified by the version it reports.
+
 Usage:
     python3 tools/build.py [--out site/index.html]
 """
@@ -24,6 +28,21 @@ TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templa
 ENGINE_PATH = os.path.join(zklib.REPO_ROOT, "lib", "zk-graphql.js")
 GITHUB_BASE = "https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/"
 ROOT_MOC = "moc-dans-plugins-community"
+VERSION_PATH = os.path.join(zklib.REPO_ROOT, "version.txt")
+VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.+-]+)?$")
+
+
+def read_version(path=VERSION_PATH):
+    """The repository's version: the one line of version.txt."""
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            version = handle.read().strip()
+    except OSError as exc:
+        zklib.fail("cannot read %s: %s" % (os.path.relpath(path, zklib.REPO_ROOT), exc))
+    if not VERSION_PATTERN.match(version):
+        zklib.fail("%s must hold one version such as 1.2.3, not %r"
+                   % (os.path.relpath(path, zklib.REPO_ROOT), version))
+    return version
 
 
 def make_wikilink_renderer(by_id, note_id, unresolved):
@@ -166,7 +185,10 @@ def main():
     parser.add_argument("--out", default=os.path.join("site", "index.html"))
     parser.add_argument("--dataset", default=os.path.join("site", "dataset.json"),
                         help="where to write the machine-readable graph consumed by dpc-mcp-server")
+    parser.add_argument("--version-out", default=os.path.join("site", "version.json"),
+                        help="where to write {\"version\": ...}, read from version.txt")
     args = parser.parse_args()
+    version = read_version()
 
     try:
         notes = zklib.load_notes()
@@ -238,6 +260,14 @@ def main():
         json.dump(dataset, handle, ensure_ascii=False, sort_keys=True, indent=1)
         handle.write("\n")
 
+    # Served at /version.json so a deploy can be checked against the version it
+    # reports. Exactly one key, no indentation: it is a contract, not a document.
+    version_path = (os.path.join(zklib.REPO_ROOT, args.version_out)
+                    if not os.path.isabs(args.version_out) else args.version_out)
+    with open(version_path, "w", encoding="utf-8") as handle:
+        json.dump({"version": version}, handle)
+        handle.write("\n")
+
     print(
         "built %s — %d notes (%d MOCs, %d concepts), %d links, %d citations across %d repos"
         % (
@@ -248,6 +278,7 @@ def main():
     )
     print("wrote %s — %d notes with Markdown bodies"
           % (os.path.relpath(data_path, zklib.REPO_ROOT), len(dataset["notes"])))
+    print("wrote %s — version %s" % (os.path.relpath(version_path, zklib.REPO_ROOT), version))
     return 0
 
 
