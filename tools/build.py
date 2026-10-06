@@ -32,7 +32,7 @@ import re  # noqa: E402
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "template.html")
 NOTE_TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "note_template.html")
 # The production origin, used for every absolute URL the build writes: the
-# canonical links, og:url, sitemap.xml and robots.txt. It is a constant rather
+# canonical links, og:url, og:image, sitemap.xml and robots.txt. It is a constant rather
 # than an environment variable on purpose — the generated files are committed,
 # so a build that silently picked up a different (or missing) value would
 # commit wrong URLs that CI would then enforce.
@@ -42,6 +42,14 @@ SITE_DESCRIPTION = (
     "community's Minecraft plugins actually work, where every claim cites "
     "source code pinned at a commit SHA."
 )
+# The link-preview card (og:image / twitter:image) shared by the explorer and
+# every note page. site/og.png is a committed static asset, not generated here:
+# a 1200x630 card with the site name, SITE_DESCRIPTION and the domain. If it is
+# ever redrawn at another size, change the dimensions below with it.
+OG_IMAGE_URL = SITE_ORIGIN + "/og.png"
+OG_IMAGE_WIDTH = 1200
+OG_IMAGE_HEIGHT = 630
+OG_IMAGE_ALT = "DPC Zettelkasten: " + SITE_DESCRIPTION
 # Static, crawlable copies of each note live here (site/notes/<id>.html). The
 # explorer itself routes by URL fragment, which crawlers and link previews never
 # see, so these are what the sitemap lists and what a shared link unfurls.
@@ -265,6 +273,10 @@ def render_note_pages(notes, payload):
             "summary": md.escape(note.summary),
             "description": md.escape(description),
             "url": md.escape(note_url(note.id)),
+            "ogImage": md.escape(OG_IMAGE_URL),
+            "ogImageWidth": str(OG_IMAGE_WIDTH),
+            "ogImageHeight": str(OG_IMAGE_HEIGHT),
+            "ogImageAlt": md.escape(OG_IMAGE_ALT),
             "sourceUrl": md.escape(record["sourceUrl"]),
             "body": body,
             "sources": sources,
@@ -354,6 +366,14 @@ def main():
         "{{siteUrl}}", md.escape(SITE_ORIGIN + "/")
     ).replace(
         "{{siteDescription}}", md.escape(SITE_DESCRIPTION)
+    ).replace(
+        "{{ogImage}}", md.escape(OG_IMAGE_URL)
+    ).replace(
+        "{{ogImageWidth}}", str(OG_IMAGE_WIDTH)
+    ).replace(
+        "{{ogImageHeight}}", str(OG_IMAGE_HEIGHT)
+    ).replace(
+        "{{ogImageAlt}}", md.escape(OG_IMAGE_ALT)
     ).replace(
         "/*__ZKGRAPHQL__*/", engine
     ).replace(

@@ -5,6 +5,13 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- A link-preview image. `site/og.png` (1200×630: the site name, its
+  description and the domain, in the explorer's colours) is served at
+  `/og.png`, and the explorer and every note page now carry `og:image`
+  (`https://zettel.dansplugins.com/og.png`) with its type, width, height and
+  alt text, plus `twitter:image` and a `summary_large_image` Twitter card. CI
+  checks the PNG's size matches the tags and that the image serves it as
+  `image/png`.
 - Search and sharing metadata. `build.py` now also writes a static, crawlable
   page per note at `site/notes/<id>.html` (rendered note, sources, backlinks,
   and a link back into the explorer), `site/sitemap.xml` listing `/` and every
@@ -12,8 +19,7 @@ All notable changes to this project are documented here.
   the sitemap. The explorer and each note page carry a meta description, a
   canonical link, `og:title`/`og:description`/`og:url`/`og:type` and a
   `twitter:card`. Absolute URLs come from the `SITE_ORIGIN` constant
-  (`https://zettel.dansplugins.com`), never the environment. No `og:image` is
-  set, as the repository holds no image to point at. CI checks the new files
+  (`https://zettel.dansplugins.com`), never the environment. CI checks the new files
   are current, free of localhost URLs, and served by the image.
 - `version.txt` at the repository root holds the collection's version (0.2.0,
   the latest release in this file). `build.py` writes it to the
