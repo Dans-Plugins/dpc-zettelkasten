@@ -144,8 +144,12 @@ The explorer routes by URL fragment (`#/<id>`), which crawlers and link previews
 never see, so `build.py` also writes a plain static page per note at
 `site/notes/<id>.html` with its description, canonical URL and Open Graph /
 Twitter card tags, and lists them in `sitemap.xml`. Every absolute URL uses the
-`SITE_ORIGIN` constant in `tools/build.py` (the production origin); there is no
-image asset in the repository, so the cards carry no `og:image`.
+`SITE_ORIGIN` constant in `tools/build.py` (the production origin). The cards
+use `site/og.png` (served at `/og.png`) as `og:image` and `twitter:image` with a
+`summary_large_image` card. It is a committed 1200×630 image showing the site
+name, its description and the domain; `build.py` does not generate it, so if it
+is redrawn, keep `OG_IMAGE_WIDTH`/`OG_IMAGE_HEIGHT` in `tools/build.py` in step
+(CI checks they match).
 
 ## Consuming it elsewhere
 

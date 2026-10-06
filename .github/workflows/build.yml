@@ -52,6 +52,36 @@ jobs:
             echo "::error::generated files point at localhost"; exit 1
           fi
 
+      # The link-preview card is a committed static asset, not generated, so
+      # nothing above would notice it going missing or being redrawn at a size
+      # the og:image:width/height tags no longer describe.
+      - name: Check the link-preview image matches its share tags
+        run: |
+          python3 - <<'PY'
+          import re, struct, sys
+          sys.path.insert(0, "tools")
+          import build
+          with open("site/og.png", "rb") as handle:
+              head = handle.read(24)
+          if head[:8] != b"\x89PNG\r\n\x1a\n":
+              sys.exit("::error::site/og.png is not a PNG")
+          size = struct.unpack(">II", head[16:24])
+          if size != (build.OG_IMAGE_WIDTH, build.OG_IMAGE_HEIGHT):
+              sys.exit("::error::site/og.png is %dx%d, the tags say %dx%d"
+                       % (size + (build.OG_IMAGE_WIDTH, build.OG_IMAGE_HEIGHT)))
+          for page in ("site/index.html", "site/notes/faction.html"):
+              html = open(page, encoding="utf-8").read()
+              for tag in ('<meta property="og:image" content="https://zettel.dansplugins.com/og.png">',
+                          '<meta property="og:image:width" content="1200">',
+                          '<meta property="og:image:height" content="630">',
+                          '<meta property="og:image:alt" content="',
+                          '<meta name="twitter:card" content="summary_large_image">',
+                          '<meta name="twitter:image" content="https://zettel.dansplugins.com/og.png">'):
+                  if tag not in html:
+                      sys.exit("::error::%s lacks %s" % (page, tag))
+          print("site/og.png is %dx%d and both page kinds point at it" % size)
+          PY
+
       # dpc-mcp-server consumes lib/zk-graphql.js directly. If it stops loading
       # outside a browser, that server breaks without this repo's tests failing.
       - uses: actions/setup-node@v4
@@ -203,6 +233,13 @@ jobs:
           curl -sf http://127.0.0.1:18080/ \
             | grep -q '<link rel="canonical" href="https://zettel.dansplugins.com/">' \
             || { echo "::error::/ lacks its canonical link"; exit 1; }
+          # The share card is what og:image names, so it must be served as a PNG
+          # and byte-for-byte the committed file.
+          curl -sf -o /dev/null -w '%{http_code} %{content_type}\n' http://127.0.0.1:18080/og.png \
+            | grep -q '^200 image/png' || { echo "::error::/og.png is not served as image/png"; exit 1; }
+          curl -sf http://127.0.0.1:18080/og.png > /tmp/served-og.png
+          cmp -s /tmp/served-og.png site/og.png \
+            || { echo "::error::served og.png differs from the committed one"; exit 1; }
 
           # Compare against the expected uid rather than "not root": a failed
           # exec returns an empty string, which passes any "!= 0" test.
