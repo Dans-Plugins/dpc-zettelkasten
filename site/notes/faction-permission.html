@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction Permission — DPC Zettelkasten</title>
+<meta name="description" content="The individually grantable capabilities inside a faction, each with a default and a type.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/faction-permission.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction Permission">
+<meta property="og:description" content="The individually grantable capabilities inside a faction, each with a default and a type.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction-permission.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction Permission">
+<meta name="twitter:description" content="The individually grantable capabilities inside a faction, each with a default and a type.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/faction-permission">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction Permission</h1>
+<p class="summary">The individually grantable capabilities inside a faction, each with a default and a type.</p>
+<p>A permission is one capability a faction can grant or withhold — claiming land, inviting members, editing <a class="wl" href="law.html" data-id="law">Law</a>, and so on. Permissions are the leaves of the governance model; <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a> bundles them.</p>
+<h2 id="parameterised-by-role">Parameterised by role</h2>
+<p>Some permissions are not a single capability but a family: the ability to modify <em>a particular</em> role. <code>MfFactionPermissions.permissionsFor(factionId, roles)</code> builds the permission set for a specific faction from its specific roles, which means the available permissions differ between factions.</p>
+<p>This is why permissions are stored and resolved <strong>by name</strong> rather than by reference — the object graph is per-faction and rebuilt at load, so only the string is stable enough to persist.</p>
+<h2 id="defaults-are-per-permission">Defaults are per-permission</h2>
+<p>Each permission declares its own default, consulted last in the three-level resolution described in <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a>. A faction can shift the middle level by setting <code>defaultPermissionsByName</code> on the <a class="wl" href="faction.html" data-id="faction">Faction</a> record, and a role can shift the top level. The permission's own default is the backstop that guarantees every lookup terminates in a boolean.</p>
+<h2 id="serialization">Serialization</h2>
+<p>Dedicated serializers exist for a permission and for a map of permissions, keeping the encoding of permission state in one place rather than scattered through the repositories that persist roles.</p>
+<h2 id="related">Related</h2>
+<p>Permissions govern members. Non-members are governed by <a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a> settings and by their <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a> to the landowner — two separate systems that meet at the block-interaction check on a <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/permission/MfFactionPermission.kt" rel="noopener noreferrer">Medieval-Factions/MfFactionPermission.kt</a> <span class="claim">— A faction permission is a data class of a name, a translate function taking the faction, and a default boolean, with equality and hashCode defined on the name alone.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/permission/MfFactionPermissions.kt" rel="noopener noreferrer">Medieval-Factions/MfFactionPermissions.kt</a> <span class="claim">— A registry holds the permission types, builds the permission set for a faction from its roles, and parses permission names back into permission objects.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="claimed-chunk.html">Claimed Chunk</a></li>
+<li><a href="expansion-plugin.html">Expansion Plugin</a></li>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="faction-flag.html">Faction Flag</a></li>
+<li><a href="faction-role.html">Faction Role</a></li>
+<li><a href="law.html">Law</a></li>
+<li><a href="locked-block.html">Locked Block</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/faction-permission.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

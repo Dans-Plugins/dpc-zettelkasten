@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Main Thread Safety — DPC Zettelkasten</title>
+<meta name="description" content="Bukkit state may only be read on the server's main thread, so anything doing I/O snapshots first and sends afterwards.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/main-thread-safety.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Main Thread Safety">
+<meta property="og:description" content="Bukkit state may only be read on the server's main thread, so anything doing I/O snapshots first and sends afterwards.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/main-thread-safety.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Main Thread Safety">
+<meta name="twitter:description" content="Bukkit state may only be read on the server's main thread, so anything doing I/O snapshots first and sends afterwards.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/main-thread-safety">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Main Thread Safety</h1>
+<p class="summary">Bukkit state may only be read on the server's main thread, so anything doing I/O snapshots first and sends afterwards.</p>
+<p>A Bukkit server runs game logic on one thread. Plugin data structures reachable from that logic are not thread-safe, and reading them from a background thread produces corruption that surfaces far from its cause.</p>
+<h2 id="snapshot-on-send-off">Snapshot on, send off</h2>
+<p><a class="wl" href="dpc-api-faction-sync.html" data-id="dpc-api-faction-sync">DPC API Faction Sync</a> is the clearest worked example in the codebase, and its class comment states the rule outright. The work is split in two:</p>
+<ol>
+<li><strong><code>collectSnapshot()</code></strong> — runs on the main thread. It walks the faction service and the members lists, and returns an immutable <code>SyncSnapshot</code>.
+</li>
+<li><strong><code>dispatchAsync()</code></strong> — safe from any thread. It serializes the snapshot and hands it to the JDK <code>HttpClient</code>, which does the I/O on its own pool.
+</li>
+</ol>
+<p>The scheduled task is therefore registered with <code>runTaskTimer</code> — the <em>main thread</em> variant — even though its purpose is a network call. This looks backwards until you see the split: the expensive part is already asynchronous inside <code>HttpClient</code>, and scheduling the task asynchronously would only move the <em>unsafe</em> part off the main thread.</p>
+<h2 id="the-general-rule">The general rule</h2>
+<p>The pattern generalises to anything the plugin does off-thread: <strong>collect an immutable snapshot on the main thread, then act on the snapshot elsewhere.</strong> Never hold a reference to live Bukkit or service state across a thread boundary.</p>
+<h2 id="where-it-also-shows-up">Where it also shows up</h2>
+<ul>
+<li><a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a> pass <code>!server.isPrimaryThread</code> to the Bukkit <code>Event</code> constructor, so listeners are told truthfully which thread they are on.
+</li>
+<li><a class="wl" href="gate.html" data-id="gate">Gate</a> checks <code>isChunkLoaded</code> before reading a block, avoiding a synchronous chunk load on the main thread.
+</li>
+<li>The <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> caches use <code>ConcurrentHashMap</code> and <code>CopyOnWriteArrayList</code>, because reads can legitimately arrive from async listeners even when writes do not.
+</li>
+</ul>
+<h2 id="related">Related</h2>
+<p>Getting this wrong is not usually a crash — it is a rare, unreproducible inconsistency. That is why the constraint is written into a class comment rather than left implicit.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/dpc/MfDpcApiService.kt#L13-L21" rel="noopener noreferrer">Medieval-Factions/MfDpcApiService.kt:13-21</a> <span class="claim">— The DPC API service documents that Bukkit plugin data structures are not thread-safe, that collectSnapshot must be called from the main server thread, and that the returned snapshot is an immutable view safe to serialize off it.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L498-L509" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:498-509</a> <span class="claim">— The faction sync task is scheduled with runTaskTimer on the main thread so snapshot collection can touch Bukkit state, while the HTTP send is dispatched asynchronously.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="alternate-account-finder.html">Alternate Account Finder</a></li>
+<li><a href="dpc-api-faction-sync.html">DPC API Faction Sync</a></li>
+<li><a href="faction-chat-channel.html">Faction Chat Channel</a></li>
+<li><a href="faction-events.html">Faction Events</a></li>
+<li><a href="medieval-roleplay-engine.html">Medieval Roleplay Engine</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="player-interaction-status.html">Player Interaction Status</a></li>
+<li><a href="spatial-value-types.html">Spatial Value Types</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/main-thread-safety.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

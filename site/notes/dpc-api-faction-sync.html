@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPC API Faction Sync — DPC Zettelkasten</title>
+<meta name="description" content="A running server can push its faction roster to the community API on a timer — the one code path where a Minecraft server writes to shared public data.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/dpc-api-faction-sync.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="DPC API Faction Sync">
+<meta property="og:description" content="A running server can push its faction roster to the community API on a timer — the one code path where a Minecraft server writes to shared public data.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/dpc-api-faction-sync.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DPC API Faction Sync">
+<meta name="twitter:description" content="A running server can push its faction roster to the community API on a timer — the one code path where a Minecraft server writes to shared public data.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/dpc-api-faction-sync">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>DPC API Faction Sync</h1>
+<p class="summary">A running server can push its faction roster to the community API on a timer — the one code path where a Minecraft server writes to shared public data.</p>
+<p>A <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> server can be configured to POST its faction roster to the community API, which is how live in-game data reaches <a class="wl" href="dansplugins-dot-com.html" data-id="dansplugins-dot-com">dansplugins.com</a>. It is off by default.</p>
+<h2 id="the-wire-format">The wire format</h2>
+<p>Each faction becomes a <code>DpcFactionPayload</code>: <code>name</code>, <code>serverId</code>, <code>memberCount</code>, <code>description</code>, and optionally <code>serverIp</code> and <code>discordLink</code>. The whole roster is sent as one JSON array with an <code>X-API-Key</code> header, on a timer whose interval is configurable with a one-minute floor.</p>
+<p>Notably absent: <a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a>, <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a> counts, player names, UUIDs. The payload is a public directory listing, not a data export.</p>
+<h2 id="the-empty-roster-guard">The empty-roster guard</h2>
+<p>The most important nine lines in the file refuse to send an empty array, and the reasoning is written into the comment beside them.</p>
+<p>The provider already treats an empty array as a no-op, so sending one accomplishes nothing. Skipping it here is <em>defence in depth</em>: a transient empty read — faction data not yet loaded during startup, or a reload landing mid-cycle — can then never reach the wire at all, rather than reaching it and depending on the provider's guards to avoid what the comment calls a faction wipe.</p>
+<p>The shape of the risk is what makes this worth a note. A POST carries the server's whole roster, so a bad read is not a bad row — it is a bad <em>replacement set</em>, and the blast radius is a shared registry other people's servers appear in. Two independent guards for one failure is proportionate when the failure is someone else's data.</p>
+<h2 id="other-guards-in-the-same-file">Other guards in the same file</h2>
+<ul>
+<li>The URL is validated as an absolute <code>http</code>/<code>https</code> URI before use.
+</li>
+<li>A plain-<code>http</code> URL logs a one-time warning that the API key will travel unencrypted.
+</li>
+<li>Strings are truncated to maximum lengths before sending.
+</li>
+<li>Response bodies are truncated before logging, and the API key is never logged.
+</li>
+<li>A malformed Discord link is dropped from the payload rather than sent.
+</li>
+</ul>
+<h2 id="threading">Threading</h2>
+<p>Collection runs on the main thread, dispatch runs asynchronously — see <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a>, for which this file is the reference example.</p>
+<h2 id="related">Related</h2>
+<p>The receiving end is a separate <code>dpc-api</code> service that also backs <a class="wl" href="dansplugins-dot-com.html" data-id="dansplugins-dot-com">dansplugins.com</a>; the website reads from it rather than from Minecraft.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/dpc/DpcFactionPayload.kt#L7-L14" rel="noopener noreferrer">Medieval-Factions/DpcFactionPayload.kt:7-14</a> <span class="claim">— The sync payload for one faction is name, serverId, memberCount, description, and optional serverIp and discordLink.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/dpc/MfDpcApiService.kt#L154-L162" rel="noopener noreferrer">Medieval-Factions/MfDpcApiService.kt:154-162</a> <span class="claim">— An empty roster is never POSTed, because a transient empty read during startup or a reload could otherwise reach the wire and rely on the provider's guards to avoid a faction wipe.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/resources/config.yml#L271-L281" rel="noopener noreferrer">Medieval-Factions/config.yml:271-281</a> <span class="claim">— The dpc-api config block is disabled by default and holds url, key, server-id, login-reminder, share-server-ip, server-address, discord-link and sync-interval-minutes.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dansplugins-dot-com.html">dansplugins.com</a></li>
+<li><a href="main-thread-safety.html">Main Thread Safety</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+<li><a href="moc-web-and-infrastructure.html">Web and Infrastructure</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/dpc-api-faction-sync.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

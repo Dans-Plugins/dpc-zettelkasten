@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Repository Pattern — DPC Zettelkasten</title>
+<meta name="description" content="Each domain record gets a storage-agnostic interface plus a jOOQ implementation, so services never name a database.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/repository-pattern.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Repository Pattern">
+<meta property="og:description" content="Each domain record gets a storage-agnostic interface plus a jOOQ implementation, so services never name a database.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/repository-pattern.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Repository Pattern">
+<meta name="twitter:description" content="Each domain record gets a storage-agnostic interface plus a jOOQ implementation, so services never name a database.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/repository-pattern">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Repository Pattern</h1>
+<p class="summary">Each domain record gets a storage-agnostic interface plus a jOOQ implementation, so services never name a database.</p>
+<p>Every persisted record type in <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> has two files: an interface named <code>Mf&lt;Thing&gt;Repository</code> and an implementation named <code>JooqMf&lt;Thing&gt;Repository</code>. The naming convention is the whole convention — the technology appears in the implementation's name and nowhere else.</p>
+<h2 id="what-the-interface-says">What the interface says</h2>
+<p><code>MfFactionRepository</code> declares six methods: three overloads of <code>getFaction</code>, a <code>getFactions</code>, an <code>upsert</code>, and a <code>delete</code>. There is no <code>save</code>/<code>update</code> split, no query language, no transaction handle, and no <code>Connection</code>. A caller cannot tell from the interface whether the data lives in a database, a flat file, or memory.</p>
+<p>Note <code>upsert</code> rather than separate insert and update. Because domain records are immutable data classes carrying their own <a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">Value Class Identifier</a>, the caller always has a complete record in hand and never needs to express &quot;change these three columns&quot;.</p>
+<h2 id="why-bother">Why bother</h2>
+<p>Three payoffs, in descending order of how much they actually matter here:</p>
+<ol>
+<li><strong>Testability.</strong> A fake repository is a <code>MutableMap</code> and twenty lines.
+</li>
+<li><strong>Dialect independence.</strong> The interface is what lets H2, MySQL, and PostgreSQL all work — see <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>.
+</li>
+<li><strong>Replaceability.</strong> In principle the storage could be swapped. In practice nobody has, and this is the weakest of the three arguments.
+</li>
+</ol>
+<h2 id="the-mapping-happens-in-the-implementation">The mapping happens in the implementation</h2>
+<p>The jOOQ classes are where domain records meet columns, including the awkward parts: <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a> lists are serialized to a JSON column with Gson, and <a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">Value Class Identifier</a> values are unwrapped to strings. Keeping that in the implementation is what allows the domain model to be shaped for the simulation rather than for the schema.</p>
+<h2 id="related">Related</h2>
+<p>The repository is also where <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a> lives, because the version check has to be part of the same statement as the write.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/MfFactionRepository.kt#L5-L13" rel="noopener noreferrer">Medieval-Factions/MfFactionRepository.kt:5-13</a> <span class="claim">— The faction repository interface declares only getFaction by id, name and player id, getFactions, upsert and delete, with no SQL or storage concepts.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/JooqMfFactionRepository.kt#L27" rel="noopener noreferrer">Medieval-Factions/JooqMfFactionRepository.kt:27</a> <span class="claim">— The jOOQ implementation of the faction repository is a separate class named after its technology.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="alternate-account-finder.html">Alternate Account Finder</a></li>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="food-spoilage.html">Food Spoilage</a></li>
+<li><a href="jooq-persistence.html">jOOQ Persistence</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="service-layer.html">Service Layer</a></li>
+<li><a href="testing-and-ci.html">Testing and CI</a></li>
+<li><a href="value-class-identifier.html">Value Class Identifier</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/repository-pattern.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

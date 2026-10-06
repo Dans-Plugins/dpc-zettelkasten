@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPC Conventions — DPC Zettelkasten</title>
+<meta name="description" content="The repository that writes the organization's standards down, using Medieval Factions as the worked example throughout.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/dpc-conventions.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="DPC Conventions">
+<meta property="og:description" content="The repository that writes the organization's standards down, using Medieval Factions as the worked example throughout.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/dpc-conventions.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DPC Conventions">
+<meta name="twitter:description" content="The repository that writes the organization's standards down, using Medieval Factions as the worked example throughout.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/dpc-conventions">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>DPC Conventions</h1>
+<p class="summary">The repository that writes the organization's standards down, using Medieval Factions as the worked example throughout.</p>
+<p>dpc-conventions holds the standards every repository in the organization is measured against. It contains no code — six documents and a ready-to-use prompt.</p>
+<h2 id="the-documents">The documents</h2>
+<div class="table-scroll"><table><thead><tr>
+<th>Document</th>
+<th>Covers</th>
+</tr></thead><tbody>
+<tr>
+<td><code>README_STRUCTURE.md</code></td>
+<td>The sections every plugin README must have, in order</td>
+</tr>
+<tr>
+<td><code>DOCUMENTATION_PRACTICES.md</code></td>
+<td><a class="wl" href="two-tier-documentation.html" data-id="two-tier-documentation">Two-Tier Documentation</a> — repo files versus wiki pages</td>
+</tr>
+<tr>
+<td><code>CONTRIBUTING_STANDARDS.md</code></td>
+<td>What a complete <code>CONTRIBUTING.md</code> contains</td>
+</tr>
+<tr>
+<td><code>TESTING_AND_CI.md</code></td>
+<td><a class="wl" href="testing-and-ci.html" data-id="testing-and-ci">Testing and CI</a></td>
+</tr>
+<tr>
+<td><code>RELEASE_AUTOMATION.md</code></td>
+<td><a class="wl" href="release-automation.html" data-id="release-automation">Release Automation</a></td>
+</tr>
+<tr>
+<td><code>GITHUB_COPILOT_INSTRUCTIONS.md</code></td>
+<td>The required <code>.github/copilot-instructions.md</code></td>
+</tr>
+</tbody></table></div>
+<p>Five of the six point at <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> as the reference implementation. The standard is not an abstract ideal; it is &quot;look at what the flagship does&quot;.</p>
+<p><code>GITHUB_COPILOT_INSTRUCTIONS.md</code> is the exception, and so is the <code>CLAUDE_PROMPT.md</code> at the repository root — neither mentions the flagship at all, because both describe a file each repository must write about <em>itself</em> rather than a shape to copy from elsewhere.</p>
+<h2 id="conventions-for-coding-agents">Conventions for coding agents</h2>
+<p><code>GITHUB_COPILOT_INSTRUCTIONS.md</code> is the one with no equivalent in most organizations' standards. It requires every repository to carry a <code>.github/copilot-instructions.md</code> describing the plugin's architecture, stack, and community norms, and linking back to dpc-conventions.</p>
+<p>The reasoning is stated plainly: without it, an AI contributor has no awareness of the conventions, the architecture, or the branch and issue workflow, and its first suggestion will be inconsistent with the rest of the project. Machine readers are treated as a first-class audience for documentation.</p>
+<h2 id="one-notable-exception">One notable exception</h2>
+<p><code>LICENSE</code> is explicitly excluded from the standardisation effort — the documentation practices note says not to add, change, or remove it, because licensing is left to the repository owner. Everything else in a repository root is fair game for alignment; that one file is not.</p>
+<h2 id="related">Related</h2>
+<p>This zettelkasten applies the same instinct one level up: standards and architecture written down, each claim traceable to a source.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-conventions/blob/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec/README.md" rel="noopener noreferrer">dpc-conventions/README.md</a> <span class="claim">— dpc-conventions documents standards across DPC projects with the stated goal of bringing every plugin to the same level of completeness and quality as Medieval Factions.</span></li>
+<li><a href="https://github.com/Dans-Plugins/dpc-conventions/blob/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec/docs/GITHUB_COPILOT_INSTRUCTIONS.md" rel="noopener noreferrer">dpc-conventions/GITHUB_COPILOT_INSTRUCTIONS.md</a> <span class="claim">— Every DPC plugin repository must have a .github/copilot-instructions.md that links back to the conventions repository and describes the plugin's architecture, stack and community norms.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-conventions-and-process.html">Conventions and Process</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="release-automation.html">Release Automation</a></li>
+<li><a href="two-tier-documentation.html">Two-Tier Documentation</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/dpc-conventions.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

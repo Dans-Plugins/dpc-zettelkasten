@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release Channel — DPC Zettelkasten</title>
+<meta name="description" content="Each managed plugin tracks either published releases or a rolling build of its main branch, and Dan's Plugin Manager remembers the choice per plugin.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/release-channel.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Release Channel">
+<meta property="og:description" content="Each managed plugin tracks either published releases or a rolling build of its main branch, and Dan's Plugin Manager remembers the choice per plugin.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/release-channel.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Release Channel">
+<meta name="twitter:description" content="Each managed plugin tracks either published releases or a rolling build of its main branch, and Dan's Plugin Manager remembers the choice per plugin.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/release-channel">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Release Channel</h1>
+<p class="summary">Each managed plugin tracks either published releases or a rolling build of its main branch, and Dan's Plugin Manager remembers the choice per plugin.</p>
+<p>A channel is the answer to &quot;which build of this plugin should the server get?&quot; <a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">Dan's Plugin Manager</a> gives each managed plugin one of two, and there are exactly two — the enum has no third value and unknown names fall back to stable.</p>
+<div class="table-scroll"><table><thead><tr>
+<th>Channel</th>
+<th>What it fetches</th>
+<th>Who publishes it</th>
+</tr></thead><tbody>
+<tr>
+<td><code>stable</code> (default)</td>
+<td>The latest published GitHub release</td>
+<td>A maintainer, when they cut one</td>
+</tr>
+<tr>
+<td><code>experimental</code></td>
+<td>A build of <code>main</code>, refreshed on every merge</td>
+<td>The repository's CI, as a rolling <code>dev</code> prerelease</td>
+</tr>
+</tbody></table></div>
+<h2 id="the-rolling-dev-prerelease">The rolling <code>dev</code> prerelease</h2>
+<p>The experimental channel is not a different way of reading the release list. It reads <em>one specific release</em> — a prerelease tagged <code>dev</code> that each repository's CI overwrites every time a change is merged to <code>main</code>. This is the piece that is hard to guess from the outside: &quot;the dev build&quot; is a GitHub release like any other, it simply never changes its tag.</p>
+<p>That has a consequence DPM has to work around. Every experimental build carries the same <code>dev</code> tag, so tag equality would report &quot;already up to date&quot; forever. DPM records the version as <code>dev-&lt;commit&gt;</code> instead, which is what <code>/dpm list</code> and <code>/dpm info</code> show.</p>
+<p>It also means the stable channel cannot reach these builds even in principle: stable resolves through GitHub's <code>releases/latest</code>, which excludes prereleases by design.</p>
+<h2 id="the-choice-is-sticky">The choice is sticky</h2>
+<p><code>/dpm get &lt;plugin&gt; --experimental</code> is not a one-off download. The channel is remembered per plugin, so plain <code>/dpm get</code> and <code>/dpm update</code> keep that plugin on experimental builds until <code>--stable</code> is passed. This is the behaviour of a package manager pinning a package to a channel, which is of a piece with the rest of DPM's <a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">apt-shaped vocabulary</a>.</p>
+<p>Three edges follow from stickiness, and each guards a specific failure:</p>
+<ul>
+<li><strong>Dependencies keep their own channel.</strong> A dependency pulled in automatically arrives from whatever channel <em>it</em> is set to, not the channel of the plugin that required it.
+</li>
+<li><strong>A plugin pinned to experimental stays pinned</strong> even if its repository stops publishing a rolling build. <code>/dpm update</code> reports and skips it rather than silently reverting it to releases — a quiet downgrade would be worse than a visible stall.
+</li>
+<li><strong>Removing a plugin resets it to stable</strong>, so a later reinstall does not silently return to unreleased code.
+</li>
+</ul>
+<h2 id="why-this-is-the-honest-default-for-a-community">Why this is the honest default for a community</h2>
+<p><a class="wl" href="release-automation.html" data-id="release-automation">Release Automation</a> describes the stable path: a maintainer creates a release, CI builds it and attaches the jar. That path is deliberate and slow, which is right for the servers people actually play on.</p>
+<p>The experimental channel exists because the gap between &quot;merged&quot; and &quot;released&quot; is where most of the useful feedback lives, and a server operator willing to run main-branch code is the best tester the community has. The guide is blunt about the trade — unreleased, unreviewed code that can stop a server from starting — and DPM repeats the warning on every switch rather than burying it in docs.</p>
+<p>Worth noting for anyone reading DPM's own version numbers: the channel feature itself lives on <code>main</code> and is in no published DPM release, and DPM publishes no rolling build of itself. A jar with the flags has to be built from source.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/USER_GUIDE.md" rel="noopener noreferrer">Dans-Plugin-Manager/USER_GUIDE.md</a> <span class="claim">— Every managed plugin tracks one of two channels — stable, the latest published GitHub release, or experimental, a build of the plugin's main branch published automatically by the repository's CI as a rolling dev prerelease.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/COMMANDS.md" rel="noopener noreferrer">Dans-Plugin-Manager/COMMANDS.md</a> <span class="claim">— /dpm get takes --experimental or --stable to switch the named plugins between channels, while /dpm update takes no channel flags and follows whatever channel each plugin is already set to.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/src/main/java/dansplugins/dpm/objects/ReleaseChannel.java" rel="noopener noreferrer">Dans-Plugin-Manager/ReleaseChannel.java</a> <span class="claim">— The channel model is an enum of exactly two values, STABLE and EXPERIMENTAL, with unrecognised stored values falling back to STABLE.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dans-plugin-manager.html">Dan's Plugin Manager</a></li>
+<li><a href="moc-conventions-and-process.html">Conventions and Process</a></li>
+<li><a href="release-automation.html">Release Automation</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/release-channel.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

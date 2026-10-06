@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medieval Roleplay Engine — DPC Zettelkasten</title>
+<meta name="description" content="A roleplay plugin whose chat audience is computed from distance in blocks rather than from channel membership — whisper, local, emote and yell differ only by radius.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/medieval-roleplay-engine.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Medieval Roleplay Engine">
+<meta property="og:description" content="A roleplay plugin whose chat audience is computed from distance in blocks rather than from channel membership — whisper, local, emote and yell differ only by radius.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/medieval-roleplay-engine.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Medieval Roleplay Engine">
+<meta name="twitter:description" content="A roleplay plugin whose chat audience is computed from distance in blocks rather than from channel membership — whisper, local, emote and yell differ only by radius.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/medieval-roleplay-engine">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Medieval Roleplay Engine</h1>
+<p class="summary">A roleplay plugin whose chat audience is computed from distance in blocks rather than from channel membership — whisper, local, emote and yell differ only by radius.</p>
+<p>Speech here has a physical range. Where <a class="wl" href="faction-chat-channel.html" data-id="faction-chat-channel">Faction Chat Channel</a> resolves an audience from the diplomacy graph, this plugin resolves one from geometry: an utterance reaches the players standing near enough to hear it, and the speech &quot;modes&quot; differ only in how far that is.</p>
+<h2 id="one-delivery-routine-four-radii">One delivery routine, four radii</h2>
+<p><code>deliverMessageToNearbyPlayers</code> is the whole mechanism. It walks the online players, drops anyone in another world, drops anyone whose distance from the speaker is not strictly less than the radius, drops anyone who has hidden that channel, and sends. Everything above it is a caller picking a number and a colour: whisper 2 blocks, local chat and emotes 25, yelling 50 — four separate config integers, so an operator tunes how far a voice carries.</p>
+<p>A character card supplies the name, so a line is attributed to the character rather than to the Minecraft account.</p>
+<h2 id="local-chat-is-a-mode-not-a-command">Local chat is a mode, not a command</h2>
+<p><code>/local</code> puts a UUID into an in-memory set. While it is there the chat listener cancels the vanilla chat event and re-broadcasts the message at <code>localChatRadius</code>; text between asterisks is split out and sent separately at <code>emoteRadius</code>, so <code>*draws his sword* Stand back!</code> becomes an action and a line of dialogue with independently configurable reach.</p>
+<p><code>/global</code> is the mirror image, and the most revealing line in the plugin: it takes the UUID back out of the set and does nothing else. Global chat is not a channel this plugin delivers — it is what happens when the plugin declines to intercept.</p>
+<h2 id="one-channel-to-mute">One channel to mute</h2>
+<p>All roleplay output shares a single mute flag. The user guide states plainly that hiding local chat withholds whispers, yells, emotes, dice results and bird notices as well, and that a hidden player cannot speak in local chat. Why the mute is that coarse is not recorded.</p>
+<h2 id="related">Related</h2>
+<p>The plugin soft-depends on <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> and <a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a>, running alongside the flagship without requiring it. One observation offered as reasoning, not as anything the source claims: the distance walk runs inside an <code>AsyncPlayerChatEvent</code> handler and reads live player locations there, which is the opposite of the snapshot discipline <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a> describes. No comment or commit in the repository addresses that.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/utils/Messenger.java#L53-L81" rel="noopener noreferrer">Medieval-Roleplay-Engine/Messenger.java:53-81</a> <span class="claim">— All roleplay chat is delivered by one routine that iterates the online players and sends only to those in the same world whose distance from the speaker is strictly less than the given radius and who have not hidden that channel.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/config/ConfigService.java#L24-L35" rel="noopener noreferrer">Medieval-Roleplay-Engine/ConfigService.java:24-35</a> <span class="claim">— The speech ranges are four independent integer config options defaulting to 2 blocks for whisper, 25 for local chat, 25 for emotes and 50 for yelling.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/listeners/ChatListener.java#L25-L59" rel="noopener noreferrer">Medieval-Roleplay-Engine/ChatListener.java:25-59</a> <span class="claim">— While a player is in local chat the plugin cancels the AsyncPlayerChatEvent and re-sends the message under the character card's name, splitting any text between asterisks into a separate emote delivered at emoteRadius instead of localChatRadius.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/src/main/java/dansplugins/rpsystem/commands/global/GlobalChatCommand.java#L27-L41" rel="noopener noreferrer">Medieval-Roleplay-Engine/GlobalChatCommand.java:27-41</a> <span class="claim">— The /global command only removes the player's UUID from the local-chat set — it delivers no message of its own, so global chat is ordinary uncancelled server chat.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Roleplay-Engine/blob/283dfca2c786b76bf3259a474daa6d5378b13d07/USER_GUIDE.md#L47-L49" rel="noopener noreferrer">Medieval-Roleplay-Engine/USER_GUIDE.md:47-49</a> <span class="claim">— Hiding local chat withholds the entire roleplay channel — whispers, yells, emotes, dice results and bird landing notices — and a hidden player cannot talk in local chat either.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/medieval-roleplay-engine.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

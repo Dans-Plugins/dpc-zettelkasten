@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legacy Data Migration — DPC Zettelkasten</title>
+<meta name="description" content="Version 4's flat JSON files are backed up and read once into the database, behind a deliberate server shutdown that forces the operator to configure storage first.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/legacy-data-migration.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Legacy Data Migration">
+<meta property="og:description" content="Version 4's flat JSON files are backed up and read once into the database, behind a deliberate server shutdown that forces the operator to configure storage first.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/legacy-data-migration.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Legacy Data Migration">
+<meta name="twitter:description" content="Version 4's flat JSON files are backed up and read once into the database, behind a deliberate server shutdown that forces the operator to configure storage first.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/legacy-data-migration">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Legacy Data Migration</h1>
+<p class="summary">Version 4's flat JSON files are backed up and read once into the database, behind a deliberate server shutdown that forces the operator to configure storage first.</p>
+<p>Medieval Factions 4 stored its data in flat JSON files. Version 5 stores it in a database (see <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>). The <code>legacy</code> package exists to carry a version 4 server across that gap exactly once.</p>
+<h2 id="the-deliberate-shutdown">The deliberate shutdown</h2>
+<p>The interesting decision is what happens on first boot after the upgrade. On detecting a <code>v4.</code> version string in the config, the plugin does <em>not</em> migrate. It:</p>
+<ol>
+<li>Backs up the old data files.
+</li>
+<li>Writes fresh defaults and sets <code>migrateMf4: true</code>.
+</li>
+<li>Logs that the server is shutting down for migration, and that a database should be configured now if one is wanted.
+</li>
+<li>Calls <code>server.shutdown()</code>.
+</li>
+</ol>
+<p>Migration then runs on the <em>next</em> start. This costs the operator a restart and buys something worth more: a chance to point <code>database.url</code> at MySQL before any data is written. Migrating first and asking later would strand every server on the default embedded H2 file, and there is no second migration to move them.</p>
+<p>The forced stop is also honest about risk. Migration is irreversible; a server that hits it unaware would otherwise discover the change mid-session with players connected.</p>
+<h2 id="legacy-records-are-separate-types">Legacy records are separate types</h2>
+<p><code>MfLegacyFaction</code>, <code>MfLegacyClaimedChunk</code>, <code>MfLegacyGate</code>, <code>MfLegacyLockedBlock</code>, <code>MfLegacyPowerRecord</code>, <code>MfLegacyActivityRecord</code>, <code>MfLegacyLocation</code> mirror the version 4 JSON shapes rather than reusing the current domain classes.</p>
+<p>Keeping them separate is what lets the current model evolve freely — <a class="wl" href="faction.html" data-id="faction">Faction</a> can gain and lose fields without anyone having to reason about whether a change breaks the reading of a five-year-old JSON file. The legacy classes are frozen by definition, because the format they describe will never change again.</p>
+<h2 id="related">Related</h2>
+<p>The migrator writes through the same repositories as everything else, so migrated data goes through the same validation and gets the same <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a> version columns as data created today.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L126-L141" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:126-141</a> <span class="claim">— When the stored config version starts with v4, the plugin takes a backup, writes migrateMf4 into the config, logs instructions, and shuts the server down instead of migrating immediately.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/legacy/MfLegacyDataMigrator.kt#L37-L47" rel="noopener noreferrer">Medieval-Factions/MfLegacyDataMigrator.kt:37-47</a> <span class="claim">— A dedicated migrator class exposes backup and migrate entry points and has private per-record methods for config, players, factions, claimed chunks and locked blocks.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="food-spoilage.html">Food Spoilage</a></li>
+<li><a href="gate.html">Gate</a></li>
+<li><a href="locked-block.html">Locked Block</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/legacy-data-migration.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

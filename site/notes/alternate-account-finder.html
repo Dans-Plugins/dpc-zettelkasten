@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alternate Account Finder — DPC Zettelkasten</title>
+<meta name="description" content="A moderation plugin that keeps a permanent per-account login history keyed by encrypted IP address, and reports accounts that share one.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/alternate-account-finder.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Alternate Account Finder">
+<meta property="og:description" content="A moderation plugin that keeps a permanent per-account login history keyed by encrypted IP address, and reports accounts that share one.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/alternate-account-finder.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Alternate Account Finder">
+<meta name="twitter:description" content="A moderation plugin that keeps a permanent per-account login history keyed by encrypted IP address, and reports accounts that share one.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/alternate-account-finder">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Alternate Account Finder</h1>
+<p class="summary">A moderation plugin that keeps a permanent per-account login history keyed by encrypted IP address, and reports accounts that share one.</p>
+<p>Two accounts that have connected from the same IP address are probably one person. Alternate Account Finder acts on that inference: it accumulates a login history per account and surfaces accounts whose histories overlap.</p>
+<h2 id="what-is-stored">What is stored</h2>
+<p>The plugin keeps one row per <em>(address, account)</em> pair — the address, the player's UUID, a login counter, and the first and last login timestamps for that pair. This is not a last-known-IP field: every distinct address an account has ever connected from keeps its own row, and a repeat login from a known address increments that row's counter and refreshes its <code>last_login</code>.</p>
+<p>Nothing removes those rows. The repository offers reads and an upsert and no delete; there is no retention window, purge command, or expiry setting anywhere in the plugin. Login history therefore lives as long as the database does. No comment, migration note, or document in the repository explains that choice, so the reason is not recorded.</p>
+<p>Addresses are not stored in plaintext. They are AES-encrypted under a 256-bit key kept in the plugin's data folder, in ECB mode with no IV — deliberately, and the class says why: the lookups are equality comparisons on the stored value, so the ciphertext has to be deterministic. The same comment names the cost, that ECB leaks the pattern of repeated addresses, and scopes the class to this use only. Losing the key makes the history undecryptable, which the plugin warns about loudly on startup.</p>
+<h2 id="finding-alts">Finding alts</h2>
+<p>A query self-joins the table against itself on equal stored addresses and returns the distinct other UUIDs. Because the comparison is on ciphertext and the encryption is deterministic, the join works without decrypting anything. It is a single hop: accounts that share an address directly, not alts-of-alts.</p>
+<p>Detection runs on join. The address is read on the main thread — the comment cites issue #65, where it could be null by the time an async task ran — and the write happens off-thread, the same split described in <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a>. A notification fires only on an account's first login from a given address, so regulars do not re-alert.</p>
+<h2 id="related">Related</h2>
+<p>Storage is the <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a> stack the community uses generally, behind a <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a> boundary. Notifications go through the same optional backend selection as <a class="wl" href="notification.html" data-id="notification">Notification</a>, preferring <a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a> when installed.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/resources/com/dansplugins/detectionsystem/db/migration/V1__Initial_version.sql#L1-L8" rel="noopener noreferrer">AlternateAccountFinder/V1__Initial_version.sql:1-8</a> <span class="claim">— The sole table holds one row per (address, player UUID) pair, storing a login count and the first and last login timestamps for that pair, with the pair as the primary key.</span></li>
+<li><a href="https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/logins/LoginRepository.java#L95-L112" rel="noopener noreferrer">AlternateAccountFinder/LoginRepository.java:95-112</a> <span class="claim">— Potential alternate accounts are found by self-joining the login table on equal stored address values and selecting the distinct other UUIDs, not by comparing a single last-known IP.</span></li>
+<li><a href="https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/logins/LoginRepository.java#L22-L135" rel="noopener noreferrer">AlternateAccountFinder/LoginRepository.java:22-135</a> <span class="claim">— The repository exposes only reads and an upsert that increments the login counter; it contains no operation that deletes or expires a login record.</span></li>
+<li><a href="https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/encryption/IpEncryption.java#L18-L50" rel="noopener noreferrer">AlternateAccountFinder/IpEncryption.java:18-50</a> <span class="claim">— Addresses are stored as Base64 AES/ECB ciphertext under a fixed on-disk key, and the class documents that determinism is required so encrypted IPs can be compared for equality in database lookups.</span></li>
+<li><a href="https://github.com/Dans-Plugins/AlternateAccountFinder/blob/88353003ae38472975ddd042b830b4447fdbf18a/src/main/java/com/dansplugins/detectionsystem/listeners/PlayerJoinListener.java#L26-L64" rel="noopener noreferrer">AlternateAccountFinder/PlayerJoinListener.java:26-64</a> <span class="claim">— Every player join records a login, and moderators listed in notify-users are notified only when that join is the account's first from that address.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/alternate-account-finder.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

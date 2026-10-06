@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medieval Factions Map — DPC Zettelkasten</title>
+<meta name="description" content="Mid-level map of the flagship — routes to the domain model and the architecture, and names the seams other software attaches to.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/moc-medieval-factions.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Medieval Factions Map">
+<meta property="og:description" content="Mid-level map of the flagship — routes to the domain model and the architecture, and names the seams other software attaches to.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/moc-medieval-factions.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Medieval Factions Map">
+<meta name="twitter:description" content="Mid-level map of the flagship — routes to the domain model and the architecture, and names the seams other software attaches to.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/moc-medieval-factions">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Medieval Factions Map</h1>
+<p class="summary">Mid-level map of the flagship — routes to the domain model and the architecture, and names the seams other software attaches to.</p>
+<p><a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> is the largest codebase in the organization and the reference implementation for everything else. It carries enough distinct material to need two maps rather than one, and this note is the fork between them.</p>
+<h2 id="the-two-halves">The two halves</h2>
+<p>**<a class="wl" href="moc-faction-domain-model.html" data-id="moc-faction-domain-model">Faction Domain Model</a> — what the simulation <em>is</em>.** Factions, power, land, diplomacy, governance. Read this if you want to understand the game, or if you are deciding what a feature should <em>do</em>.</p>
+<p>**<a class="wl" href="moc-plugin-architecture.html" data-id="moc-plugin-architecture">Plugin Architecture</a> — how the code is <em>arranged</em>.** Services, repositories, persistence, concurrency. Read this if you are deciding where a feature should <em>live</em>.</p>
+<p>The split is clean in practice: a change almost always starts in one and lands in the other.</p>
+<h2 id="the-seams">The seams</h2>
+<p>Four places other software attaches, each covered by its own note under <a class="wl" href="moc-plugin-architecture.html" data-id="moc-plugin-architecture">Plugin Architecture</a> or <a class="wl" href="moc-plugin-ecosystem.html" data-id="moc-plugin-ecosystem">Plugin Ecosystem</a>:</p>
+<div class="table-scroll"><table><thead><tr>
+<th>Seam</th>
+<th>What attaches</th>
+<th>Note</th>
+</tr></thead><tbody>
+<tr>
+<td>Bukkit events</td>
+<td>Anything reacting to a faction change</td>
+<td><a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a></td>
+</tr>
+<tr>
+<td>Service registry</td>
+<td>Anything reading or writing faction state</td>
+<td><a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a></td>
+</tr>
+<tr>
+<td>Pluggable interfaces</td>
+<td>Optional plugins supplying an implementation</td>
+<td><a class="wl" href="notification.html" data-id="notification">Notification</a> · <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a></td>
+</tr>
+<tr>
+<td>Outbound HTTP</td>
+<td>The community website</td>
+<td><a class="wl" href="dpc-api-faction-sync.html" data-id="dpc-api-faction-sync">DPC API Faction Sync</a></td>
+</tr>
+</tbody></table></div>
+<p>If you are writing an <a class="wl" href="expansion-plugin.html" data-id="expansion-plugin">Expansion Plugin</a>, the first two are the ones you want.</p>
+<h2 id="reading-the-source">Reading the source</h2>
+<p>Documentation lives beside the code by convention — see <a class="wl" href="two-tier-documentation.html" data-id="two-tier-documentation">Two-Tier Documentation</a>. <code>USER_GUIDE.md</code>, <code>COMMANDS.md</code>, <code>CONFIG.md</code>, <code>FACTION_FLAGS.md</code>, <code>DATABASE_QUERYING.md</code>, and <code>FAQ.md</code> are all in the repository root. Start there before reading Kotlin.</p>
+<h2 id="where-it-sits">Where it sits</h2>
+<p>Up: <a class="wl" href="moc-dans-plugins-community.html" data-id="moc-dans-plugins-community">Dan's Plugins Community</a>. Sideways: <a class="wl" href="moc-plugin-ecosystem.html" data-id="moc-plugin-ecosystem">Plugin Ecosystem</a> for the plugins around it, <a class="wl" href="moc-web-and-infrastructure.html" data-id="moc-web-and-infrastructure">Web and Infrastructure</a> for where its data goes.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/README.md" rel="noopener noreferrer">Medieval-Factions/README.md</a> <span class="claim">— Medieval Factions is described as a system of mechanics for simulating sovereign nations in Minecraft.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/moc/moc-medieval-factions.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service Layer — DPC Zettelkasten</title>
+<meta name="description" content="Services own in-memory state, enforce the rules, fire events, and return typed failures — commands and listeners talk only to them.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/service-layer.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Service Layer">
+<meta property="og:description" content="Services own in-memory state, enforce the rules, fire events, and return typed failures — commands and listeners talk only to them.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/service-layer.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Service Layer">
+<meta name="twitter:description" content="Services own in-memory state, enforce the rules, fire events, and return typed failures — commands and listeners talk only to them.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/service-layer">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Service Layer</h1>
+<p class="summary">Services own in-memory state, enforce the rules, fire events, and return typed failures — commands and listeners talk only to them.</p>
+<p>Every domain area in <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> gets a service. The service owns the in-memory copy of that area's data, applies the rules, fires <a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a>, and delegates persistence to a repository. Nothing else in the plugin should touch a repository directly.</p>
+<h2 id="one-registry">One registry</h2>
+<p><code>Services</code> is a plain class with fifteen constructor properties — player, faction, law, relationship, claim, lock, interaction, notification, gate, chat, duel, potion, teleport, map, and approval request. It is constructed once during <code>onEnable</code> and hung off the plugin instance as <code>plugin.services</code>.</p>
+<p>There is no dependency-injection framework. Wiring is a hundred lines of <code>onEnable</code> constructing repositories and passing them into services, which for a plugin of this size is easier to follow than a container would be.</p>
+<p><code>mapService</code> is the only nullable entry: it exists only when an optional <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a> plugin is installed. Its type carries that fact, so callers must handle absence rather than discovering it at runtime.</p>
+<h2 id="failures-are-values">Failures are values</h2>
+<p>Mutating methods return <code>Result4k&lt;T, ServiceFailure&gt;</code> rather than throwing. <code>ServiceFailure</code> carries a <code>type</code>, a <code>message</code>, and the underlying <code>cause</code>, and <code>ServiceFailureType</code> distinguishes nine cases — <code>NOT_FOUND</code>, <code>BAD_REQUEST</code>, <code>BAD_RESPONSE</code>, <code>AUTHENTICATION_REQUIRED</code>, <code>AUTHORIZATION</code>, <code>RULES_VIOLATION</code>, <code>DUPLICATE</code>, <code>CONFLICT</code>, and <code>GENERAL</code>.</p>
+<p>Each service maps exceptions to types in a small private helper — an <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a> failure becomes <code>CONFLICT</code>, everything else becomes <code>GENERAL</code>. A command can then branch on <code>CONFLICT</code> and tell the player to try again, which is a very different message from an internal error.</p>
+<h2 id="read-from-memory-write-through">Read from memory, write through</h2>
+<p><code>MfFactionService</code> is the fullest example: it loads every <a class="wl" href="faction.html" data-id="faction">Faction</a> into a <code>ConcurrentHashMap</code> at startup, serves reads from that map, and on write both persists through the <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a> and updates the cache. After that one bulk load, ordinary reads never reach the database — only writes do.</p>
+<h2 id="related">Related</h2>
+<p>The variation between services is mostly how much caching they do. <code>MfLawService</code> caches nothing and takes only a repository — the minimum a service can be while still owning the failure mapping.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/service/Services.kt#L19-L35" rel="noopener noreferrer">Medieval-Factions/Services.kt:19-35</a> <span class="claim">— A single Services class holds fifteen services, one per domain area, and the map service is nullable because it depends on an optional plugin.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/failure/ServiceFailure.kt#L3-L19" rel="noopener noreferrer">Medieval-Factions/ServiceFailure.kt:3-19</a> <span class="claim">— A service failure carries a type, message and cause, and the failure type enum has nine values including NOT_FOUND, CONFLICT, RULES_VIOLATION and GENERAL.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="duel.html">Duel</a></li>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="faction-events.html">Faction Events</a></li>
+<li><a href="law.html">Law</a></li>
+<li><a href="locked-block.html">Locked Block</a></li>
+<li><a href="main-thread-safety.html">Main Thread Safety</a></li>
+<li><a href="map-integration.html">Map Integration</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="optimistic-locking.html">Optimistic Locking</a></li>
+<li><a href="player-interaction-status.html">Player Interaction Status</a></li>
+<li><a href="ponder.html">Ponder</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/service-layer.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

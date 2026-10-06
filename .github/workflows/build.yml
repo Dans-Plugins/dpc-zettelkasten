@@ -38,6 +38,19 @@ jobs:
             fi
           done
           echo "site/index.html, site/dataset.json and site/version.json are up to date"
+          # The static note pages, sitemap.xml and robots.txt are generated too.
+          # git status also catches a page that was generated but never
+          # committed, or a committed page for a note that no longer exists.
+          drift="$(git status --porcelain -- site)"
+          if [ -n "$drift" ]; then
+            echo "$drift"
+            echo "::error::site/ is out of date — run 'python3 tools/build.py' and commit the result"
+            exit 1
+          fi
+          # Every absolute URL must be on the production origin.
+          if grep -rlE 'https?://(localhost|127\.0\.0\.1)' site/notes site/sitemap.xml site/robots.txt; then
+            echo "::error::generated files point at localhost"; exit 1
+          fi
 
       # dpc-mcp-server consumes lib/zk-graphql.js directly. If it stops loading
       # outside a browser, that server breaks without this repo's tests failing.
@@ -171,6 +184,25 @@ jobs:
               throw new Error('/version.json is ' + JSON.stringify(served) + ', expected version ' + expected);
             console.log('/version.json reports', served.version);
           "
+
+          # Search and sharing: robots.txt names the sitemap, the sitemap lists
+          # every note page, and a note page is served with its share metadata.
+          curl -sf http://127.0.0.1:18080/robots.txt \
+            | grep -qx 'Sitemap: https://zettel.dansplugins.com/sitemap.xml' \
+            || { echo "::error::/robots.txt does not name the sitemap"; exit 1; }
+          curl -sf http://127.0.0.1:18080/sitemap.xml > /tmp/sitemap.xml \
+            || { echo "::error::/sitemap.xml did not answer 200"; exit 1; }
+          expected=$(( $(ls site/notes/*.html | wc -l) + 1 ))
+          test "$(grep -c '<loc>' /tmp/sitemap.xml)" = "$expected" \
+            || { echo "::error::sitemap.xml does not list / plus every note page"; exit 1; }
+          curl -sf -o /dev/null -w '%{http_code} %{content_type}\n' http://127.0.0.1:18080/notes/faction.html \
+            | grep -q '^200 text/html' || { echo "::error::/notes/faction.html is not served as text/html"; exit 1; }
+          curl -sf http://127.0.0.1:18080/notes/faction.html \
+            | grep -q '<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction.html">' \
+            || { echo "::error::/notes/faction.html lacks its og:url"; exit 1; }
+          curl -sf http://127.0.0.1:18080/ \
+            | grep -q '<link rel="canonical" href="https://zettel.dansplugins.com/">' \
+            || { echo "::error::/ lacks its canonical link"; exit 1; }
 
           # Compare against the expected uid rather than "not root": a failed
           # exec returns an empty string, which passes any "!= 0" test.

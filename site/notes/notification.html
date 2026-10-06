@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notification — DPC Zettelkasten</title>
+<meta name="description" content="A one-method interface for reaching an offline player, with implementations chosen at startup based on which plugins are installed.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/notification.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Notification">
+<meta property="og:description" content="A one-method interface for reaching an offline player, with implementations chosen at startup based on which plugins are installed.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/notification.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Notification">
+<meta name="twitter:description" content="A one-method interface for reaching an offline player, with implementations chosen at startup based on which plugins are installed.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/notification">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Notification</h1>
+<p class="summary">A one-method interface for reaching an offline player, with implementations chosen at startup based on which plugins are installed.</p>
+<p>When <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> needs to tell a player something and that player is offline, it hands the message to an <code>MfNotificationService</code>. The interface has one method and no return value.</p>
+<h2 id="three-implementations-chosen-once">Three implementations, chosen once</h2>
+<p><code>setupNotificationService()</code> is a single <code>when</code> expression evaluated during <code>onEnable</code>:</p>
+<ol>
+<li><strong>Mailboxes</strong> — if the <a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a> plugin is installed, the message waits in the player's in-game mail.
+</li>
+<li><strong>RPKit</strong> — otherwise, if <code>rpk-notification-lib-bukkit</code> is installed.
+</li>
+<li><strong>No-op</strong> — otherwise, the message is discarded.
+</li>
+</ol>
+<p>The order is a preference, not a negotiation: with both installed, Mailboxes wins and RPKit is never consulted. The rest of the codebase never learns which was chosen. <code>MfFaction.sendMessage</code> illustrates the intended use: message online members directly, and route the offline ones through the notification service.</p>
+<h2 id="degrading-quietly">Degrading quietly</h2>
+<p>The Mailboxes implementation begins by fetching the plugin from Bukkit's plugin manager and casting it, returning immediately on a null or failed cast. A notification to an unreachable backend is dropped, not raised.</p>
+<p>That is the right call for this particular payload — a faction announcement is not worth a stack trace in the console on every send, and the alternative (throwing from a notification path) would let a missing optional dependency break faction operations. It does mean a misconfigured server loses messages silently.</p>
+<h2 id="why-an-interface-at-all">Why an interface at all</h2>
+<p>The no-op implementation is the tell. Rather than scatter <code>if (mailboxesInstalled)</code> checks through the codebase, the plugin resolves the question once at startup and lets the type system carry the answer. This is the same shape as <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a>, and it is the pattern to copy when integrating any optional plugin.</p>
+<h2 id="related">Related</h2>
+<p>The <code>MfNotification</code> record itself is just a title and a body — no severity, no routing hints. Anything richer would have to be encoded in the text.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/notification/MfNotificationService.kt#L5-L7" rel="noopener noreferrer">Medieval-Factions/MfNotificationService.kt:5-7</a> <span class="claim">— The notification service interface declares a single method taking a player id and a notification.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/notification/mailboxes/MailboxesNotificationService.kt#L10-L16" rel="noopener noreferrer">Medieval-Factions/MailboxesNotificationService.kt:10-16</a> <span class="claim">— The Mailboxes-backed implementation looks the plugin up by name, returns silently if it is absent, and forwards the notification through the Mailboxes API's sendPluginMessageToPlayer.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L559-L563" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:559-563</a> <span class="claim">— The implementation is chosen at startup by a when expression that prefers Mailboxes, falls back to RpkNotificationService when rpk-notification-lib-bukkit is present, and otherwise uses the no-op service.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="alternate-account-finder.html">Alternate Account Finder</a></li>
+<li><a href="mailboxes.html">Mailboxes</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/notification.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

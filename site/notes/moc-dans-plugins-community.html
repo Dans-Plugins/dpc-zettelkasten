@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dan's Plugins Community — DPC Zettelkasten</title>
+<meta name="description" content="The root map — an index of the six Maps of Content, and through them every concept note in the collection.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/moc-dans-plugins-community.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Dan's Plugins Community">
+<meta property="og:description" content="The root map — an index of the six Maps of Content, and through them every concept note in the collection.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/moc-dans-plugins-community.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dan's Plugins Community">
+<meta name="twitter:description" content="The root map — an index of the six Maps of Content, and through them every concept note in the collection.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/moc-dans-plugins-community">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Dan's Plugins Community</h1>
+<p class="summary">The root map — an index of the six Maps of Content, and through them every concept note in the collection.</p>
+<p>Dan's Plugins Community (DPC) is a collection of open-source Minecraft plugins built around a single ambition: let players simulate societies. <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> is the flagship — sovereign nations, claimed land, diplomacy, war — and most other repositories in the organization either extend it, support it, or share its conventions.</p>
+<p><strong>This is a map of maps.</strong> It holds no claims of its own. Every concept note in the collection lives under exactly one of the maps below, and each map is a curated route through its cluster rather than an alphabetical dump.</p>
+<hr>
+<h2 id="moc-medieval-factions-the-flagship"><a class="wl" href="moc-medieval-factions.html" data-id="moc-medieval-factions">The flagship</a></h2>
+<p>The largest repository in the organization, and the reference implementation every convention points back at. It is big enough to need two maps of its own:</p>
+<h3 id="moc-faction-domain-model-the-nouns-of-the-simulation">→ <a class="wl" href="moc-faction-domain-model.html" data-id="moc-faction-domain-model">Faction Domain Model</a> — the nouns of the simulation</h3>
+<p>What the game is <em>about</em>. Almost all of it hangs off one number.</p>
+<ul>
+<li><strong>The currency of the whole game</strong> — <a class="wl" href="player-power.html" data-id="player-power">Player Power</a> · <a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a> · <a class="wl" href="demesne-limit.html" data-id="demesne-limit">Demesne Limit</a>
+</li>
+<li><strong>The state</strong> — <a class="wl" href="faction.html" data-id="faction">Faction</a> · <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a>
+</li>
+<li><strong>Politics</strong> — <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a> · <a class="wl" href="vassalage.html" data-id="vassalage">Vassalage</a> · <a class="wl" href="approval-request.html" data-id="approval-request">Approval Request</a>
+</li>
+<li><strong>Internal governance</strong> — <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a> · <a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a> · <a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a>
+</li>
+<li><strong>Props for roleplay</strong> — <a class="wl" href="law.html" data-id="law">Law</a> · <a class="wl" href="gate.html" data-id="gate">Gate</a> · <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a>
+</li>
+<li><strong>Player to player</strong> — <a class="wl" href="faction-chat-channel.html" data-id="faction-chat-channel">Faction Chat Channel</a> · <a class="wl" href="duel.html" data-id="duel">Duel</a>
+</li>
+</ul>
+<p><em>Start with <a class="wl" href="demesne-limit.html" data-id="demesne-limit">Demesne Limit</a>. It is one inequality, and the rest of the simulation is arranged around it.</em></p>
+<h3 id="moc-plugin-architecture-how-it-is-built">→ <a class="wl" href="moc-plugin-architecture.html" data-id="moc-plugin-architecture">Plugin Architecture</a> — how it is built</h3>
+<p>The shape every feature in the codebase takes.</p>
+<ul>
+<li><strong>The three layers</strong> — <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> · <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a> · <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>
+</li>
+<li><strong>Cross-cutting concerns</strong> — <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a> · <a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">Value Class Identifier</a> · <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a> · <a class="wl" href="spatial-value-types.html" data-id="spatial-value-types">Spatial Value Types</a>
+</li>
+<li><strong>Input</strong> — <a class="wl" href="player-interaction-status.html" data-id="player-interaction-status">Player Interaction Status</a>
+</li>
+<li><strong>Seams other software attaches to</strong> — <a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a> · <a class="wl" href="notification.html" data-id="notification">Notification</a> · <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a>
+</li>
+<li><strong>History still in the tree</strong> — <a class="wl" href="legacy-data-migration.html" data-id="legacy-data-migration">Legacy Data Migration</a>
+</li>
+</ul>
+<p><em>Start with <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a>. Once you have seen one feature you have seen them all.</em></p>
+<hr>
+<h2 id="moc-plugin-ecosystem-the-other-plugins">→ <a class="wl" href="moc-plugin-ecosystem.html" data-id="moc-plugin-ecosystem">Plugin Ecosystem</a> — the other plugins</h2>
+<p>What surrounds the flagship: the shared library, the official expansions, and the plugins it talks to at runtime.</p>
+<ul>
+<li><strong>The library</strong> — <a class="wl" href="ponder.html" data-id="ponder">Ponder</a>
+</li>
+<li><strong>Expansions</strong> — <a class="wl" href="expansion-plugin.html" data-id="expansion-plugin">Expansion Plugin</a> · <a class="wl" href="fiefs.html" data-id="fiefs">Fiefs</a> · <a class="wl" href="currencies.html" data-id="currencies">Currencies</a>
+</li>
+<li><strong>Runtime neighbours</strong> — <a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a>
+</li>
+<li><strong>Distribution</strong> — <a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">Dan's Plugin Manager</a>
+</li>
+</ul>
+<hr>
+<h2 id="moc-conventions-and-process-the-standards">→ <a class="wl" href="moc-conventions-and-process.html" data-id="moc-conventions-and-process">Conventions and Process</a> — the standards</h2>
+<p>What every repository in the organization is held to.</p>
+<ul>
+<li><a class="wl" href="dpc-conventions.html" data-id="dpc-conventions">DPC Conventions</a> · <a class="wl" href="two-tier-documentation.html" data-id="two-tier-documentation">Two-Tier Documentation</a> · <a class="wl" href="release-automation.html" data-id="release-automation">Release Automation</a> · <a class="wl" href="testing-and-ci.html" data-id="testing-and-ci">Testing and CI</a>
+</li>
+</ul>
+<hr>
+<h2 id="moc-web-and-infrastructure-outside-minecraft">→ <a class="wl" href="moc-web-and-infrastructure.html" data-id="moc-web-and-infrastructure">Web and Infrastructure</a> — outside Minecraft</h2>
+<p>The public site, the containerised server, and the pipe between them.</p>
+<ul>
+<li><a class="wl" href="dansplugins-dot-com.html" data-id="dansplugins-dot-com">dansplugins.com</a> · <a class="wl" href="dpc-mc-server.html" data-id="dpc-mc-server">DPC Minecraft Server</a> · <a class="wl" href="dpc-api-faction-sync.html" data-id="dpc-api-faction-sync">DPC API Faction Sync</a>
+</li>
+</ul>
+<hr>
+<h2 id="how-to-read-this-collection">How to read this collection</h2>
+<p><strong>If you have never touched the codebase</strong>, read <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a>, then <a class="wl" href="faction.html" data-id="faction">Faction</a>, then <a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a>. Those three carry most of the vocabulary everything else assumes.</p>
+<p><strong>If you are here to change code</strong>, go straight to <a class="wl" href="moc-plugin-architecture.html" data-id="moc-plugin-architecture">Plugin Architecture</a>.</p>
+<p><strong>If you are here to check something</strong>, every concept note carries citations to a Dans-Plugins repository pinned at a commit SHA. Open the source panel and follow the link — the claim is meant to be falsifiable by reading the code it points at. See <a href="../../docs/NOTE_FORMAT.md">the note format</a> for the rules.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-conventions/blob/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec/README.md" rel="noopener noreferrer">dpc-conventions/README.md</a> <span class="claim">— DPC stands for Dans Plugins Community and treats Medieval Factions as its flagship reference implementation.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/moc/moc-dans-plugins-community.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

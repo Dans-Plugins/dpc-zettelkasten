@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spatial Value Types — DPC Zettelkasten</title>
+<meta name="description" content="Positions are stored as plain records holding a world UUID and numbers, never as live Bukkit objects, and are converted at the boundary.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/spatial-value-types.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Spatial Value Types">
+<meta property="og:description" content="Positions are stored as plain records holding a world UUID and numbers, never as live Bukkit objects, and are converted at the boundary.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/spatial-value-types.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spatial Value Types">
+<meta name="twitter:description" content="Positions are stored as plain records holding a world UUID and numbers, never as live Bukkit objects, and are converted at the boundary.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/spatial-value-types">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Spatial Value Types</h1>
+<p class="summary">Positions are stored as plain records holding a world UUID and numbers, never as live Bukkit objects, and are converted at the boundary.</p>
+<p>The records that get persisted do not hold Bukkit objects. The <code>area</code> package supplies four plain types — a precise position, a block, a chunk, and a cuboid — each carrying a world <strong>UUID</strong> and numbers, and each crossing into Bukkit only through an explicit named conversion.</p>
+<h2 id="why-a-uuid-and-not-a-world">Why a UUID and not a world</h2>
+<p>A <code>World</code> is a live server object; a <code>UUID</code> is a value. Storing the identifier rather than the reference is what lets these records be written to columns by <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>, survive a restart, and be held across a thread boundary without violating <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a>.</p>
+<p>The conversions back are correspondingly <em>nullable</em>: <code>toBukkitLocation()</code> and <code>toBukkitBlock()</code> resolve the world by UUID and yield null if the server has no such world loaded. Every caller has to decide what an unresolvable position means, rather than receiving a stale object.</p>
+<h2 id="the-cuboid-is-derived-not-stored">The cuboid is derived, not stored</h2>
+<p><code>MfCuboidArea</code> keeps only two corners and computes everything else — <code>minPosition</code> and <code>maxPosition</code> per axis, height, width, depth, centre, the full block list, and a <code>contains</code> test. Its <code>init</code> block rejects a pair of corners in different worlds outright, so a mixed-world area cannot exist even briefly.</p>
+<p>It also carries <code>distanceSquared</code>, which clamps the query point onto the box per axis before measuring — the distance to the <em>nearest face</em>, not to the centre, and squared to avoid a square root.</p>
+<h2 id="who-uses-them">Who uses them</h2>
+<p>These are the vocabulary the rest of the model is written in. A <a class="wl" href="gate.html" data-id="gate">Gate</a> stores an <code>MfCuboidArea</code> plus a trigger <code>MfBlockPosition</code>; a <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a> is a block position with an owner; a <a class="wl" href="duel.html" data-id="duel">Duel</a> snapshots both participants as <code>MfPosition</code>, yaw and pitch included, so it can put them back exactly as they stood.</p>
+<p>Adoption is not uniform. <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a> predates or sidesteps the pattern — <code>MfClaimedChunk</code> stores <code>worldId</code>, <code>x</code> and <code>z</code> as loose fields and merely offers a convenience constructor taking an <code>MfChunkPosition</code>. Whether that is history or intent is not recorded anywhere in the repository.</p>
+<h2 id="related">Related</h2>
+<p>The same instinct — replace a primitive or a framework object with a small purpose-built type — appears at the identity layer as <a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">Value Class Identifier</a>. Here it buys persistence and thread safety; there it buys type safety between otherwise identical strings.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/area/MfPosition.kt#L7-L27" rel="noopener noreferrer">Medieval-Factions/MfPosition.kt:7-27</a> <span class="claim">— MfPosition holds a world UUID with double x, y and z plus yaw and pitch, and converts to a Bukkit Location only through toBukkitLocation, which returns null when the world is not loaded.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/area/MfBlockPosition.kt#L8-L26" rel="noopener noreferrer">Medieval-Factions/MfBlockPosition.kt:8-26</a> <span class="claim">— MfBlockPosition holds a world UUID and integer coordinates, with named conversions to and from a Bukkit Block.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/area/MfChunkPosition.kt#L7-L21" rel="noopener noreferrer">Medieval-Factions/MfChunkPosition.kt:7-21</a> <span class="claim">— MfChunkPosition holds a world UUID and an x and z chunk coordinate, converting to and from a Bukkit Chunk.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/area/MfCuboidArea.kt#L10-L14" rel="noopener noreferrer">Medieval-Factions/MfCuboidArea.kt:10-14</a> <span class="claim">— MfCuboidArea is two corner block positions and throws IllegalStateException on construction if the two corners are in different worlds.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/area/MfCuboidArea.kt#L16-L87" rel="noopener noreferrer">Medieval-Factions/MfCuboidArea.kt:16-87</a> <span class="claim">— Min and max corners, height, width, depth, centre, the block list, contains and distanceSquared are all computed from the two stored corners rather than stored.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/gate/MfGate.kt#L13-L24" rel="noopener noreferrer">Medieval-Factions/MfGate.kt:13-24</a> <span class="claim">— A gate stores its area as an MfCuboidArea and its trigger as an MfBlockPosition.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/claim/MfClaimedChunk.kt#L8-L17" rel="noopener noreferrer">Medieval-Factions/MfClaimedChunk.kt:8-17</a> <span class="claim">— MfClaimedChunk stores worldId, x and z as its own fields rather than an MfChunkPosition, offering constructors that accept a Bukkit Chunk or an MfChunkPosition.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="duel.html">Duel</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/spatial-value-types.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>
