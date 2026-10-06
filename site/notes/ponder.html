@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ponder — DPC Zettelkasten</title>
+<meta name="description" content="The community's shared Java/Kotlin library — a multi-module Gradle build providing command abstraction, caching, and Bukkit helpers.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/ponder.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Ponder">
+<meta property="og:description" content="The community's shared Java/Kotlin library — a multi-module Gradle build providing command abstraction, caching, and Bukkit helpers.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/ponder.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ponder">
+<meta name="twitter:description" content="The community's shared Java/Kotlin library — a multi-module Gradle build providing command abstraction, caching, and Bukkit helpers.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/ponder">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Ponder</h1>
+<p class="summary">The community's shared Java/Kotlin library — a multi-module Gradle build providing command abstraction, caching, and Bukkit helpers.</p>
+<p>Ponder is the shared library DPC plugins build on. It is small — three modules, each a handful of files — and published as Maven artifacts rather than shaded into each plugin.</p>
+<h2 id="the-three-modules">The three modules</h2>
+<div class="table-scroll"><table><thead><tr>
+<th>Module</th>
+<th>Contents</th>
+</tr></thead><tbody>
+<tr>
+<td><code>ponder-bukkit</code></td>
+<td>Bukkit/Spigot helpers — distance calculations, plugin lookups</td>
+</tr>
+<tr>
+<td><code>ponder-cache</code></td>
+<td>A generic <code>Cache&lt;K, V&gt;</code> interface with a default implementation and a <code>CacheManager</code></td>
+</tr>
+<tr>
+<td><code>ponder-commands</code></td>
+<td>A <code>Command</code> abstraction, a <code>CommandService</code> registry, and typed <code>CommandResult</code> values</td>
+</tr>
+</tbody></table></div>
+<p><code>ponder-commands</code> is the interesting one architecturally. <code>CommandService</code> is a two-method interface — <code>addCommand(name, command)</code> and <code>getCommand(name)</code> — and results are typed values such as <code>IncorrectUsageFailure</code> rather than booleans. That is the same &quot;failures are values&quot; instinct visible in the flagship's <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a>.</p>
+<h2 id="published-not-vendored">Published, not vendored</h2>
+<p>Modules are consumed from <code>repo.dansplugins.com</code> (the community's Nexus) and from GitHub Packages, under the <code>com.dansplugins</code> group. Publishing rather than copying means a fix reaches every consumer on the next dependency bump.</p>
+<p>The caveat is version skew across the fleet. <a class="wl" href="fiefs.html" data-id="fiefs">Fiefs</a> still builds against a vendored <code>Ponder-v0.15-alpha-2.jar</code> predating the current module layout, so &quot;which Ponder?&quot; is a real question when reading an older plugin.</p>
+<h2 id="related">Related</h2>
+<p>Ponder lives in the Dans-Plugins organization but is named for <a href="https://github.com/Preponderous-Software" target="_blank" rel="noopener">Preponderous</a>, and its package root is still <code>preponderous.ponder</code> while its Maven group is <code>com.dansplugins</code>. No source in the repository explains the mismatch, so treat it as a naming artefact rather than a boundary that means something.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/settings.gradle" rel="noopener noreferrer">Ponder/settings.gradle</a> <span class="claim">— Ponder is a multi-project Gradle build with three modules, ponder-bukkit, ponder-cache and ponder-commands.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/ponder-cache/src/main/java/preponderous/ponder/cache/Cache.java" rel="noopener noreferrer">Ponder/Cache.java</a> <span class="claim">— The cache module exposes a generic Cache interface with get, set, containsKey, remove, removeMatching, keys and clear.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Ponder/blob/ff5276ae2fe0e2f5ac5de9c7ba45dd6d0a04d61f/README.md" rel="noopener noreferrer">Ponder/README.md</a> <span class="claim">— Ponder modules are published to repo.dansplugins.com under the com.dansplugins group and are also available via GitHub Packages.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="fiefs.html">Fiefs</a></li>
+<li><a href="food-spoilage.html">Food Spoilage</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="release-automation.html">Release Automation</a></li>
+<li><a href="simple-skills.html">SimpleSkills</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/ponder.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

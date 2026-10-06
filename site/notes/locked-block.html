@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locked Block — DPC Zettelkasten</title>
+<meta name="description" content="Per-player protection on a single block, with an explicit accessor list — independent of faction land ownership.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/locked-block.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Locked Block">
+<meta property="og:description" content="Per-player protection on a single block, with an explicit accessor list — independent of faction land ownership.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/locked-block.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Locked Block">
+<meta name="twitter:description" content="Per-player protection on a single block, with an explicit accessor list — independent of faction land ownership.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/locked-block">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Locked Block</h1>
+<p class="summary">Per-player protection on a single block, with an explicit accessor list — independent of faction land ownership.</p>
+<p>A lock protects one block — typically a chest or door — for one player, with an explicit list of other players allowed to use it.</p>
+<h2 id="owned-by-a-player-not-a-faction">Owned by a player, not a faction</h2>
+<p>This is the notable thing about the design: a locked block belongs to an <code>MfPlayerId</code>, not an <code>MfFactionId</code>. Protection is personal and survives changes of faction. A member can secure their own chest inside their faction's <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">claim</a> against their own faction-mates, and keep it when they leave.</p>
+<p>Land ownership and container ownership are therefore two independent protection systems that both run on every block interaction. <a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a> governs the first; the accessor list governs the second.</p>
+<h2 id="chunk-coordinates-are-denormalised">Chunk coordinates are denormalised</h2>
+<p>The record stores <code>chunkX</code> and <code>chunkZ</code> alongside the full block position, even though both are derivable from it by integer division. This is an index: the common query is &quot;which locks exist in this chunk?&quot;, asked whenever a chunk's ownership changes or a player interacts within it. Storing the chunk lets that be a lookup rather than a scan over every lock in the world.</p>
+<h2 id="typed-unlock-result">Typed unlock result</h2>
+<p><code>MfUnlockResult</code> gives unlocking a typed outcome — <code>SUCCESS</code>, <code>NOT_LOCKED</code>, or <code>FAILURE</code> — so a caller can tell &quot;there was nothing to unlock&quot; apart from &quot;the unlock was refused&quot; and produce the right message for each. Compare the broader <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> failure model, which reaches for <code>Result4k</code> to make the same distinction.</p>
+<h2 id="related">Related</h2>
+<p>Locks are among the records carried over by <a class="wl" href="legacy-data-migration.html" data-id="legacy-data-migration">Legacy Data Migration</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/locks/MfLockedBlock.kt#L6-L17" rel="noopener noreferrer">Medieval-Factions/MfLockedBlock.kt:6-17</a> <span class="claim">— A locked block records an id, version, block position, chunk x and z, the owning player id, and a list of accessor player ids.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/locks/MfUnlockResult.kt" rel="noopener noreferrer">Medieval-Factions/MfUnlockResult.kt</a> <span class="claim">— The unlock result is an enum of SUCCESS, NOT_LOCKED and FAILURE rather than a boolean.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="duel.html">Duel</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="optimistic-locking.html">Optimistic Locking</a></li>
+<li><a href="player-interaction-status.html">Player Interaction Status</a></li>
+<li><a href="spatial-value-types.html">Spatial Value Types</a></li>
+<li><a href="wild-pets.html">Wild Pets</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/locked-block.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

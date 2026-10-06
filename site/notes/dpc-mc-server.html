@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DPC Minecraft Server — DPC Zettelkasten</title>
+<meta name="description" content="An infrastructure-as-code Spigot server that pins a curated set of DPC plugin jars into a Docker image, each toggleable by environment variable.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/dpc-mc-server.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="DPC Minecraft Server">
+<meta property="og:description" content="An infrastructure-as-code Spigot server that pins a curated set of DPC plugin jars into a Docker image, each toggleable by environment variable.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/dpc-mc-server.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DPC Minecraft Server">
+<meta name="twitter:description" content="An infrastructure-as-code Spigot server that pins a curated set of DPC plugin jars into a Docker image, each toggleable by environment variable.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/dpc-mc-server">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>DPC Minecraft Server</h1>
+<p class="summary">An infrastructure-as-code Spigot server that pins a curated set of DPC plugin jars into a Docker image, each toggleable by environment variable.</p>
+<p>dpc-mc-server is the community's server as code: a <code>Dockerfile</code> and a <code>compose.yml</code> that produce a Spigot server with eighteen DPC plugins already installed.</p>
+<h2 id="pinned-jars-not-downloads">Pinned jars, not downloads</h2>
+<p>Plugin jars are committed under <code>resources/jars/</code> at explicit versions — <code>Fiefs-0.10.jar</code>, <code>Dans-Essentials-2.3.0.jar</code>, and so on. The image does not fetch the latest release at build time.</p>
+<p>That is the opposite choice from <a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">Dan's Plugin Manager</a>, and for a good reason: this repository's value is that a given commit always produces the same server. The cost is that upgrading a plugin is a commit, and the pinned set drifts behind current releases until someone updates it.</p>
+<h2 id="a-toggle-per-plugin">A toggle per plugin</h2>
+<p>Every plugin has a <code>&lt;PLUGIN&gt;_ENABLED</code> environment variable threaded from <code>.env</code> through <code>compose.yml</code> into the container. Bisecting a plugin interaction is therefore a matter of flipping variables and restarting, with no image rebuild.</p>
+<p>Ports 25565 (game), 8123 (Dynmap), and 8100 (BlueMap) are exposed, so both <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a> surfaces can be compared side by side against the same world.</p>
+<h2 id="the-de-facto-integration-environment">The de facto integration environment</h2>
+<p>Because it runs <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a>, <a class="wl" href="fiefs.html" data-id="fiefs">Fiefs</a>, <a class="wl" href="currencies.html" data-id="currencies">Currencies</a>, and <a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a> together, this is where cross-plugin behaviour actually gets exercised. <a class="wl" href="testing-and-ci.html" data-id="testing-and-ci">Testing and CI</a> covers per-repository testing; nothing else in the organization tests the plugins as a set.</p>
+<h2 id="the-deposit-box">The deposit box</h2>
+<p>A <code>deposit-box/</code> directory is bind-mounted into the container, with a <code>plugin-overrides/</code> subdirectory — the hatch for dropping a locally built jar over a pinned one without rebuilding the image. That is the loop for testing an unreleased change against the full plugin set.</p>
+<h2 id="related">Related</h2>
+<p>Third-party plugins are bundled alongside the community's own, so the environment matches what a real server operator would run.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-mc-server/blob/d42e0ec06f9b29baaa043442d24ef2dd81edfa49/README.md" rel="noopener noreferrer">dpc-mc-server/README.md</a> <span class="claim">— The server is a Docker-based reproducible Spigot server pre-loaded with a curated set of DPC plugins, each toggleable via .env, and also bundles Dynmap, BlueMap, PlaceholderAPI, ViaVersion and ViaBackwards.</span></li>
+<li><a href="https://github.com/Dans-Plugins/dpc-mc-server/blob/d42e0ec06f9b29baaa043442d24ef2dd81edfa49/compose.yml" rel="noopener noreferrer">dpc-mc-server/compose.yml</a> <span class="claim">— Each bundled plugin has its own &lt;PLUGIN&gt;_ENABLED environment variable passed into the container, and ports 25565, 8123 and 8100 are exposed for the game server and the two web maps.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dans-plugin-manager.html">Dan's Plugin Manager</a></li>
+<li><a href="fiefs.html">Fiefs</a></li>
+<li><a href="food-spoilage.html">Food Spoilage</a></li>
+<li><a href="mailboxes.html">Mailboxes</a></li>
+<li><a href="map-integration.html">Map Integration</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="moc-web-and-infrastructure.html">Web and Infrastructure</a></li>
+<li><a href="simple-skills.html">SimpleSkills</a></li>
+<li><a href="testing-and-ci.html">Testing and CI</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/dpc-mc-server.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

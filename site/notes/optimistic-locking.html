@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimistic Locking — DPC Zettelkasten</title>
+<meta name="description" content="Every mutable record carries a version column; a write that does not match the version it read is rejected rather than silently overwriting.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/optimistic-locking.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Optimistic Locking">
+<meta property="og:description" content="Every mutable record carries a version column; a write that does not match the version it read is rejected rather than silently overwriting.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/optimistic-locking.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Optimistic Locking">
+<meta name="twitter:description" content="Every mutable record carries a version column; a write that does not match the version it read is rejected rather than silently overwriting.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/optimistic-locking">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Optimistic Locking</h1>
+<p class="summary">Every mutable record carries a version column; a write that does not match the version it read is rejected rather than silently overwriting.</p>
+<p>Nearly every persisted record in <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> — <a class="wl" href="faction.html" data-id="faction">Faction</a>, <a class="wl" href="player-power.html" data-id="player-power">player</a>, <a class="wl" href="law.html" data-id="law">Law</a>, <a class="wl" href="gate.html" data-id="gate">Gate</a>, <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a> — carries an integer <code>version</code>. It is not domain data; it is a concurrency protocol.</p>
+<h2 id="the-protocol">The protocol</h2>
+<pre><code class="lang-sql">UPDATE mf_faction
+   SET ..., version = :version + 1
+ WHERE id = :id
+   AND version = :version</code></pre>
+<p>If the row's version has moved since it was read, the <code>WHERE</code> matches nothing, the affected-row count is zero, and the repository throws <code>OptimisticLockingFailureException</code>. The <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> maps that to a <code>CONFLICT</code> failure, which a command turns into &quot;someone else changed this, try again&quot;.</p>
+<h2 id="why-optimistic-rather-than-locked">Why optimistic rather than locked</h2>
+<p>Two properties of the plugin make this the right trade:</p>
+<ul>
+<li><strong>Conflicts are rare.</strong> Two players editing the same <a class="wl" href="faction.html" data-id="faction">Faction</a> in the same instant is unusual. Taking a row lock on every write would pay a cost on every operation to protect against something that almost never happens.
+</li>
+<li><strong>Records are immutable.</strong> Domain objects are Kotlin <code>data class</code> values with <code>copy()</code>. A caller always holds a complete snapshot including the version it read, so the version travels with the object for free — there is nothing extra to thread through.
+</li>
+</ul>
+<p>Pessimistic locking would also mean holding a database transaction open across game logic, and game logic on a Bukkit server runs on the main thread. A held lock there is a stalled server.</p>
+<h2 id="failing-loudly-beats-a-lost-update">Failing loudly beats a lost update</h2>
+<p>The alternative to rejecting the write is accepting it, which silently discards whatever the other writer did. For a <a class="wl" href="faction.html" data-id="faction">Faction</a> record — carrying the roster, the roles, and the flags — a lost update means a player's changes vanish with no error anywhere. A <code>CONFLICT</code> a player can retry is a much better failure.</p>
+<h2 id="related">Related</h2>
+<p>Because roles and flags live inline on the faction record, editing either bumps the same version as renaming the faction. Fine-grained concurrent edits within one faction are therefore not possible by design.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/JooqMfFactionRepository.kt#L170-L174" rel="noopener noreferrer">Medieval-Factions/JooqMfFactionRepository.kt:170-174</a> <span class="claim">— The update sets version to version plus one, constrains the WHERE clause on both the id and the previously read version, and throws OptimisticLockingFailureException when no rows were affected.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/MfFactionService.kt#L198-L202" rel="noopener noreferrer">Medieval-Factions/MfFactionService.kt:198-202</a> <span class="claim">— The service maps an OptimisticLockingFailureException to the CONFLICT service failure type.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="currencies.html">Currencies</a></li>
+<li><a href="duel.html">Duel</a></li>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="faction-flag.html">Faction Flag</a></li>
+<li><a href="faction-role.html">Faction Role</a></li>
+<li><a href="jooq-persistence.html">jOOQ Persistence</a></li>
+<li><a href="law.html">Law</a></li>
+<li><a href="legacy-data-migration.html">Legacy Data Migration</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="player-interaction-status.html">Player Interaction Status</a></li>
+<li><a href="repository-pattern.html">Repository Pattern</a></li>
+<li><a href="service-layer.html">Service Layer</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/optimistic-locking.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

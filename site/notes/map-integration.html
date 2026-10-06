@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map Integration — DPC Zettelkasten</title>
+<meta name="description" content="Claimed territory is drawn on web maps through a one-method interface with a Dynmap implementation, wired only when the optional plugin is present.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/map-integration.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Map Integration">
+<meta property="og:description" content="Claimed territory is drawn on web maps through a one-method interface with a Dynmap implementation, wired only when the optional plugin is present.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/map-integration.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Map Integration">
+<meta name="twitter:description" content="Claimed territory is drawn on web maps through a one-method interface with a Dynmap implementation, wired only when the optional plugin is present.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/map-integration">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Map Integration</h1>
+<p class="summary">Claimed territory is drawn on web maps through a one-method interface with a Dynmap implementation, wired only when the optional plugin is present.</p>
+<p>Faction territory is rendered on a live web map. The flagship's side of that is one interface with one method: <code>scheduleUpdateClaims(faction)</code>.</p>
+<h2 id="debounced-not-immediate">Debounced, not immediate</h2>
+<p>The method name is the design. A <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a> change does not redraw the map — it <em>schedules</em> a redraw. The Dynmap implementation is three lines:</p>
+<pre><code class="lang-kotlin">taskScheduler.cancelTasks(faction.id)
+taskScheduler.scheduleTask(faction.id, { updateClaims(faction) }, 100L)</code></pre>
+<p>Cancel whatever is pending for this faction, then schedule a fresh redraw 100 ticks (five seconds) out. That is a debounce: claiming land is usually a burst — the fill and circle claim commands place dozens of chunks at once — and each chunk would otherwise mean a full marker rebuild. Only the last change in a burst survives to actually run.</p>
+<p>Behind the interface, <code>map/builders</code> turns a faction's claims into polygon paths and its details into an info popup, and <code>map/aliases</code> is three typealiases giving that geometry names (<code>Point</code>, <code>Path</code>, <code>LineSegment</code>). <code>map/scheduling</code> holds the <code>TaskScheduler</code> — which, incidentally, still declares the package <code>com.dansplugins.factionsystem.dynmap</code> despite living under <code>map/scheduling</code>.</p>
+<h2 id="doubly-optional">Doubly optional</h2>
+<p>The service is created only if <em>both</em> the <code>dynmap</code> plugin is installed <em>and</em> <code>dynmap.enableDynmapIntegration</code> is true. Both conditions are checked once at startup, and the result is the nullable <code>mapService</code> on the <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> registry — so the rest of the codebase deals with a null check rather than a runtime capability probe.</p>
+<p>An operator can therefore run Dynmap for the base map while keeping faction overlays off, without uninstalling anything.</p>
+<h2 id="colour-comes-from-the-faction">Colour comes from the faction</h2>
+<p>The colour a faction is drawn in is its <code>color</code> <a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a> — a <code>#RRGGBB</code> string that defaults to a randomly generated pleasant colour. Map appearance is thus player-controlled state, not a server setting.</p>
+<h2 id="related">Related</h2>
+<p>A separate repository, <code>Bluemap_MedievalFactions</code>, provides the equivalent for BlueMap, and <a class="wl" href="dpc-mc-server.html" data-id="dpc-mc-server">DPC Minecraft Server</a> ships both map plugins.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/map/MapService.kt#L8-L15" rel="noopener noreferrer">Medieval-Factions/MapService.kt:8-15</a> <span class="claim">— The map service interface declares a single method, scheduleUpdateClaims, taking a faction.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L190" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:190</a> <span class="claim">— The map service is constructed only when the dynmap plugin is installed and dynmap.enableDynmapIntegration is true in the config.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/map/dynmap/DynmapService.kt#L41-L44" rel="noopener noreferrer">Medieval-Factions/DynmapService.kt:41-44</a> <span class="claim">— Scheduling an update cancels any pending tasks for that faction and schedules a fresh one 100 ticks later, so rapid successive changes collapse into a single redraw.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="claimed-chunk.html">Claimed Chunk</a></li>
+<li><a href="dpc-mc-server.html">DPC Minecraft Server</a></li>
+<li><a href="faction-flag.html">Faction Flag</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="notification.html">Notification</a></li>
+<li><a href="service-layer.html">Service Layer</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/map-integration.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

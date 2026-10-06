@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two-Tier Documentation — DPC Zettelkasten</title>
+<meta name="description" content="Reference documents live in the repository and are versioned with the code; narrative and community content lives in the GitHub wiki.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/two-tier-documentation.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Two-Tier Documentation">
+<meta property="og:description" content="Reference documents live in the repository and are versioned with the code; narrative and community content lives in the GitHub wiki.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/two-tier-documentation.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Two-Tier Documentation">
+<meta name="twitter:description" content="Reference documents live in the repository and are versioned with the code; narrative and community content lives in the GitHub wiki.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/two-tier-documentation">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Two-Tier Documentation</h1>
+<p class="summary">Reference documents live in the repository and are versioned with the code; narrative and community content lives in the GitHub wiki.</p>
+<p>DPC splits documentation by <em>volatility</em>, not by audience. Anything that must match the code exactly lives in the repository; anything that changes on its own schedule lives in the wiki.</p>
+<h2 id="what-goes-where">What goes where</h2>
+<p><strong>In the repository</strong> (required): <code>README.md</code>, <code>CONTRIBUTING.md</code>, <code>USER_GUIDE.md</code>, <code>COMMANDS.md</code>, <code>CONFIG.md</code>. Recommended: <code>CHANGELOG.md</code>. When applicable: a flags reference such as <code>FACTION_FLAGS.md</code>, and <code>DATABASE_QUERYING.md</code>.</p>
+<p><strong>In the wiki</strong>: Guide, FAQ, Placeholders, Developer Notes, External API documentation.</p>
+<h2 id="the-reason-for-the-line">The reason for the line</h2>
+<p><code>COMMANDS.md</code> and <code>CONFIG.md</code> are the test case. A command's syntax and a config key's default are facts about a specific version of the code. Put them in a wiki and they describe whatever the latest release happens to be — which is wrong for everyone running anything else, and impossible to fix in a pull request.</p>
+<p>In the repository, they are versioned: they change in the same commit as the code, review together, and a user reading the docs for the tag they installed gets the truth.</p>
+<p>The wiki gets what benefits from <em>not</em> being versioned — a narrative guide, an FAQ that grows as questions arrive, community-maintained pages that would otherwise need a maintainer's review for a typo.</p>
+<h2 id="the-line-is-not-perfectly-held">The line is not perfectly held</h2>
+<p>The convention places FAQ in the wiki, but <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> now also carries an in-repo <code>FAQ.md</code> linked from its README. Whether that is the convention drifting or the flagship leading it is not recorded anywhere; note only that the two currently disagree.</p>
+<h2 id="applied-here">Applied here</h2>
+<p>This zettelkasten sits on the same side of the line as <code>COMMANDS.md</code>: its claims are about specific commits, so they are pinned to SHAs rather than left to track <code>main</code>. See the <a href="../../docs/NOTE_FORMAT.md">note format</a>.</p>
+<h2 id="related">Related</h2>
+<p>The rule is enforced by review rather than tooling — <a class="wl" href="dpc-conventions.html" data-id="dpc-conventions">DPC Conventions</a> describes the shape, and an audit is a matter of checking which files exist.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-conventions/blob/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec/docs/DOCUMENTATION_PRACTICES.md" rel="noopener noreferrer">dpc-conventions/DOCUMENTATION_PRACTICES.md</a> <span class="claim">— DPC plugins use a two-tier model in which README, CONTRIBUTING, USER_GUIDE, COMMANDS and CONFIG are required in the repository root while Guide, FAQ, Placeholders and Developer Notes pages live in the wiki.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/README.md" rel="noopener noreferrer">Medieval-Factions/README.md</a> <span class="claim">— The flagship README links to in-repo USER_GUIDE, COMMANDS, CONFIG, FACTION_FLAGS and DATABASE_QUERYING documents alongside external wiki pages.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dpc-conventions.html">DPC Conventions</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-conventions-and-process.html">Conventions and Process</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/two-tier-documentation.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

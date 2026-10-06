@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction Domain Model — DPC Zettelkasten</title>
+<meta name="description" content="Guided path through the nouns of the simulation — factions, power, land, and the relationships between them.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/moc-faction-domain-model.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction Domain Model">
+<meta property="og:description" content="Guided path through the nouns of the simulation — factions, power, land, and the relationships between them.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/moc-faction-domain-model.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction Domain Model">
+<meta name="twitter:description" content="Guided path through the nouns of the simulation — factions, power, land, and the relationships between them.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/moc-faction-domain-model">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction Domain Model</h1>
+<p class="summary">Guided path through the nouns of the simulation — factions, power, land, and the relationships between them.</p>
+<p>The domain model is small enough to hold in your head, and almost all of it hangs off one number. This map walks it in dependency order rather than alphabetically.</p>
+<h2 id="start-with-power">Start with power</h2>
+<p>Every player carries <a class="wl" href="player-power.html" data-id="player-power">Player Power</a>, a scalar that rises with time online and falls on death. A <a class="wl" href="faction.html" data-id="faction">Faction</a>'s <a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a> is the sum of its members' power, plus a conditional contribution from its vassals. That single number is the currency of the whole simulation: it decides how much land a faction may hold, via the <a class="wl" href="demesne-limit.html" data-id="demesne-limit">Demesne Limit</a>.</p>
+<p>This is the design's central lever. Territory is not bought, it is <em>staffed</em> — land follows people, and a faction that empties out loses its grip on the map.</p>
+<h2 id="then-land">Then land</h2>
+<p>Land is claimed one Minecraft chunk at a time; see <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a>. Whether a non-member may build inside a claim depends on <a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a> settings and, for members, on the <a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a> granted by their <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a>.</p>
+<h2 id="then-politics">Then politics</h2>
+<p>Factions relate to each other through <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a> — allied, at war, or bound in the liege/vassal hierarchy described in <a class="wl" href="vassalage.html" data-id="vassalage">Vassalage</a>. Relationship changes are two-sided, which is what <a class="wl" href="approval-request.html" data-id="approval-request">Approval Request</a> exists to mediate.</p>
+<h2 id="then-the-trimmings">Then the trimmings</h2>
+<p>Several features are self-contained and can be read in any order once the above is clear: <a class="wl" href="law.html" data-id="law">Law</a> (a faction's written rules), <a class="wl" href="gate.html" data-id="gate">Gate</a> (redstone-triggered walls), and <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a> (per-player container locks that operate independently of faction land).</p>
+<p>Two more sit at the edge of the model, where the simulation touches the players directly rather than the factions: <a class="wl" href="faction-chat-channel.html" data-id="faction-chat-channel">Faction Chat Channel</a> (three private audiences computed from the diplomacy graph at send time) and <a class="wl" href="duel.html" data-id="duel">Duel</a> (a consented fight nobody dies in, and the one record here with no faction on it).</p>
+<h2 id="what-ties-it-together">What ties it together</h2>
+<p>Nothing in this map is stored as an object graph — every one of these concepts is persisted through its own repository, and read back through the <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a>. If you are tracing a value from a command to the database, <a class="wl" href="moc-plugin-architecture.html" data-id="moc-plugin-architecture">Plugin Architecture</a> is the map you want next.</p>
+</article>
+
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/moc/moc-faction-domain-model.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

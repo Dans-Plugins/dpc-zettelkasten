@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction Chat Channel — DPC Zettelkasten</title>
+<meta name="description" content="Three private channels whose audiences are computed from the diplomacy graph at send time rather than from a subscriber list.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/faction-chat-channel.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction Chat Channel">
+<meta property="og:description" content="Three private channels whose audiences are computed from the diplomacy graph at send time rather than from a subscriber list.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction-chat-channel.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction Chat Channel">
+<meta name="twitter:description" content="Three private channels whose audiences are computed from the diplomacy graph at send time rather than from a subscriber list.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/faction-chat-channel">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction Chat Channel</h1>
+<p class="summary">Three private channels whose audiences are computed from the diplomacy graph at send time rather than from a subscriber list.</p>
+<p>A player in a <a class="wl" href="faction.html" data-id="faction">Faction</a> can direct their chat to one of three audiences: <code>FACTION</code>, <code>VASSALS</code>, or <code>ALLIES</code>. The selection is a nullable field on the same persisted player record that carries <a class="wl" href="player-power.html" data-id="player-power">Player Power</a> — <code>null</code> means ordinary server chat — so the channel a player was last talking in is stored rather than held for the session.</p>
+<h2 id="the-audience-is-a-query-not-a-list">The audience is a query, not a list</h2>
+<p>No channel has members. Each is a rule evaluated against the diplomacy graph every time someone speaks, which means the audience tracks <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a> changes with no subscription to maintain.</p>
+<ul>
+<li><strong><code>FACTION</code></strong> — the faction's own members.
+</li>
+<li><strong><code>VASSALS</code></strong> — not the speaker's direct vassals. The service walks the liege chain to its <strong>top</strong> and addresses that faction's members plus every faction in its vassal tree. Realm-wide chat, reached from anywhere in the hierarchy; see <a class="wl" href="vassalage.html" data-id="vassalage">Vassalage</a>.
+</li>
+<li><strong><code>ALLIES</code></strong> — own members, plus the members of allies <strong>whose alliance is reciprocated</strong>. An ally faction is included only if the reverse relationship is also <code>ALLY</code>.
+</li>
+</ul>
+<p>That last rule is worth noticing. <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a> stores directed edges, and the service checks the pairing for liege and vassal edges; here the same suspicion is applied to alliance, at the call site, so a one-sided <code>ALLY</code> row grants no access to allied chat.</p>
+<h2 id="written-down-not-read-back">Written down, not read back</h2>
+<p>After delivery the message is persisted asynchronously as an <code>MfChatChannelMessage</code> — timestamp, sender, faction, channel, and text — keeping the database write off the main thread, per <a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a>. The service offers paged reads and a count over a faction's history.</p>
+<p>At this commit <strong>nothing outside the <code>chat</code> package calls those read methods.</strong> The log is written and retained; no comment, commit message or document in the repository records what it is for.</p>
+<h2 id="formatting">Formatting</h2>
+<p>Each channel has a configurable format string under <code>chat</code> in <code>config.yml</code>, with placeholders for faction colour, name, role and message. One detail is worth flagging for anyone editing this code: the hard-coded fallback used when a format key is missing selects its template from the <em>sending player's currently selected channel</em> rather than from the channel argument the method was called with. The two normally agree. Nothing in the repository explains the difference.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/chat/MfFactionChatChannel.kt#L3-L8" rel="noopener noreferrer">Medieval-Factions/MfFactionChatChannel.kt:3-8</a> <span class="claim">— There are exactly three faction chat channels — FACTION, VASSALS and ALLIES.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/player/MfPlayer.kt#L7-L16" rel="noopener noreferrer">Medieval-Factions/MfPlayer.kt:7-16</a> <span class="claim">— A player's selected chat channel is a nullable field on the persisted player record, defaulting to null.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/chat/MfChatService.kt#L37-L61" rel="noopener noreferrer">Medieval-Factions/MfChatService.kt:37-61</a> <span class="claim">— Recipients are resolved per channel at send time — FACTION reaches the faction's own members, VASSALS walks to the top of the liege chain and reaches that faction's members plus every faction in its vassal tree, and ALLIES reaches own members plus allies whose reverse relationship is also ALLY.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/chat/MfChatService.kt#L62-L71" rel="noopener noreferrer">Medieval-Factions/MfChatService.kt:62-71</a> <span class="claim">— The message is written to the repository on an asynchronous task after delivery, and echoed to the console sender so colour codes survive.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/chat/MfChatChannelMessage.kt#L7-L15" rel="noopener noreferrer">Medieval-Factions/MfChatChannelMessage.kt:7-15</a> <span class="claim">— A stored chat message carries a timestamp, the sending player id, the faction id, the channel and the raw message text.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/resources/config.yml#L103-L110" rel="noopener noreferrer">Medieval-Factions/config.yml:103-110</a> <span class="claim">— Each of the three channels has its own configurable format string under the chat key.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="medieval-roleplay-engine.html">Medieval Roleplay Engine</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/faction-chat-channel.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

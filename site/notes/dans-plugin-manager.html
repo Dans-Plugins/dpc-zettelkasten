@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dan's Plugin Manager — DPC Zettelkasten</title>
+<meta name="description" content="A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/dans-plugin-manager.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Dan's Plugin Manager">
+<meta property="og:description" content="A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/dans-plugin-manager.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dan's Plugin Manager">
+<meta name="twitter:description" content="A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/dans-plugin-manager">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Dan's Plugin Manager</h1>
+<p class="summary">A plugin that installs other DPC plugins from in-game or the console, pulling releases straight from GitHub.</p>
+<p>DPM is a package manager for the community's own plugins, run from inside a Minecraft server. <code>/dpm get medieval-factions</code> downloads the latest release jar into the plugins folder.</p>
+<h2 id="a-package-manager-s-vocabulary">A package manager's vocabulary</h2>
+<p>The command set is the giveaway: <code>list</code>, <code>get</code>, <code>update</code>, <code>remove</code>, <code>search</code>, <code>info</code>, <code>clean</code>. These are apt and dnf commands, ported to a game console.</p>
+<p><code>/dpm info</code> is the most useful of them — it reports the GitHub owner and repo, which <a class="wl" href="release-channel.html" data-id="release-channel">channel</a> the plugin is on and the latest build on that channel, its publish date, whether the plugin is installed, and <strong>whether its dependencies are satisfied</strong>. That last field matters in an ecosystem where <a class="wl" href="expansion-plugin.html" data-id="expansion-plugin">expansions</a> hard-depend on <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> and simply fail to load without it.</p>
+<p>DPM does not only choose <em>which plugin</em> to install but <em>which build</em> of it: each managed plugin tracks a <a class="wl" href="release-channel.html" data-id="release-channel">Release Channel</a>, either published releases or a rolling build of <code>main</code>, and the choice sticks until it is changed.</p>
+<p><code>/dpm clean</code> addresses the failure mode that follows from downloading jars: two versions of the same plugin left in the folder. Like <code>remove</code>, it previews by default and requires <code>--confirm</code> to actually delete — a good default for a command that removes files from a live server.</p>
+<h2 id="github-releases-as-the-registry">GitHub releases as the registry</h2>
+<p>There is no separate package index. DPM reads GitHub releases directly, which is why <a class="wl" href="release-automation.html" data-id="release-automation">Release Automation</a> matters operationally rather than merely cosmetically: a release without an attached jar is invisible to DPM. A configurable <code>githubToken</code> exists for rate limits.</p>
+<h2 id="related">Related</h2>
+<p>DPM solves plugin distribution for an operator's own server; <a class="wl" href="dpc-mc-server.html" data-id="dpc-mc-server">DPC Minecraft Server</a> solves it by pinning jars into a Docker image instead. The two answer the same question with opposite trade-offs — live and current, versus reproducible and fixed.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/README.md" rel="noopener noreferrer">Dans-Plugin-Manager/README.md</a> <span class="claim">— Dan's Plugin Manager lets server operators download DPC plugins in-game or from the server console.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Dans-Plugin-Manager/blob/3733eb51df6be11ac0239d7cffcfb2ef72e756a9/COMMANDS.md" rel="noopener noreferrer">Dans-Plugin-Manager/COMMANDS.md</a> <span class="claim">— The command set covers list, get, update, remove, clean, search, info, stats and reload, with info reporting the description, GitHub owner, repo, release channel, latest build on that channel, publish date, install status and dependency status.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dpc-mc-server.html">DPC Minecraft Server</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="moc-web-and-infrastructure.html">Web and Infrastructure</a></li>
+<li><a href="release-automation.html">Release Automation</a></li>
+<li><a href="release-channel.html">Release Channel</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/dans-plugin-manager.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

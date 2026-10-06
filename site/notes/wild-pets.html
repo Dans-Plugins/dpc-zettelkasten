@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wild Pets — DPC Zettelkasten</title>
+<meta name="description" content="A standalone plugin that turns taming into a per-entity-type recipe — a required item, a quantity, and a success chance — so that any mob can become a pet.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/wild-pets.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Wild Pets">
+<meta property="og:description" content="A standalone plugin that turns taming into a per-entity-type recipe — a required item, a quantity, and a success chance — so that any mob can become a pet.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/wild-pets.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Wild Pets">
+<meta name="twitter:description" content="A standalone plugin that turns taming into a per-entity-type recipe — a required item, a quantity, and a success chance — so that any mob can become a pet.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/wild-pets">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Wild Pets</h1>
+<p class="summary">A standalone plugin that turns taming into a per-entity-type recipe — a required item, a quantity, and a success chance — so that any mob can become a pet.</p>
+<p>Vanilla Minecraft tames a handful of species. Wild Pets replaces that with a lookup table: each entity type gets a row saying what taming it costs and how likely an attempt is to work — and a type with no row still gets one.</p>
+<h2 id="a-row-per-entity-type">A row per entity type</h2>
+<p>An entity configuration is five fields: type name, success chance, required item, item amount, and an enabled flag. The plugin ships 81 of them, from passive animals through hostile mobs to the Ender Dragon and the Wither. Every shipped row is enabled at a 0.5 chance, so the difference between mobs is entirely the item and the quantity — 8 sweet berries for a fox, 64 ender eyes for the Ender Dragon. The <code>enabled</code> flag is the per-type off switch.</p>
+<h2 id="a-fallback-that-is-never-a-wall">A fallback that is never a wall</h2>
+<p>Lookup compares the entity's type name against each row, case-insensitively. On no match it returns a default configuration built inline: 0.25 chance, 10 wheat. An unlisted entity type is therefore <em>harder</em> to tame than anything in the table, but never refused. Nothing in the repository explains the choice of 0.25 or of wheat, so treat those numbers as unexplained.</p>
+<p>The consequence is that a key which cannot match degrades silently rather than erroring. The shipped table contains <code>Wandering Trader</code> — with a space, which an enum constant name cannot contain — and rows like <code>Piglin_Baby</code> and <code>Chicken_Jockey</code> that name variants rather than types. My reading is that these rows are unreachable and those mobs fall through to the default; I have not run a server to confirm it.</p>
+<h2 id="the-attempt-is-a-transaction">The attempt is a transaction</h2>
+<p>Right-clicking in taming mode checks the enabled flag, the owner's pet limit, and the held stack against the row's material and amount, then rolls. The stack is decremented by the required amount on failure as well as on success, so a failed attempt has a price.</p>
+<h2 id="related">Related</h2>
+<p>Taming is entered as a mode — <code>/wp tame</code> flags the player and the next right-click supplies the target — which is the same shape as the flagship's <a class="wl" href="player-interaction-status.html" data-id="player-interaction-status">Player Interaction Status</a>. A tamed pet carries an owner plus an access list and can be locked against everyone else, which is <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a>'s design applied to a mob rather than a chest.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfig.java#L8-L21" rel="noopener noreferrer">Wild-Pets/EntityConfig.java:8-21</a> <span class="claim">— An entity configuration is five immutable fields — type name, chance to succeed, required taming item, taming item amount, and an enabled flag.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfigService.java#L42-L137" rel="noopener noreferrer">Wild-Pets/EntityConfigService.java:42-137</a> <span class="claim">— The built-in table holds 81 entity configurations across passive, neutral, hostile and boss mobs, every one enabled with a chance to succeed of 0.5, with Endermite listed twice.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfigService.java#L23-L32" rel="noopener noreferrer">Wild-Pets/EntityConfigService.java:23-32</a> <span class="claim">— A configuration is selected by comparing the entity's type name case-insensitively against each row's type, and the default configuration is returned when no row matches.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/config/EntityConfigService.java#L164-L166" rel="noopener noreferrer">Wild-Pets/EntityConfigService.java:164-166</a> <span class="claim">— The default configuration is constructed inline as type &quot;default&quot; with a 0.25 chance to succeed, 10 wheat, and enabled true.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Wild-Pets/blob/374065a04fdb5865fc782a1424b82e3b951881b3/src/main/java/dansplugins/wildpets/listeners/InteractionHandler.java#L83-L136" rel="noopener noreferrer">Wild-Pets/InteractionHandler.java:83-136</a> <span class="claim">— A taming attempt is refused when the entity's configuration is disabled or the player is at the pet limit, requires the configured material and amount in the main hand, and removes that amount from the held stack whether the roll succeeds or fails.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="simple-skills.html">SimpleSkills</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/wild-pets.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dansplugins.com — DPC Zettelkasten</title>
+<meta name="description" content="The community's Next.js website — plugin directory, guides, and player accounts — backed by a separate dpc-api service.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/dansplugins-dot-com.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="dansplugins.com">
+<meta property="og:description" content="The community's Next.js website — plugin directory, guides, and player accounts — backed by a separate dpc-api service.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/dansplugins-dot-com.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dansplugins.com">
+<meta name="twitter:description" content="The community's Next.js website — plugin directory, guides, and player accounts — backed by a separate dpc-api service.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/dansplugins-dot-com">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>dansplugins.com</h1>
+<p class="summary">The community's Next.js website — plugin directory, guides, and player accounts — backed by a separate dpc-api service.</p>
+<p>dansplugins.com is the community's public face: a Next.js and MUI application listing the plugins, hosting guides, and — since accounts were added — letting players claim a profile and like things.</p>
+<h2 id="a-front-end-not-a-backend">A front end, not a backend</h2>
+<p>The site holds almost no data of its own. <code>utils/apiBase.ts</code> resolves a separate <strong>dpc-api</strong> service from <code>NEXT_PUBLIC_API_URL</code>, and the <code>services/</code> directory is a set of thin clients against it: <code>claimService</code>, <code>likeService</code>, <code>profileService</code>, <code>backlogService</code>, <code>featureRequestService</code>, <code>visitService</code>.</p>
+<p>That separation is why this repository is TypeScript with no database. It also means the site is not the receiving end of <a class="wl" href="dpc-api-faction-sync.html" data-id="dpc-api-faction-sync">DPC API Faction Sync</a> — dpc-api is, and the site reads what dpc-api stores.</p>
+<h2 id="failing-soft">Failing soft</h2>
+<p>The service clients wrap their fetches in <code>try</code>/<code>catch</code> and return an empty array on any error. A page whose data call fails renders empty rather than erroring.</p>
+<p>For a public site whose backend is a separately deployed service, that is the right default: a visitor browsing the plugin list should not see a 500 because the likes endpoint is down. The trade-off is that a genuine outage looks identical to &quot;there is nothing here&quot;.</p>
+<h2 id="more-than-a-brochure">More than a brochure</h2>
+<p>The <code>pages/</code> directory shows the scope: a plugin index, guides, news, a roadmap, a leaderboard, commissions, a developer portal, per-user profile pages at <code>/u/[username]</code>, plus <code>sitemap.xml</code> and <code>robots.txt</code> generated server-side. The <code>__tests__/</code> directory holds a test file for most modules in <code>services/</code> and <code>utils/</code>, run with Vitest.</p>
+<h2 id="related">Related</h2>
+<p>Static plugin metadata lives in <code>pages/data/plugins.json</code>, checked into the repository — the directory of plugins is versioned, while the live data behind it is not.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dansplugins-dot-com/blob/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b/README.md" rel="noopener noreferrer">dansplugins-dot-com/README.md</a> <span class="claim">— The site is a Next.js application serving as the central hub for the community at dansplugins.com, showcasing plugins and linking to documentation and support.</span></li>
+<li><a href="https://github.com/Dans-Plugins/dansplugins-dot-com/blob/e5eb6d69c4ffd4fc2a704b064c50b71fc1f5487b/utils/apiBase.ts" rel="noopener noreferrer">dansplugins-dot-com/apiBase.ts</a> <span class="claim">— The site resolves a separate dpc-api backend from the NEXT_PUBLIC_API_URL environment variable, defaulting to a local dev-portal origin.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dpc-api-faction-sync.html">DPC API Faction Sync</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-web-and-infrastructure.html">Web and Infrastructure</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/dansplugins-dot-com.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

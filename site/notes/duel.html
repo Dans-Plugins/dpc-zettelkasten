@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Duel — DPC Zettelkasten</title>
+<meta name="description" content="A consented fight between two players in which the losing blow is cancelled and both duellists are restored to the health and position they started from.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/duel.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Duel">
+<meta property="og:description" content="A consented fight between two players in which the losing blow is cancelled and both duellists are restored to the health and position they started from.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/duel.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Duel">
+<meta name="twitter:description" content="A consented fight between two players in which the losing blow is cancelled and both duellists are restored to the health and position they started from.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/duel">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Duel</h1>
+<p class="summary">A consented fight between two players in which the losing blow is cancelled and both duellists are restored to the health and position they started from.</p>
+<p>A duel is a fight two players agree to, which nobody dies in. It sits inside <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> without touching the faction model at all: no <a class="wl" href="faction.html" data-id="faction">Faction</a> id appears anywhere on the record, and challenger and challenged are plain player ids.</p>
+<h2 id="the-record-is-a-snapshot">The record is a snapshot</h2>
+<p><code>MfDuel</code> stores both participants' <strong>health and position as they were when the duel began</strong>, taken at the moment the invite is accepted, along with an end time. Positions use <a class="wl" href="spatial-value-types.html" data-id="spatial-value-types">MfPosition</a>, so yaw and pitch are captured too; the duellists are put back facing the way they were.</p>
+<h2 id="death-is-replaced-not-survived">Death is replaced, not survived</h2>
+<p>The interesting mechanic is in <code>EntityDamageListener</code>. When a participant would drop to zero health or below, the damage event is <strong>cancelled</strong> — the losing blow never lands. Both players are then cleaned up and reset: potion effects cleared, fire extinguished, health restored, teleported back. The winner is restored too, so a duel costs neither side anything material.</p>
+<p>What changes hands is a trophy: the winner is given the loser's head — a <code>PLAYER_HEAD</code> carrying the loser as its owning player, named after them, with the lore <em>&quot;Lost in a duel against&quot;</em> the winner — dropped at their feet if their inventory is full. The duel row is then deleted.</p>
+<h2 id="ending-on-time">Ending on time</h2>
+<p>A duel also ends when its clock runs out. A repeating task drives a boss bar per duel from the remaining time against the configured <code>duels.duration</code> (default <code>PT2M</code>, parsed as an ISO-8601 duration), and on expiry runs the identical restoration and announces a <strong>tie</strong> to players within <code>duels.notificationDistance</code> blocks. Both outcomes share the same ending; only the message and the head differ.</p>
+<h2 id="why-it-is-persisted">Why it is persisted</h2>
+<p>Duels go through the <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> to a repository and carry a <code>version</code> for <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a>, and the service loads them all at startup. A duel therefore outlives a restart mid-fight — and because the boss bar does not, the plugin sweeps boss bars named <code>duel_*</code> whose duel no longer exists during startup.</p>
+<h2 id="related">Related</h2>
+<p>Like <a class="wl" href="locked-block.html" data-id="locked-block">Locked Block</a>, a duel is player-owned state living inside a faction-shaped plugin. Its restoration path is also why an in-flight teleport is cancelled on damage, handled in the same listener.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/duel/MfDuel.kt#L7-L20" rel="noopener noreferrer">Medieval-Factions/MfDuel.kt:7-20</a> <span class="claim">— A duel records both player ids, both starting health values, both starting positions and an end time.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/command/duel/accept/MfDuelAcceptCommand.kt#L81-L95" rel="noopener noreferrer">Medieval-Factions/MfDuelAcceptCommand.kt:81-95</a> <span class="claim">— Accepting an invite deletes the invite and creates the duel, snapshotting each player's current health and location and setting the end time to now plus the configured duels.duration.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/listener/EntityDamageListener.kt#L31-L55" rel="noopener noreferrer">Medieval-Factions/EntityDamageListener.kt:31-55</a> <span class="claim">— When damage during a duel would take a participant to zero health or below the damage event is cancelled, and both duellists have their potion effects cleared, fire ticks zeroed, health set back to the recorded starting value and are teleported to their recorded starting position.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/listener/EntityDamageListener.kt#L56-L101" rel="noopener noreferrer">Medieval-Factions/EntityDamageListener.kt:56-101</a> <span class="claim">— The winner is given a head belonging to the loser, dropped on the ground if their inventory is full, nearby players are told who won, and the duel row is then deleted asynchronously.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/listener/EntityDamageListener.kt#L106-L118" rel="noopener noreferrer">Medieval-Factions/EntityDamageListener.kt:106-118</a> <span class="claim">— The trophy is a PLAYER_HEAD whose owning player is the loser, named after them and given the lore &quot;Lost in a duel against&quot; the winner.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/duel/MfDuelService.kt#L25-L35" rel="noopener noreferrer">Medieval-Factions/MfDuelService.kt:25-35</a> <span class="claim">— The duel service loads every stored duel and duel invite into memory in its constructor.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L406-L421" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:406-421</a> <span class="claim">— At startup the plugin removes any boss bar keyed duel_ whose duel no longer exists.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L423-L461" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:423-461</a> <span class="claim">— A repeating task drives each duel's boss bar from the time remaining and, once the end time passes, performs the same restoration and announces a tie.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/resources/config.yml#L111-L113" rel="noopener noreferrer">Medieval-Factions/config.yml:111-113</a> <span class="claim">— Duels default to a duration of PT2M and a notification distance of 64.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="spatial-value-types.html">Spatial Value Types</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/duel.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction — DPC Zettelkasten</title>
+<meta name="description" content="The central record of the simulation — a named group of players with land, roles, diplomacy, and a power score.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/faction.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction">
+<meta property="og:description" content="The central record of the simulation — a named group of players with land, roles, diplomacy, and a power score.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction">
+<meta name="twitter:description" content="The central record of the simulation — a named group of players with land, roles, diplomacy, and a power score.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/faction">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction</h1>
+<p class="summary">The central record of the simulation — a named group of players with land, roles, diplomacy, and a power score.</p>
+<p>A faction is the unit of political organisation: a named group of players that can hold land, make war, and be inherited into a feudal hierarchy. Everything else in the domain model either belongs to a faction or describes a relation between two of them.</p>
+<h2 id="what-the-record-holds">What the record holds</h2>
+<p><code>MfFaction</code> is an immutable Kotlin data class. Its fields fall into four groups:</p>
+<ul>
+<li><strong>Identity</strong> — an <a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">id</a>, a <code>name</code>, an optional chat <code>prefix</code>, and a <code>description</code>.
+</li>
+<li><strong>People</strong> — <code>members</code>, outstanding <code>invites</code>, and pending <code>applications</code>.
+</li>
+<li><strong>Governance</strong> — <code>roles</code> (see <a class="wl" href="faction-role.html" data-id="faction-role">Faction Role</a>), <code>defaultPermissionsByName</code> (see <a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a>), and <code>flags</code> (see <a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a>).
+</li>
+<li><strong>Territory</strong> — a <code>home</code> position and an <code>autoclaim</code> toggle. Note that the claims themselves are <em>not</em> stored on the faction; see <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a>.
+</li>
+</ul>
+<p>The <code>version</code> field is not domain data — it exists for <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a>.</p>
+<h2 id="power-is-computed-not-stored">Power is computed, not stored</h2>
+<p><code>power</code> and <code>maxPower</code> are computed properties, derived on every read from the members' <a class="wl" href="player-power.html" data-id="player-power">Player Power</a> and from vassals. Nothing writes a faction's power to the database. This is what makes <a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a> a live quantity that responds to players logging in and dying, rather than a value that has to be recalculated by a scheduled job.</p>
+<p>The exception is <code>bonusPower</code>, an operator-granted constant that is stored — and which the faction can decline by turning off the <code>acceptBonusPower</code> flag.</p>
+<h2 id="where-it-lives-at-runtime">Where it lives at runtime</h2>
+<p><code>MfFactionService</code> loads every faction into a <code>ConcurrentHashMap</code> when the plugin starts and serves reads from memory. Writes go through the same service so that they can fire <a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a> and be persisted through the <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a>. Code should never reach past the service to the repository — see <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a>.</p>
+<h2 id="membership-is-stored-sideways">Membership is stored sideways</h2>
+<p>The <code>members</code> list on the record is a view, not the storage. Membership lives in its own <code>mf_faction_member</code> table, and the repository's &quot;which faction is this player in?&quot; query is a subquery against it.</p>
+<p>In memory, though, the service answers that question by scanning every cached faction's member list until one matches. That is fine at the scale these servers run at, and worth knowing before calling it inside a loop over online players.</p>
+<p>Note also that the player record itself holds no faction reference — see <a class="wl" href="player-power.html" data-id="player-power">Player Power</a>. The edge is stored in exactly one place, which is why a player cannot end up in two factions through disagreeing records.</p>
+<h2 id="related">Related</h2>
+<p>Diplomacy lives entirely outside the faction record in <a class="wl" href="faction-relationship.html" data-id="faction-relationship">Faction Relationship</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/MfFaction.kt#L14-L30" rel="noopener noreferrer">Medieval-Factions/MfFaction.kt:14-30</a> <span class="claim">— A faction is a Kotlin data class holding id, version, name, description, members, invites, flags, prefix, home, bonus power, autoclaim, roles, default permissions, and applications.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/MfFactionService.kt#L30-L45" rel="noopener noreferrer">Medieval-Factions/MfFactionService.kt:30-45</a> <span class="claim">— The faction service keeps all factions in a ConcurrentHashMap loaded from the repository at startup.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/MfFactionService.kt#L62-L66" rel="noopener noreferrer">Medieval-Factions/MfFactionService.kt:62-66</a> <span class="claim">— Finding which faction a player belongs to is a linear scan over every cached faction's member list, not an indexed lookup.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/JooqMfFactionRepository.kt#L35-L42" rel="noopener noreferrer">Medieval-Factions/JooqMfFactionRepository.kt:35-42</a> <span class="claim">— Membership is persisted in a separate mf_faction_member table, and the repository's player lookup is a subquery against it.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="approval-request.html">Approval Request</a></li>
+<li><a href="claimed-chunk.html">Claimed Chunk</a></li>
+<li><a href="currencies.html">Currencies</a></li>
+<li><a href="duel.html">Duel</a></li>
+<li><a href="faction-chat-channel.html">Faction Chat Channel</a></li>
+<li><a href="faction-events.html">Faction Events</a></li>
+<li><a href="faction-flag.html">Faction Flag</a></li>
+<li><a href="faction-permission.html">Faction Permission</a></li>
+<li><a href="faction-power.html">Faction Power</a></li>
+<li><a href="faction-relationship.html">Faction Relationship</a></li>
+<li><a href="faction-role.html">Faction Role</a></li>
+<li><a href="fiefs.html">Fiefs</a></li>
+<li><a href="gate.html">Gate</a></li>
+<li><a href="law.html">Law</a></li>
+<li><a href="legacy-data-migration.html">Legacy Data Migration</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="optimistic-locking.html">Optimistic Locking</a></li>
+<li><a href="player-power.html">Player Power</a></li>
+<li><a href="service-layer.html">Service Layer</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/faction.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

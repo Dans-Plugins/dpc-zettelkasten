@@ -109,6 +109,9 @@ site/
   index.html       The generated explorer (committed, so it works on clone)
   dataset.json     The same graph as data, for non-browser consumers
   version.json     {"version": ...} generated from version.txt
+  notes/           One static page per note, for search engines and link previews
+  sitemap.xml      Every note page, on https://zettel.dansplugins.com
+  robots.txt       Allows all crawlers and names the sitemap
 version.txt       The collection's version, one line
 .claude/skills/   Skills for growing and auditing the collection
 ```
@@ -122,7 +125,7 @@ python3 tools/validate.py       # frontmatter, ids, wikilinks, citation presence
 python3 tools/validate.py --check-readme   # the same, plus this file's counts
 python3 tools/check_sources.py  # citations resolve on GitHub; report drift  (needs `gh`)
 python3 tools/sources_index.py  # regenerate docs/SOURCES.md
-python3 tools/build.py          # regenerate site/index.html, site/dataset.json, site/version.json
+python3 tools/build.py          # regenerate everything under site/
 ```
 
 `validate.py`, `sources_index.py`, and `build.py` run offline and are what CI
@@ -131,10 +134,18 @@ asserted against the collection rather than trusted. `check_sources.py` needs an
 authenticated [`gh`](https://cli.github.com/) and runs in CI as its own job,
 where drift is reported but only an invalid citation fails the build.
 
-**After changing any note or `version.txt`, rebuild and commit `site/index.html`,
-`site/dataset.json` and `site/version.json`.** All three are generated files kept in the repository so the
-explorer works straight from a clone and downstream consumers have something
-stable to fetch. CI fails if any is stale.
+**After changing any note or `version.txt`, rebuild and commit everything under
+`site/`** — `index.html`, `dataset.json`, `version.json`, the static `notes/`
+pages, `sitemap.xml` and `robots.txt`. All are generated files kept in the
+repository so the explorer works straight from a clone and downstream consumers
+have something stable to fetch. CI fails if any is stale.
+
+The explorer routes by URL fragment (`#/<id>`), which crawlers and link previews
+never see, so `build.py` also writes a plain static page per note at
+`site/notes/<id>.html` with its description, canonical URL and Open Graph /
+Twitter card tags, and lists them in `sitemap.xml`. Every absolute URL uses the
+`SITE_ORIGIN` constant in `tools/build.py` (the production origin); there is no
+image asset in the repository, so the cards carry no `og:image`.
 
 ## Consuming it elsewhere
 

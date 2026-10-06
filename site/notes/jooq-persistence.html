@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jOOQ Persistence — DPC Zettelkasten</title>
+<meta name="description" content="Storage is jOOQ over a Hikari pool, with Flyway migrations and a configurable SQL dialect — H2 by default, MySQL or PostgreSQL optionally.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/jooq-persistence.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="jOOQ Persistence">
+<meta property="og:description" content="Storage is jOOQ over a Hikari pool, with Flyway migrations and a configurable SQL dialect — H2 by default, MySQL or PostgreSQL optionally.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/jooq-persistence.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jOOQ Persistence">
+<meta name="twitter:description" content="Storage is jOOQ over a Hikari pool, with Flyway migrations and a configurable SQL dialect — H2 by default, MySQL or PostgreSQL optionally.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/jooq-persistence">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>jOOQ Persistence</h1>
+<p class="summary">Storage is jOOQ over a Hikari pool, with Flyway migrations and a configurable SQL dialect — H2 by default, MySQL or PostgreSQL optionally.</p>
+<p><a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> persists through jOOQ against a HikariCP connection pool, with the schema managed by Flyway. All three are configured once in <code>onEnable</code> and never referenced again outside the <code>Jooq*Repository</code> classes.</p>
+<h2 id="the-default-is-a-file">The default is a file</h2>
+<p>Out of the box the database is embedded H2 at <code>./medieval_factions_db</code>, with three settings that matter:</p>
+<ul>
+<li><code>AUTO_SERVER=true</code> — H2 starts a TCP server beside the embedded database, so an operator can query the live data with a SQL client while the Minecraft server is running. This is what makes <code>DATABASE_QUERYING.md</code> possible.
+</li>
+<li><code>MODE=MYSQL</code> — H2 emulates MySQL, so SQL written for one mostly works on both.
+</li>
+<li><code>DATABASE_TO_UPPER=false</code> — identifiers stay lowercase and case-sensitive.
+</li>
+</ul>
+<p>A server that outgrows the file changes <code>database.url</code> and <code>database.dialect</code> and nothing else; the <code>SQLDialect</code> is read straight from config and handed to jOOQ, which is what makes MySQL and PostgreSQL viable without touching code.</p>
+<h2 id="flyway-owns-the-schema">Flyway owns the schema</h2>
+<p>Migrations live on the classpath under <code>com/dansplugins/factionsystem/db/migration</code>, with history in a dedicated <code>mf_schema_history</code> table. Two configuration choices are worth noting: <code>baselineOnMigrate(true)</code> with <code>baselineVersion(&quot;0&quot;)</code> lets Flyway adopt a database it did not create, and <code>validateOnMigrate(false)</code> tolerates checksum drift rather than refusing to start.</p>
+<p>The migration runs with the plugin's own classloader temporarily installed as the thread context classloader, and the original restored afterwards. That dance is required because Flyway scans the classpath by reflection, and inside a Bukkit server the thread context classloader is not the one holding the plugin's resources.</p>
+<h2 id="related">Related</h2>
+<p>The repositories built on this DSL are described in <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a>, and the version-column protocol they implement is <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/MedievalFactions.kt#L150-L184" rel="noopener noreferrer">Medieval-Factions/MedievalFactions.kt:150-184</a> <span class="claim">— The plugin builds a HikariDataSource from config, runs Flyway migrations from a classpath location into an mf_schema_history table with baselineOnMigrate enabled, then creates a jOOQ DSL context using a dialect read from config.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/DATABASE_QUERYING.md" rel="noopener noreferrer">Medieval-Factions/DATABASE_QUERYING.md</a> <span class="claim">— The default database is embedded H2 with AUTO_SERVER=true, MODE=MYSQL and DATABASE_TO_UPPER=false, which allows a second process to query the file while the server runs.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="alternate-account-finder.html">Alternate Account Finder</a></li>
+<li><a href="legacy-data-migration.html">Legacy Data Migration</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-plugin-architecture.html">Plugin Architecture</a></li>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+<li><a href="repository-pattern.html">Repository Pattern</a></li>
+<li><a href="spatial-value-types.html">Spatial Value Types</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/jooq-persistence.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

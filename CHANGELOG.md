@@ -5,6 +5,16 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+- Search and sharing metadata. `build.py` now also writes a static, crawlable
+  page per note at `site/notes/<id>.html` (rendered note, sources, backlinks,
+  and a link back into the explorer), `site/sitemap.xml` listing `/` and every
+  note page with its `updated` date as `lastmod`, and `site/robots.txt` naming
+  the sitemap. The explorer and each note page carry a meta description, a
+  canonical link, `og:title`/`og:description`/`og:url`/`og:type` and a
+  `twitter:card`. Absolute URLs come from the `SITE_ORIGIN` constant
+  (`https://zettel.dansplugins.com`), never the environment. No `og:image` is
+  set, as the repository holds no image to point at. CI checks the new files
+  are current, free of localhost URLs, and served by the image.
 - `version.txt` at the repository root holds the collection's version (0.2.0,
   the latest release in this file). `build.py` writes it to the
   generated-but-committed `site/version.json` as `{"version": "..."}`, and the

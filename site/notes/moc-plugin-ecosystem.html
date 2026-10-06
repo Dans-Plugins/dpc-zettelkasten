@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugin Ecosystem — DPC Zettelkasten</title>
+<meta name="description" content="The plugins around the flagship — the shared library, the official expansions, the plugins Medieval Factions talks to at runtime, and the standalone plugins that stand apart from it entirely.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/moc-plugin-ecosystem.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Plugin Ecosystem">
+<meta property="og:description" content="The plugins around the flagship — the shared library, the official expansions, the plugins Medieval Factions talks to at runtime, and the standalone plugins that stand apart from it entirely.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/moc-plugin-ecosystem.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Plugin Ecosystem">
+<meta name="twitter:description" content="The plugins around the flagship — the shared library, the official expansions, the plugins Medieval Factions talks to at runtime, and the standalone plugins that stand apart from it entirely.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/moc-plugin-ecosystem">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Plugin Ecosystem</h1>
+<p class="summary">The plugins around the flagship — the shared library, the official expansions, the plugins Medieval Factions talks to at runtime, and the standalone plugins that stand apart from it entirely.</p>
+<p>The organization holds roughly forty repositories. They are not forty unrelated plugins — they cluster.</p>
+<h2 id="the-library">The library</h2>
+<p><a class="wl" href="ponder.html" data-id="ponder">Ponder</a> is the shared Kotlin/Java library: a multi-module Gradle project providing command dispatch, caching, and Bukkit helpers used across plugins.</p>
+<h2 id="the-expansions">The expansions</h2>
+<p><a class="wl" href="expansion-plugin.html" data-id="expansion-plugin">Expansion Plugin</a> describes the pattern: a plugin that hard-depends on <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> and extends the simulation rather than standing alone.</p>
+<ul>
+<li><a class="wl" href="fiefs.html" data-id="fiefs">Fiefs</a> — sub-factions inside a faction.
+</li>
+<li><a class="wl" href="currencies.html" data-id="currencies">Currencies</a> — faction-minted local money.
+</li>
+</ul>
+<h2 id="the-runtime-neighbours">The runtime neighbours</h2>
+<p>Plugins the flagship detects and uses if they happen to be installed:</p>
+<ul>
+<li><a class="wl" href="mailboxes.html" data-id="mailboxes">Mailboxes</a> — persistent player mail, used as a <a class="wl" href="notification.html" data-id="notification">Notification</a> backend.
+</li>
+<li><a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a> — Dynmap and BlueMap surfaces for <a class="wl" href="claimed-chunk.html" data-id="claimed-chunk">Claimed Chunk</a> data.
+</li>
+</ul>
+<h2 id="distribution-and-hosting">Distribution and hosting</h2>
+<ul>
+<li><a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">Dan's Plugin Manager</a> — installs DPC plugins from in-game or the console.
+</li>
+<li><a class="wl" href="dpc-mc-server.html" data-id="dpc-mc-server">DPC Minecraft Server</a> — infrastructure-as-code server that runs a curated set of the plugins together, and therefore doubles as the integration test bed.
+</li>
+</ul>
+<h2 id="the-standalone-plugins">The standalone plugins</h2>
+<p>Not everything here orbits the flagship. These are the most-downloaded plugins that depend on nothing in the organization but <a class="wl" href="ponder.html" data-id="ponder">Ponder</a>, and each earns a note by holding an idea the collection did not otherwise have:</p>
+<ul>
+<li><a class="wl" href="medieval-roleplay-engine.html" data-id="medieval-roleplay-engine">Medieval Roleplay Engine</a> — chat whose audience is a radius measured in blocks rather than a membership list, which is the exact counterpoint to <a class="wl" href="faction-chat-channel.html" data-id="faction-chat-channel">Faction Chat Channel</a> resolving one from the diplomacy graph.
+</li>
+<li><a class="wl" href="wild-pets.html" data-id="wild-pets">Wild Pets</a> — taming generalised into a per-entity-type table of required item, quantity and success chance, so any mob becomes a pet.
+</li>
+<li><a class="wl" href="simple-skills.html" data-id="simple-skills">SimpleSkills</a> — progression in which a level buys a rising <em>probability</em> of a perk rather than unlocking one.
+</li>
+<li><a class="wl" href="food-spoilage.html" data-id="food-spoilage">Food Spoilage</a> — the clearest case in the organization of a plugin with no persistence layer at all, because the item stack itself is the database. Worth reading directly against <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a> and <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>.
+</li>
+<li><a class="wl" href="alternate-account-finder.html" data-id="alternate-account-finder">Alternate Account Finder</a> — deterministic encryption chosen so that an equality join still works over ciphertext, and the privacy cost that buys.
+</li>
+</ul>
+<h2 id="the-rest">The rest</h2>
+<p>The remaining repositories are small standalone plugins that do one obvious thing each. They matter to this collection mainly as subjects of <a class="wl" href="dpc-conventions.html" data-id="dpc-conventions">DPC Conventions</a> — the standards effort exists precisely to bring them up to the flagship's level.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-mc-server/blob/d42e0ec06f9b29baaa043442d24ef2dd81edfa49/README.md" rel="noopener noreferrer">dpc-mc-server/README.md</a> <span class="claim">— The community server ships a curated set of DPC plugins that can each be toggled via environment variables.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/moc/moc-plugin-ecosystem.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

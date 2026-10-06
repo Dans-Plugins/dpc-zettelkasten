@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plugin Architecture — DPC Zettelkasten</title>
+<meta name="description" content="How the flagship is layered — services over repositories over jOOQ — and the cross-cutting concerns that shape every feature.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/moc-plugin-architecture.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Plugin Architecture">
+<meta property="og:description" content="How the flagship is layered — services over repositories over jOOQ — and the cross-cutting concerns that shape every feature.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/moc-plugin-architecture.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Plugin Architecture">
+<meta name="twitter:description" content="How the flagship is layered — services over repositories over jOOQ — and the cross-cutting concerns that shape every feature.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/moc-plugin-architecture">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Plugin Architecture</h1>
+<p class="summary">How the flagship is layered — services over repositories over jOOQ — and the cross-cutting concerns that shape every feature.</p>
+<p><a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> has a consistent internal shape, and once you have seen one feature you have seen them all. This map describes that shape.</p>
+<h2 id="the-three-layers">The three layers</h2>
+<ol>
+<li><strong>Commands</strong> parse player input and delegate immediately.
+</li>
+<li><strong>Services</strong> own the in-memory state and the business rules — <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a>.
+</li>
+<li><strong>Repositories</strong> are interfaces that hide storage — <a class="wl" href="repository-pattern.html" data-id="repository-pattern">Repository Pattern</a> — implemented against <a class="wl" href="jooq-persistence.html" data-id="jooq-persistence">jOOQ Persistence</a>.
+</li>
+</ol>
+<p>A new feature is almost always: a data class, an ID value class (<a class="wl" href="value-class-identifier.html" data-id="value-class-identifier">Value Class Identifier</a>), a repository interface, a jOOQ implementation, a service, and a command.</p>
+<h2 id="cross-cutting-concerns">Cross-cutting concerns</h2>
+<ul>
+<li><strong><a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a></strong> — every mutable record carries a version; a stale write is rejected rather than silently overwriting.
+</li>
+<li><strong><a class="wl" href="main-thread-safety.html" data-id="main-thread-safety">Main Thread Safety</a></strong> — Bukkit state is not thread-safe, so anything doing I/O must snapshot on the main thread and act off it.
+</li>
+<li><strong><a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a></strong> — the plugin fires cancellable Bukkit events, which is the supported extension point for other plugins.
+</li>
+<li><strong><a class="wl" href="legacy-data-migration.html" data-id="legacy-data-migration">Legacy Data Migration</a></strong> — flat files from version 4 are read once and written into the database.
+</li>
+<li><strong><a class="wl" href="spatial-value-types.html" data-id="spatial-value-types">Spatial Value Types</a></strong> — the <code>area</code> package's world-UUID records, which are what makes a position storable and safe to carry off the main thread.
+</li>
+<li><strong><a class="wl" href="player-interaction-status.html" data-id="player-interaction-status">Player Interaction Status</a></strong> — the per-player mode that lets a command take a <em>block</em> as an argument, by consuming the player's next click.
+</li>
+</ul>
+<h2 id="where-to-attach">Where to attach</h2>
+<p>If you are writing an <a class="wl" href="expansion-plugin.html" data-id="expansion-plugin">Expansion Plugin</a>, the seams that matter are <a class="wl" href="faction-events.html" data-id="faction-events">Faction Events</a> (react to things) and the <a class="wl" href="service-layer.html" data-id="service-layer">Service Layer</a> (read and change things). If you are integrating an external system, look at how <a class="wl" href="notification.html" data-id="notification">Notification</a> and <a class="wl" href="map-integration.html" data-id="map-integration">Map Integration</a> define an interface and swap in an implementation at startup — that is the pattern to copy.</p>
+</article>
+
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="expansion-plugin.html">Expansion Plugin</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="moc-medieval-factions.html">Medieval Factions Map</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/moc/moc-plugin-architecture.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

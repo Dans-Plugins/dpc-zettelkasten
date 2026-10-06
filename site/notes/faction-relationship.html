@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction Relationship — DPC Zettelkasten</title>
+<meta name="description" content="Diplomacy is stored as directed edges between factions, typed as ally, at war, vassal, or liege.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/faction-relationship.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction Relationship">
+<meta property="og:description" content="Diplomacy is stored as directed edges between factions, typed as ally, at war, vassal, or liege.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction-relationship.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction Relationship">
+<meta name="twitter:description" content="Diplomacy is stored as directed edges between factions, typed as ally, at war, vassal, or liege.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/faction-relationship">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction Relationship</h1>
+<p class="summary">Diplomacy is stored as directed edges between factions, typed as ally, at war, vassal, or liege.</p>
+<p>Diplomacy is not a field on the <a class="wl" href="faction.html" data-id="faction">Faction</a> record. It is a separate table of directed edges, each carrying one of four types: <code>ALLY</code>, <code>AT_WAR</code>, <code>VASSAL</code>, or <code>LIEGE</code>.</p>
+<h2 id="directed-not-symmetric">Directed, not symmetric</h2>
+<p>Each row records a relationship <em>from</em> one faction <em>to</em> another. Two of the four types are inverses — A's <code>VASSAL</code> edge to B pairs with B's <code>LIEGE</code> edge to A — so a hierarchy is represented by two rows, not one.</p>
+<p>The service enforces that pairing rather than assuming it. <code>getLiege</code> reads the faction's own <code>LIEGE</code> edge, then checks the reverse direction for a matching <code>VASSAL</code> edge before accepting the answer; <code>getVassals</code> filters symmetrically. A half-written hierarchy — one row present, its counterpart missing — resolves to no relationship at all rather than to a lopsided one.</p>
+<p>Storing both directions also means &quot;who are my allies?&quot; and &quot;who considers me an ally?&quot; are the same cheap query.</p>
+<h2 id="why-relationships-get-an-approval-step">Why relationships get an approval step</h2>
+<p>Because a relationship change binds two independent groups of players, it cannot be a unilateral command. <a class="wl" href="approval-request.html" data-id="approval-request">Approval Request</a> exists for exactly the three relationship transitions that need consent — war, alliance, and vassalisation.</p>
+<h2 id="effect-on-the-rest-of-the-model">Effect on the rest of the model</h2>
+<p>Relationships are read by more of the codebase than any other domain concept:</p>
+<ul>
+<li><a class="wl" href="faction-power.html" data-id="faction-power">Faction Power</a> walks a faction's vassals to compute their contribution.
+</li>
+<li><a class="wl" href="faction-flag.html" data-id="faction-flag">Faction Flag</a> settings such as <code>alliesCanInteractWithLand</code> and <code>vassalageTreeCanInteractWithLand</code> turn relationship type into land access.
+</li>
+<li>Combat rules consult war status before allowing PvP between factions.
+</li>
+</ul>
+<h2 id="related">Related</h2>
+<p><a class="wl" href="vassalage.html" data-id="vassalage">Vassalage</a> covers the liege/vassal pair specifically, since it carries mechanical weight that alliance does not.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/relationship/MfFactionRelationshipType.kt#L3-L8" rel="noopener noreferrer">Medieval-Factions/MfFactionRelationshipType.kt:3-8</a> <span class="claim">— The relationship type enum has exactly four values, ALLY, AT_WAR, VASSAL, and LIEGE.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/relationship/MfFactionRelationship.kt" rel="noopener noreferrer">Medieval-Factions/MfFactionRelationship.kt</a> <span class="claim">— A relationship is a record of an id, a factionId, a targetId and a type — a directed edge from one faction to another.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/relationship/MfFactionRelationshipService.kt#L101-L121" rel="noopener noreferrer">Medieval-Factions/MfFactionRelationshipService.kt:101-121</a> <span class="claim">— Both getLiege and getVassals confirm the reverse edge before accepting a result — getLiege requires a matching VASSAL edge back, and getVassals filters to targets that carry a matching LIEGE edge back.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="approval-request.html">Approval Request</a></li>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="faction-chat-channel.html">Faction Chat Channel</a></li>
+<li><a href="faction-flag.html">Faction Flag</a></li>
+<li><a href="faction-permission.html">Faction Permission</a></li>
+<li><a href="faction-power.html">Faction Power</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="vassalage.html">Vassalage</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/faction-relationship.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

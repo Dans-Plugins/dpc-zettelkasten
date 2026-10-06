@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faction Role — DPC Zettelkasten</title>
+<meta name="description" content="A named bundle of permission overrides that a faction assigns to its members.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/faction-role.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Faction Role">
+<meta property="og:description" content="A named bundle of permission overrides that a faction assigns to its members.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/faction-role.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Faction Role">
+<meta name="twitter:description" content="A named bundle of permission overrides that a faction assigns to its members.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/faction-role">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Faction Role</h1>
+<p class="summary">A named bundle of permission overrides that a faction assigns to its members.</p>
+<p>A role is a named set of <a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a> overrides. Each member of a <a class="wl" href="faction.html" data-id="faction">Faction</a> holds exactly one, and a faction defines its own roles rather than picking from a fixed list.</p>
+<h2 id="three-level-resolution">Three-level resolution</h2>
+<p>The permission map is <code>Map&lt;String, Boolean?&gt;</code>, and the nullability carries meaning. Looking up whether a role grants a permission walks three levels:</p>
+<ol>
+<li><strong>The role's own value</strong>, if it is not null.
+</li>
+<li><strong>The faction's default</strong> for that permission.
+</li>
+<li><strong>The permission's built-in default.</strong>
+</li>
+</ol>
+<p>Null therefore means <em>inherit</em>, distinct from an explicit <code>false</code> meaning <em>deny</em>. That distinction is what lets a faction change a default and have every role that has not opted out follow along — a role with all-null values tracks the faction's policy automatically.</p>
+<h2 id="serialized-by-name">Serialized by name</h2>
+<p>Roles store <code>permissionsByName: Map&lt;String, Boolean?&gt;</code> and resolve those strings to permission objects on read, discarding any that no longer parse. Storing names rather than object references means a permission that is removed from the plugin does not break deserialization of existing factions — the stale entry is simply dropped. It also means a typo silently becomes a no-op, which is the cost of that robustness.</p>
+<p>Roles implement Bukkit's <code>ConfigurationSerializable</code>, so they round-trip through the same serialization the rest of the plugin's configuration uses.</p>
+<h2 id="defaults">Defaults</h2>
+<p>A new faction is not created with an empty role set. <code>MfFactionRoles.defaults()</code> builds three: <strong>Owner</strong>, <strong>Officer</strong>, and <strong>Member</strong> — with Member as the <code>defaultRoleId</code> that new joiners receive. Owner is granted everything, Officer a curated middle tier (diplomacy, kicking, setting home, and managing the Member role), and Member nothing but the permissions whose own default is <code>true</code>.</p>
+<p>A freshly founded faction is therefore immediately governable, and the three-tier shape is a suggestion rather than a constraint — a faction can create, delete, and rename roles from there.</p>
+<h2 id="related">Related</h2>
+<p><a class="wl" href="faction-permission.html" data-id="faction-permission">Faction Permission</a> describes what can be granted. Roles are stored inline on the <a class="wl" href="faction.html" data-id="faction">Faction</a> record rather than in their own table, which is why changing a role bumps the faction's <a class="wl" href="optimistic-locking.html" data-id="optimistic-locking">Optimistic Locking</a> version.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/role/MfFactionRole.kt#L9-L30" rel="noopener noreferrer">Medieval-Factions/MfFactionRole.kt:9-30</a> <span class="claim">— A role holds an id, a name, and a map of permission names to nullable booleans, and resolves a permission by falling back from the role to the faction default to the permission's own default.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/src/main/kotlin/com/dansplugins/factionsystem/faction/role/MfFactionRoles.kt" rel="noopener noreferrer">Medieval-Factions/MfFactionRoles.kt</a> <span class="claim">— A new faction is created with three roles, Owner, Officer and Member, with Member set as the default role.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="faction.html">Faction</a></li>
+<li><a href="faction-permission.html">Faction Permission</a></li>
+<li><a href="medieval-factions.html">Medieval Factions</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="moc-faction-domain-model.html">Faction Domain Model</a></li>
+<li><a href="repository-pattern.html">Repository Pattern</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/faction-role.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

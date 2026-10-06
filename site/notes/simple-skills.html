@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimpleSkills — DPC Zettelkasten</title>
+<meta name="description" content="A progression layer where ordinary activities each tick a per-player counter, and the resulting level buys a linearly rising chance of a perk.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/simple-skills.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="SimpleSkills">
+<meta property="og:description" content="A progression layer where ordinary activities each tick a per-player counter, and the resulting level buys a linearly rising chance of a perk.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/simple-skills.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SimpleSkills">
+<meta name="twitter:description" content="A progression layer where ordinary activities each tick a per-player counter, and the resulting level buys a linearly rising chance of a perk.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/simple-skills">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>SimpleSkills</h1>
+<p class="summary">A progression layer where ordinary activities each tick a per-player counter, and the resulting level buys a linearly rising chance of a perk.</p>
+<p>SimpleSkills adds twenty skills — Mining, Farming, Cardio, Dueling and the rest — that level up simply by doing the corresponding thing, and pay out an occasional perk once they do. Each is a separate <code>active</code> toggle in the config, and an inactive skill never registers its listeners at all.</p>
+<h2 id="counting-not-measuring">Counting, not measuring</h2>
+<p>The economy is deliberately flat: every qualifying action is worth exactly one experience point. Mining an ore, sprinting a tick, breeding an animal — all one. What varies is not the reward but the filter, and each skill decides for itself which events qualify (Mining wants an ore block, broken in survival mode, with a pickaxe in hand).</p>
+<p>Levelling is where the curve lives. The next level costs <code>base × level^factor</code>, so with the shipped defaults of 10 and 1.2 the first level is cheap and the hundredth is not.</p>
+<h2 id="level-as-a-probability">Level as a probability</h2>
+<p>Perks are not unlocked, they are rolled for. <code>ChanceCalculator</code> draws uniformly over the configured maximum level and compares against a threshold proportional to the player's level in that skill, scaled down by a per-skill nerf factor. The arithmetic reduces — this is my reading of the formula, not a comment in the source — to a success chance that climbs linearly from nothing at level 0 to exactly the nerf factor at the level cap. Progression therefore feels like a dial rather than a staircase.</p>
+<h2 id="the-one-exploit-that-is-guarded">The one exploit that is guarded</h2>
+<p>Block skills refuse experience for a block a player placed, tracked by metadata on the block itself. The javadoc says why in as many words: silk-touching an ore, setting it back down, and re-mining it would otherwise be infinite experience. It is the only anti-farming guard in the plugin, and its correctness depends on listener registration order, which the code comments call out.</p>
+<h2 id="related">Related</h2>
+<p>The plugin sits on <a class="wl" href="ponder.html" data-id="ponder">Ponder</a> for its command service and its savable-record interfaces, and ships in the curated jar set on <a class="wl" href="dpc-mc-server.html" data-id="dpc-mc-server">DPC Minecraft Server</a> alongside <a class="wl" href="wild-pets.html" data-id="wild-pets">Wild Pets</a> and <a class="wl" href="food-spoilage.html" data-id="food-spoilage">Food Spoilage</a> — standalone plugins that, unlike <a class="wl" href="fiefs.html" data-id="fiefs">Fiefs</a>, extend vanilla rather than <a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/SimpleSkills.java#L166-L215" rel="noopener noreferrer">SimpleSkills/SimpleSkills.java:166-215</a> <span class="claim">— Twenty named skills are instantiated at plugin enable, and only those the config marks active register Bukkit listeners.</span></li>
+<li><a href="https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/playerrecord/PlayerRecord.java#L131-L139" rel="noopener noreferrer">SimpleSkills/PlayerRecord.java:131-139</a> <span class="claim">— A qualifying action adds exactly one experience point to the skill, with no weighting for what was done.</span></li>
+<li><a href="https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/experience/ExperienceCalculator.java#L8-L10" rel="noopener noreferrer">SimpleSkills/ExperienceCalculator.java:8-10</a> <span class="claim">— Experience required for the next level is the base requirement multiplied by the current level raised to the power of the increase factor.</span></li>
+<li><a href="https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/chance/ChanceCalculator.java#L52-L63" rel="noopener noreferrer">SimpleSkills/ChanceCalculator.java:52-63</a> <span class="claim">— A perk roll draws uniformly over the configured maximum level and succeeds below a threshold of maxLevel times (level / maxLevel) times a caller-supplied nerf factor.</span></li>
+<li><a href="https://github.com/Dans-Plugins/SimpleSkills/blob/3350aa18ae484114fb6c21d130d32174050ee1dd/src/main/java/dansplugins/simpleskills/listeners/PlacedBlockListener.java#L13-L43" rel="noopener noreferrer">SimpleSkills/PlacedBlockListener.java:13-43</a> <span class="claim">— Player-placed blocks are tagged with plugin metadata so block-break skills refuse to grant experience for them, which the class javadoc states closes a silk-touch replace-and-remine exploit.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="moc-plugin-ecosystem.html">Plugin Ecosystem</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/simple-skills.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>

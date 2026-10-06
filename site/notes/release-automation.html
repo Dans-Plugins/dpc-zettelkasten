@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release Automation — DPC Zettelkasten</title>
+<meta name="description" content="Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.">
+<link rel="canonical" href="https://zettel.dansplugins.com/notes/release-automation.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="DPC Zettelkasten">
+<meta property="og:title" content="Release Automation">
+<meta property="og:description" content="Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.">
+<meta property="og:url" content="https://zettel.dansplugins.com/notes/release-automation.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Release Automation">
+<meta name="twitter:description" content="Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #2a2b2e; --fg-dim: #62646b; --line: #dcdcd6;
+    --accent: #6d43d4; --code-bg: #f0efec;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171d; --fg: #d6d9e0; --fg-dim: #8b91a0; --line: #2f333d;
+      --accent: #a78bfa; --code-bg: #12131a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.65 var(--sans); -webkit-text-size-adjust: 100%;
+  }
+  main, header, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline;
+           padding-top: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  header .brand { font-weight: 650; color: var(--fg); text-decoration: none; }
+  header .open { margin-left: auto; }
+  a { color: var(--accent); }
+  h1 { line-height: 1.25; margin: 22px 0 6px; }
+  .summary { color: var(--fg-dim); margin-top: 0; }
+  code, pre { font-family: var(--mono); font-size: 0.9em; background: var(--code-bg); border-radius: 4px; }
+  code { padding: 1px 4px; }
+  pre { padding: 10px 12px; overflow-x: auto; }
+  pre code { padding: 0; background: none; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  blockquote { margin: 0; padding-left: 14px; border-left: 3px solid var(--line); color: var(--fg-dim); }
+  .wl.broken { color: var(--fg-dim); text-decoration: line-through; }
+  .meta { border-top: 1px solid var(--line); margin-top: 28px; }
+  .meta li { margin: 4px 0; }
+  .meta .claim { color: var(--fg-dim); }
+  footer { color: var(--fg-dim); font-size: 13px; padding-top: 18px; padding-bottom: 28px; }
+  footer a { color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="/">DPC Zettelkasten</a>
+  <a class="open" href="/#/release-automation">Open in the explorer</a>
+</header>
+<main>
+<article>
+<h1>Release Automation</h1>
+<p class="summary">Creating a GitHub Release triggers a workflow that builds the plugin and attaches the jar, so every release has a reproducible artifact.</p>
+<p>Every DPC plugin should build and attach its own jar when a release is created. The convention specifies the workflow file down to the steps.</p>
+<h2 id="the-workflow">The workflow</h2>
+<p><code>.github/workflows/release.yml</code>, triggered <code>on: release: types: [created]</code>, with <code>permissions: contents: write</code>. It checks out, sets up JDK 17 (Temurin), makes <code>gradlew</code> executable, runs <code>./gradlew clean build</code>, and uploads <code>build/libs/*.jar</code> to the release.</p>
+<h2 id="why-drafts-matter">Why drafts matter</h2>
+<p>The trigger fires on release <em>creation</em>, including drafts. That is deliberate: a maintainer can create a draft release, let CI build and attach the jar, and hand that artifact to users as an experimental build before deciding to publish. Testing a release candidate needs no separate pipeline.</p>
+<h2 id="why-it-is-a-convention-and-not-a-nicety">Why it is a convention and not a nicety</h2>
+<p>Manual jar uploads fail in two ways that automation removes. They can be forgotten — leaving a release with notes and no download. And they can be built from a dirty working tree, so the published jar does not correspond to the tag. Building in CI from a clean checkout makes the artifact a function of the commit.</p>
+<p>There is also a consumer that depends on it: <a class="wl" href="dans-plugin-manager.html" data-id="dans-plugin-manager">Dan's Plugin Manager</a> installs plugins by reading GitHub releases. A release without an attached jar is a release DPM cannot install.</p>
+<h2 id="the-flagship-deviates-for-a-reason">The flagship deviates, for a reason</h2>
+<p><a class="wl" href="medieval-factions.html" data-id="medieval-factions">Medieval Factions</a> follows the template but inserts a step before the build: it clones <a class="wl" href="ponder.html" data-id="ponder">Ponder</a> at tag <code>2.0.0</code> and runs <code>publishToMavenLocal</code>. The library version it needs is not resolvable from a public repository at build time, so CI builds it from source first.</p>
+<p>That is worth knowing before copying the convention's workflow verbatim into a plugin that depends on Ponder — the template alone will not resolve the dependency.</p>
+<h2 id="the-other-half">The other half</h2>
+<p>This convention covers releases a maintainer cuts deliberately. Repositories also publish a rolling <code>dev</code> prerelease on every merge to <code>main</code>, which is what the experimental <a class="wl" href="release-channel.html" data-id="release-channel">Release Channel</a> serves — the same automation, on a trigger that fires continuously rather than on a human decision.</p>
+<h2 id="related">Related</h2>
+<p><a class="wl" href="testing-and-ci.html" data-id="testing-and-ci">Testing and CI</a> covers the build and test side. Both live in <a class="wl" href="dpc-conventions.html" data-id="dpc-conventions">DPC Conventions</a>.</p>
+</article>
+<section class="meta"><h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/Dans-Plugins/dpc-conventions/blob/9dc9aa37e9ed58722d86a914c563b5ceeaa07bec/docs/RELEASE_AUTOMATION.md" rel="noopener noreferrer">dpc-conventions/RELEASE_AUTOMATION.md</a> <span class="claim">— The convention is a .github/workflows/release.yml triggered on release creation that checks out, sets up JDK 17, builds with Gradle and uploads the built jar to the release.</span></li>
+<li><a href="https://github.com/Dans-Plugins/Medieval-Factions/blob/3a51c55366b544d31429fae8bcb64efaf1878e15/.github/workflows/release.yml" rel="noopener noreferrer">Medieval-Factions/release.yml</a> <span class="claim">— The flagship's release workflow follows the convention but adds a step that clones Ponder at tag 2.0.0 and publishes it to the local Maven repository before building.</span></li>
+</ul></section>
+<section class="meta"><h2>Linked from</h2>
+<ul>
+<li><a href="dans-plugin-manager.html">Dan's Plugin Manager</a></li>
+<li><a href="dpc-conventions.html">DPC Conventions</a></li>
+<li><a href="moc-conventions-and-process.html">Conventions and Process</a></li>
+<li><a href="moc-dans-plugins-community.html">Dan's Plugins Community</a></li>
+<li><a href="release-channel.html">Release Channel</a></li>
+<li><a href="testing-and-ci.html">Testing and CI</a></li>
+</ul></section>
+</main>
+<footer>
+  <a href="https://github.com/Dans-Plugins/dpc-zettelkasten/blob/main/notes/concepts/release-automation.md" rel="noopener noreferrer">This note on GitHub</a> ·
+  More by Daniel Stephenson → <a href="https://danielstephenson.dev" rel="noopener noreferrer">danielstephenson.dev</a>
+</footer>
+</body>
+</html>
