@@ -112,6 +112,7 @@ site/
   notes/           One static page per note, for search engines and link previews
   sitemap.xml      Every note page, on https://zettel.dansplugins.com
   robots.txt       Allows all crawlers and names the sitemap
+  og.png           The link-preview image (a committed asset, not generated)
 version.txt       The collection's version, one line
 .claude/skills/   Skills for growing and auditing the collection
 ```
