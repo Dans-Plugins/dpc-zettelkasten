@@ -138,6 +138,6 @@ CI has three jobs:
   the CORS headers and preflight, `/version.json` (status, `application/json`,
   `Cache-Control: no-store`, and the version in `version.txt`), that
   `/robots.txt` names the sitemap and `/sitemap.xml` lists `/` plus every note
-  page, that a note page and `/` carry their `og:url` and canonical link, that
+  page, that a note page carries its `og:url` and `/` its canonical link, that
   `/og.png` is served as `image/png` byte-identical to the committed file, and
   that the container runs as uid 101.
