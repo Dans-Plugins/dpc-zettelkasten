@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-06
+
 ### Added
 - A link-preview image. `site/og.png` (1200×630: the site name, its
   description and the domain, in the explorer's colours) is served at
