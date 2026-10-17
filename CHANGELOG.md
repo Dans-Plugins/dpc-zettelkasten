@@ -4,6 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- `validate.py` now rejects a citation whose `lines` starts at 0 (`lines: 0`,
+  `lines: 0-12`). GitHub numbers lines from 1, so the permalink anchored
+  nothing, and `check_sources.py` only checks the end of the range. A malformed
+  range such as `lines: a-b` is now reported as a problem instead of crashing
+  the validator with a `ValueError`.
+
 ## [0.3.0] - 2026-10-06
 
 ### Added
