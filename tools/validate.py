@@ -75,9 +75,14 @@ def validate_source(note, index, source, problems):
     lines = source.get("lines")
     if lines and not zklib.LINES_RE.match(lines):
         problems.append("%s: lines %r must be 'N' or 'N-M'" % (where, lines))
-    if lines and "-" in lines:
-        start, end = lines.split("-")
-        if int(start) > int(end):
+        return
+    if lines:
+        bounds = [int(part) for part in lines.split("-")]
+        # GitHub numbers lines from 1, so #L0 anchors nothing; check_sources.py
+        # only tests the end of the range against the file length.
+        if min(bounds) < 1:
+            problems.append("%s: lines %r must start at 1 or later" % (where, lines))
+        if bounds[0] > bounds[-1]:
             problems.append("%s: lines %r has start after end" % (where, lines))
 
 
