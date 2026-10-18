@@ -2,9 +2,9 @@
 """Validate every note in the zettelkasten.
 
 Checks the rules in docs/NOTE_FORMAT.md that can be checked without network
-access: frontmatter shape, id/filename agreement, the YYYY-MM-DD form of
-created/updated, wikilink resolution, and the requirement that every concept
-note carries at least one pinned citation.
+access: frontmatter shape, id/filename agreement, type/directory agreement,
+the YYYY-MM-DD form of created/updated, wikilink resolution, and the
+requirement that every concept note carries at least one pinned citation.
 
 Network-dependent checks (does the cited file still exist at that SHA? has it
 drifted since?) live in tools/check_sources.py.
@@ -36,6 +36,9 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # so the "unreachable MOC" rule exempts it and the README cluster tree heads
 # itself with it, uncounted.
 ROOT_MOC_ID = "moc-dans-plugins-community"
+
+# docs/NOTE_FORMAT.md places each note type in its own directory.
+TYPE_DIRS = {"concept": "notes/concepts", "moc": "notes/moc"}
 
 README_PATH = os.path.join(zklib.REPO_ROOT, "README.md")
 
@@ -270,6 +273,11 @@ def main():
                 "%s: type %r must be one of %s"
                 % (note.rel_path, note.type, ", ".join(zklib.VALID_TYPES))
             )
+        elif os.path.dirname(note.rel_path) != TYPE_DIRS[note.type]:
+            problems.append(
+                "%s: a %s note must live in %s/"
+                % (note.rel_path, note.type, TYPE_DIRS[note.type])
+            )
 
         validate_dates(note, problems)
 
@@ -331,8 +339,8 @@ def main():
         linked_from_moc = any(moc in by_id[m].links for m in moc_ids if m != moc)
         if not linked_from_moc and not homed.get(moc) and moc != ROOT_MOC_ID:
             problems.append(
-                "notes/moc/%s.md: MOC is unreachable — no other MOC links it and no "
-                "note calls it home" % moc
+                "%s: MOC is unreachable — no other MOC links it and no "
+                "note calls it home" % by_id[moc].rel_path
             )
 
     if args.check_readme:
