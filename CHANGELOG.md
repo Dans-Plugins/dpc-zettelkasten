@@ -10,6 +10,10 @@ All notable changes to this project are documented here.
   nothing, and `check_sources.py` only checks the end of the range. A malformed
   range such as `lines: a-b` is now reported as a problem instead of crashing
   the validator with a `ValueError`.
+- `validate.py` now rejects a note whose `type` does not match its directory:
+  a concept note must live in `notes/concepts/` and a MOC in `notes/moc/`, as
+  `docs/NOTE_FORMAT.md` describes. Before, a misplaced note passed, and the
+  unreachable-MOC message named a `notes/moc/` path the file was not at.
 
 ## [0.3.0] - 2026-10-06
 

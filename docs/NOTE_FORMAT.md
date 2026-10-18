@@ -116,6 +116,9 @@ this one, that second idea wants to be its own note with a link to it.
 
 ## Note types
 
+Each type has its own directory, and `validate.py` rejects a note whose `type`
+does not match the directory it is in.
+
 **Concept notes** (`notes/concepts/`) hold exactly one idea. If a note needs two
 `##` sections that could stand alone, it is two notes. They are the only notes
 that carry citations, and they must.
