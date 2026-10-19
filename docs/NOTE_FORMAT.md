@@ -73,7 +73,8 @@ rule the whole repository exists to enforce: a note that cannot point at code,
 configuration, or documentation in the org is a note that has drifted into
 folklore.
 
-Each citation is a mapping:
+Each citation is a mapping. `validate.py` rejects a `sources` entry that is
+anything else, such as a bare URL:
 
 | Key | Required | Meaning |
 |---|---|---|
