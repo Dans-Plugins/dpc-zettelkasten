@@ -311,7 +311,23 @@ def main():
                 "%s: only concept notes may declare a home MOC" % note.rel_path
             )
 
-        for i, source in enumerate(note.sources):
+        # Read the raw value rather than note.sources, which keeps only the
+        # mappings: a bare URL under `sources:` would otherwise be dropped
+        # without a word, and the index would not match the file.
+        raw_sources = note.meta.get("sources")
+        if raw_sources is not None and not isinstance(raw_sources, list):
+            problems.append(
+                "%s: sources must be a list of citations, one '- repo: ...' "
+                "mapping per entry" % note.rel_path
+            )
+        for i, source in enumerate(raw_sources if isinstance(raw_sources, list) else []):
+            if not isinstance(source, dict):
+                problems.append(
+                    "%s: sources[%d] %r is not a citation; each entry must be a "
+                    "mapping with repo, path, ref and claim"
+                    % (note.rel_path, i, source)
+                )
+                continue
             validate_source(note, i, source, problems)
 
         for target in note.links:

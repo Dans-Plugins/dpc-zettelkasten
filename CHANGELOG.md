@@ -14,6 +14,11 @@ All notable changes to this project are documented here.
   a concept note must live in `notes/concepts/` and a MOC in `notes/moc/`, as
   `docs/NOTE_FORMAT.md` describes. Before, a misplaced note passed, and the
   unreachable-MOC message named a `notes/moc/` path the file was not at.
+- `validate.py` now rejects a `sources` entry that is not a citation mapping,
+  such as a bare `- https://github.com/...` URL, and a `sources` value that is
+  not a list. Before, such an entry was dropped without a word: next to a valid
+  citation it passed, branch URL and all, and on its own the note was told it
+  cited nothing.
 
 ## [0.3.0] - 2026-10-06
 
