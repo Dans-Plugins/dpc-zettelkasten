@@ -316,7 +316,9 @@ def write_text(path, text):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--out", default=os.path.join("site", "index.html"))
     parser.add_argument("--dataset", default=os.path.join("site", "dataset.json"),
                         help="where to write the machine-readable graph consumed by dpc-mcp-server")

@@ -232,7 +232,9 @@ def check_readme(notes, homed, problems):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--check-readme",
         action="store_true",

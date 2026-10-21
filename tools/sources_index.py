@@ -93,7 +93,9 @@ def build():
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--check", action="store_true",
                         help="exit non-zero if docs/SOURCES.md differs from what would be written")
     args = parser.parse_args()
