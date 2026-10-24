@@ -19,6 +19,10 @@ All notable changes to this project are documented here.
   not a list. Before, such an entry was dropped without a word: next to a valid
   citation it passed, branch URL and all, and on its own the note was told it
   cited nothing.
+- `--help` on `validate.py`, `check_sources.py`, `sources_index.py` and
+  `build.py` now prints each tool's description as written. Before, argparse
+  reflowed it into one paragraph, running the one-command-per-line `Usage:`
+  examples (and `check_sources.py`'s numbered list) together.
 
 ## [0.3.0] - 2026-10-06
 

@@ -213,7 +213,9 @@ def check(note, source, want_lines):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--note", help="only check this note id")
     parser.add_argument("--repo", help="only check citations to this repo")
     parser.add_argument("--drift-only", action="store_true", help="suppress ok results")
