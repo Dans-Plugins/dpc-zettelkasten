@@ -23,6 +23,10 @@ All notable changes to this project are documented here.
   `build.py` now prints each tool's description as written. Before, argparse
   reflowed it into one paragraph, running the one-command-per-line `Usage:`
   examples (and `check_sources.py`'s numbered list) together.
+- `build.py --help` now documents every flag. `--out` had no help text, though
+  it also decides where the note pages, `sitemap.xml` and `robots.txt` are
+  written, and the `Usage:` block named only `--out`, leaving out `--dataset`
+  and `--version-out`.
 
 ## [0.3.0] - 2026-10-06
 

@@ -14,8 +14,13 @@ Also writes one static page per note to `site/notes/<id>.html`, plus
 production origin (SITE_ORIGIN) so search engines and link previews can see
 the collection.
 
+The note pages, sitemap.xml and robots.txt are written next to `--out`, not to
+a path of their own.
+
 Usage:
-    python3 tools/build.py [--out site/index.html]
+    python3 tools/build.py
+    python3 tools/build.py [--out site/index.html] [--dataset site/dataset.json]
+                           [--version-out site/version.json]
 """
 
 import argparse
@@ -319,7 +324,9 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--out", default=os.path.join("site", "index.html"))
+    parser.add_argument("--out", default=os.path.join("site", "index.html"),
+                        help="where to write the explorer; the note pages, sitemap.xml "
+                             "and robots.txt are written beside it")
     parser.add_argument("--dataset", default=os.path.join("site", "dataset.json"),
                         help="where to write the machine-readable graph consumed by dpc-mcp-server")
     parser.add_argument("--version-out", default=os.path.join("site", "version.json"),
