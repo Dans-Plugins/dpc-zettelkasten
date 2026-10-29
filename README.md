@@ -93,6 +93,27 @@ From the root map:
 - [Conventions and Process](notes/moc/moc-conventions-and-process.md) — the org's standards
 - [Web and Infrastructure](notes/moc/moc-web-and-infrastructure.md) — the site and the server
 
+## The graph in 3D
+
+[![The note graph in 3D: notes as spheres and cubes joined by thin lines, coloured by cluster](docs/images/graph3d.png)](docs/images/graph3d-orbit.gif)
+
+Every note is a node and every wikilink a thin line. **Colour** is the note's
+cluster — the Map of Content it calls home — and the Maps of Content themselves
+are the pale **cubes**. **Size** grows with the number of other notes a note
+links to or is linked from, so the hubs stand out; the few biggest are labelled
+and carry a faint light in their cluster's colour. Click the picture for a
+slow orbit.
+
+It is drawn by [`tools/graph3d.py`](tools/graph3d.py) with the
+[Strata](https://github.com/Preponderous-Software/strata) engine. The layout is
+force-directed with a fixed seed, so the same notes give the same picture. It is
+a snapshot, not a build output: CI does not redraw it, so regenerate it after
+the collection changes shape:
+
+```bash
+LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe python3 tools/graph3d.py --orbit
+```
+
 ## Layout
 
 ```
@@ -102,9 +123,11 @@ notes/
 docs/
   NOTE_FORMAT.md   The rules: frontmatter, citations, wikilinks
   SOURCES.md       Generated index of every pinned commit
+  images/          The 3D graph picture and its orbit, from tools/graph3d.py
 lib/
   zk-graphql.js    The GraphQL schema + engine, shared by the explorer and MCP
 tools/            Dependency-free Python 3.8+ toolchain
+  _strata/         Strata 0.7.0's Python binding, vendored unmodified (MIT)
 site/
   index.html       The generated explorer (committed, so it works on clone)
   dataset.json     The same graph as data, for non-browser consumers
