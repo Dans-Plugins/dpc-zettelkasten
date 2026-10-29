@@ -27,6 +27,10 @@ All notable changes to this project are documented here.
   it also decides where the note pages, `sitemap.xml` and `robots.txt` are
   written, and the `Usage:` block named only `--out`, leaving out `--dataset`
   and `--version-out`.
+- `build.py --version-out` now creates its directory when it does not exist,
+  as `--out` and `--dataset` already did. Before, the build crashed with a
+  `FileNotFoundError` after writing `index.html` and `dataset.json` but before
+  the note pages, `sitemap.xml` and `robots.txt`.
 
 ## [0.3.0] - 2026-10-06
 
