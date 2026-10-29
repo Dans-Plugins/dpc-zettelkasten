@@ -420,6 +420,9 @@ def main():
     # reports. Exactly one key, no indentation: it is a contract, not a document.
     version_path = (os.path.join(zklib.REPO_ROOT, args.version_out)
                     if not os.path.isabs(args.version_out) else args.version_out)
+    version_dir = os.path.dirname(version_path)
+    if version_dir and not os.path.isdir(version_dir):
+        os.makedirs(version_dir)
     with open(version_path, "w", encoding="utf-8") as handle:
         json.dump({"version": version}, handle)
         handle.write("\n")
