@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+- A 3D picture of the note graph in `README.md`, with a looping orbit behind
+  it, drawn by the new `tools/graph3d.py` with the Strata engine. Colour is a
+  note's cluster, the Maps of Content are cubes, and size is the number of
+  linked notes. The layout is force-directed with a fixed seed, so it
+  regenerates identically. Strata's Python binding is vendored unmodified in
+  `tools/_strata/` (v0.7.0, MIT); the native library is fetched on first use
+  and checked against its pinned SHA-256. CI does not run the tool.
+
 ### Fixed
 - `validate.py` now rejects a citation whose `lines` starts at 0 (`lines: 0`,
   `lines: 0-12`). GitHub numbers lines from 1, so the permalink anchored
