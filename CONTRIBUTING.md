@@ -135,7 +135,8 @@ CI has three jobs:
 - **`image`** builds the `Dockerfile`, serves the explorer, and checks what comes
   back: `/healthz`, content types, that the served `dataset.json` and
   `lib/zk-graphql.js` are byte-identical to the committed ones (gzipped included),
-  the CORS headers and preflight, `/version.json` (status, `application/json`,
+  the CORS headers and preflight, that `dataset.json` keeps its
+  `Cache-Control: public` header alongside them, `/version.json` (status, `application/json`,
   `Cache-Control: no-store`, and the version in `version.txt`), that
   `/robots.txt` names the sitemap and `/sitemap.xml` lists `/` plus every note
   page, that a note page carries its `og:url` and `/` its canonical link, that
