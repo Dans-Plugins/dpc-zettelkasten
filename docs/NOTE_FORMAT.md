@@ -59,7 +59,8 @@ notes. The home MOC is what the sidebar groups by and what the root map
 routes through. A note may of course be linked from several MOCs — cross-links
 are the whole idea — but exactly one of them is where it *lives*.
 
-Maps of Content do not declare a home. They are placed by being linked from
+Maps of Content do not declare a home, and `validate.py` rejects a `moc:` key
+on any note that is not `type: concept`. They are placed by being linked from
 another MOC, and the root map
 [`moc-dans-plugins-community`](../notes/moc/moc-dans-plugins-community.md) is
 the entry point everything hangs off. A MOC that no other MOC links and that no
@@ -81,7 +82,7 @@ anything else, such as a bare URL:
 | `repo` | yes | `Dans-Plugins/<name>`. Citations outside the org are rejected by `validate.py`. |
 | `path` | yes | Repository-relative path to the file. |
 | `ref` | yes | **Full 40-character commit SHA.** Never a branch name — a branch moves and silently invalidates the claim. |
-| `lines` | no | `N` or `N-M`. Narrows the permalink to the exact lines that support the claim. |
+| `lines` | no | `N` or `N-M`, starting at 1 or later, with `N` no greater than `M`. Narrows the permalink to the exact lines that support the claim. |
 | `claim` | yes | The specific statement this citation backs up, in one sentence. Not a description of the file. |
 
 The `claim` field is what makes verification tractable: a reviewer (or the
@@ -118,7 +119,8 @@ this one, that second idea wants to be its own note with a link to it.
 ## Note types
 
 Each type has its own directory, and `validate.py` rejects a note whose `type`
-does not match the directory it is in.
+does not match the directory it is in. Every note needs a body: `validate.py`
+rejects one that is empty or only whitespace below the frontmatter.
 
 **Concept notes** (`notes/concepts/`) hold exactly one idea. If a note needs two
 `##` sections that could stand alone, it is two notes. They are the only notes
