@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.4] - 2026-10-30
+
 ### Added
 - A 3D picture of the note graph in `README.md`, with a looping orbit behind
   it, drawn by the new `tools/graph3d.py` with the Strata engine. Colour is a
@@ -12,6 +14,35 @@ All notable changes to this project are documented here.
   regenerates identically. Strata's Python binding is vendored unmodified in
   `tools/_strata/` (v0.7.0, MIT); the native library is fetched on first use
   and checked against its pinned SHA-256. CI does not run the tool.
+
+### Fixed
+- `build.py --help` now documents every flag. `--out` had no help text, though
+  it also decides where the note pages, `sitemap.xml` and `robots.txt` are
+  written, and the `Usage:` block named only `--out`, leaving out `--dataset`
+  and `--version-out`.
+- `build.py --version-out` now creates its directory when it does not exist,
+  as `--out` and `--dataset` already did. Before, the build crashed with a
+  `FileNotFoundError` after writing `index.html` and `dataset.json` but before
+  the note pages, `sitemap.xml` and `robots.txt`.
+
+## [0.3.3] - 2026-10-24
+
+### Fixed
+- `--help` on `validate.py`, `check_sources.py`, `sources_index.py` and
+  `build.py` now prints each tool's description as written. Before, argparse
+  reflowed it into one paragraph, running the one-command-per-line `Usage:`
+  examples (and `check_sources.py`'s numbered list) together.
+
+## [0.3.2] - 2026-10-21
+
+### Fixed
+- `validate.py` now rejects a `sources` entry that is not a citation mapping,
+  such as a bare `- https://github.com/...` URL, and a `sources` value that is
+  not a list. Before, such an entry was dropped without a word: next to a valid
+  citation it passed, branch URL and all, and on its own the note was told it
+  cited nothing.
+
+## [0.3.1] - 2026-10-19
 
 ### Fixed
 - `validate.py` now rejects a citation whose `lines` starts at 0 (`lines: 0`,
@@ -23,23 +54,6 @@ All notable changes to this project are documented here.
   a concept note must live in `notes/concepts/` and a MOC in `notes/moc/`, as
   `docs/NOTE_FORMAT.md` describes. Before, a misplaced note passed, and the
   unreachable-MOC message named a `notes/moc/` path the file was not at.
-- `validate.py` now rejects a `sources` entry that is not a citation mapping,
-  such as a bare `- https://github.com/...` URL, and a `sources` value that is
-  not a list. Before, such an entry was dropped without a word: next to a valid
-  citation it passed, branch URL and all, and on its own the note was told it
-  cited nothing.
-- `--help` on `validate.py`, `check_sources.py`, `sources_index.py` and
-  `build.py` now prints each tool's description as written. Before, argparse
-  reflowed it into one paragraph, running the one-command-per-line `Usage:`
-  examples (and `check_sources.py`'s numbered list) together.
-- `build.py --help` now documents every flag. `--out` had no help text, though
-  it also decides where the note pages, `sitemap.xml` and `robots.txt` are
-  written, and the `Usage:` block named only `--out`, leaving out `--dataset`
-  and `--version-out`.
-- `build.py --version-out` now creates its directory when it does not exist,
-  as `--out` and `--dataset` already did. Before, the build crashed with a
-  `FileNotFoundError` after writing `index.html` and `dataset.json` but before
-  the note pages, `sitemap.xml` and `robots.txt`.
 
 ## [0.3.0] - 2026-10-06
 
