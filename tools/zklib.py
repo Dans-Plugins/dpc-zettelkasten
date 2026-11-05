@@ -13,6 +13,11 @@ import sys
 NOTES_DIRNAME = "notes"
 VALID_TYPES = ("concept", "moc")
 
+# Keys that hold one value. parse_frontmatter accepts `key: [a]` for any key, so
+# Note rejects a list here: every tool hashes or compares these as strings, and
+# would otherwise die on a TypeError that does not name the file.
+SCALAR_KEYS = ("id", "title", "type", "summary", "moc")
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NOTES_ROOT = os.path.join(REPO_ROOT, NOTES_DIRNAME)
 
@@ -126,6 +131,12 @@ class Note(object):
     def __init__(self, path, meta, body):
         self.path = path
         self.rel_path = os.path.relpath(path, REPO_ROOT).replace(os.sep, "/")
+        # An empty list is a bare `key:`, which the required-key check reports.
+        for key in SCALAR_KEYS:
+            if isinstance(meta.get(key), list) and meta[key]:
+                raise NoteError(
+                    "%s: %s must be a single value, not a list" % (self.rel_path, key)
+                )
         self.meta = meta
         self.body = body
         self.id = meta.get("id") or os.path.splitext(os.path.basename(path))[0]

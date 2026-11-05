@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- `validate.py` now rejects a `tags` value that is not a list. Before, the key
+  was never inspected, and a string reached `dataset.json` as it was.
+- `validate.py --check-readme` no longer crashes on a citation with no `repo`.
+  Before, a `KeyError` traceback replaced every problem already found.
+- The tools now stop with an error naming the file when `id`, `title`, `type`,
+  `moc` or `summary` is a list. Before, `id` and `moc` crashed `validate.py`
+  with a `TypeError` that named no note, and `title` and `summary` passed.
+
 ## [0.3.4] - 2026-10-30
 
 ### Added
