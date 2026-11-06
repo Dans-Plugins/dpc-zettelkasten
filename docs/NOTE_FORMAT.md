@@ -37,9 +37,13 @@ Prose. Link to other notes with [[claimed-chunk]] or [[claimed-chunk|claims]].
 | `type` | yes | `concept` or `moc`. |
 | `moc` | yes for `concept` | Id of the note's **home** Map of Content. See below. |
 | `summary` | yes | One sentence. Appears under the title and feeds search. |
-| `tags` | no | Inline list, e.g. `[medieval-factions, persistence]`. |
+| `tags` | no | Inline list, e.g. `[medieval-factions, persistence]`. `validate.py` rejects a value that is not a list. |
 | `created` / `updated` | no | `YYYY-MM-DD`, zero-padded, a real calendar date. `validate.py` rejects any other form, and rejects an `updated` earlier than `created`. |
 | `sources` | yes for `concept` | List of citations — see below. |
+
+`id`, `title`, `type`, `moc`, and `summary` each hold one value. A list there,
+such as `moc: [moc-faction-domain-model]`, stops the tools with an error naming
+the file.
 
 ## Home MOCs
 

@@ -3,8 +3,8 @@
 
 Checks the rules in docs/NOTE_FORMAT.md that can be checked without network
 access: frontmatter shape, id/filename agreement, type/directory agreement,
-the YYYY-MM-DD form of created/updated, wikilink resolution, and the
-requirement that every concept note carries at least one pinned citation.
+the YYYY-MM-DD form of created/updated, tags being a list, wikilink resolution,
+and the requirement that every concept note carries at least one pinned citation.
 
 Network-dependent checks (does the cited file still exist at that SHA? has it
 drifted since?) live in tools/check_sources.py.
@@ -116,6 +116,16 @@ def validate_dates(note, problems):
         )
 
 
+def validate_tags(note, problems):
+    # A string passes through build.py into dataset.json, where lib/zk-graphql.js
+    # would iterate it character by character.
+    tags = note.meta.get("tags")
+    if tags is not None and not isinstance(tags, list):
+        problems.append(
+            "%s: tags %r must be an inline list, e.g. [a, b]" % (note.rel_path, tags)
+        )
+
+
 def fenced_blocks(text):
     """Every fenced code block's contents, so the cluster tree can be located by
     the root map's title rather than by line number. Paired by walking the
@@ -154,7 +164,8 @@ def check_readme(notes, homed, problems):
         "mocs": sum(1 for n in notes if n.type == "moc"),
         "concepts": sum(1 for n in notes if n.type == "concept"),
         "citations": sum(len(n.sources) for n in notes),
-        "repos": len(set(s["repo"] for n in notes for s in n.sources)),
+        # validate_source has already reported any citation with no repo.
+        "repos": len(set(s["repo"] for n in notes for s in n.sources if s.get("repo"))),
     }
 
     match = README_SUMMARY_RE.search(readme)
@@ -282,6 +293,7 @@ def main():
             )
 
         validate_dates(note, problems)
+        validate_tags(note, problems)
 
         if note.type == "concept" and not note.sources:
             problems.append(
