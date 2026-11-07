@@ -101,6 +101,31 @@ jobs:
             console.log('engine ok —', data.stats.noteCount, 'notes,', data.stats.citationCount, 'citations');
           "
 
+      # Notes and fields are looked up by name in plain objects, so a name that
+      # Object.prototype defines must still read as unknown. dpc-mcp-server
+      # passes these names straight through from its callers.
+      - name: Check inherited property names read as unknown
+        run: |
+          node <<'JS'
+          const { createEngine } = require('./lib/zk-graphql.js');
+          const engine = createEngine(require('./site/dataset.json'));
+          const rejects = (query, expected) => {
+            let message = '';
+            try { engine.execute(query); } catch (e) { message = e.message; }
+            if (!message.startsWith(expected)) throw new Error(query + ' gave: ' + (message || 'no error'));
+          };
+          for (const id of ['constructor', 'toString', '__proto__']) {
+            const { data } = engine.execute('{ note(id: "' + id + '") { title links { title } } }');
+            if (data.note !== null) throw new Error('note(id: ' + id + ') is ' + JSON.stringify(data.note));
+          }
+          rejects('{ constructor }', 'Cannot query field "constructor"');
+          rejects('{ stats { toString } }', 'Cannot query field "toString"');
+          rejects('{ note(id: "faction", constructor: 1) { id } }', 'Unknown argument "constructor"');
+          const { data } = engine.execute('{ note(id: "faction") { id } }');
+          if (!data.note || data.note.id !== 'faction') throw new Error('a real note no longer resolves');
+          console.log('inherited names read as unknown');
+          JS
+
   citations:
     # Pinned: ubuntu-latest is Ubuntu 26.04, which setup-python has no 3.8 build for.
     runs-on: ubuntu-24.04
