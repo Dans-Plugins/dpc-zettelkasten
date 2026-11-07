@@ -12,6 +12,10 @@ All notable changes to this project are documented here.
 - The tools now stop with an error naming the file when `id`, `title`, `type`,
   `moc` or `summary` is a list. Before, `id` and `moc` crashed `validate.py`
   with a `TypeError` that named no note, and `title` and `summary` passed.
+- The GraphQL engine now treats a name that `Object.prototype` defines as it
+  treats any other unknown name. Before, `note(id: "constructor")` returned
+  `{}` or raised a `TypeError` instead of `null`, `{ constructor }` failed with
+  `def.resolve is not a function`, and an argument with such a name was accepted.
 
 ## [0.3.4] - 2026-10-30
 
