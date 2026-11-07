@@ -102,8 +102,7 @@ jobs:
           "
 
       # Notes and fields are looked up by name in plain objects, so a name that
-      # Object.prototype defines must still read as unknown. dpc-mcp-server
-      # passes these names straight through from its callers.
+      # Object.prototype defines must still read as unknown.
       - name: Check inherited property names read as unknown
         run: |
           node <<'JS'
