@@ -126,7 +126,7 @@ CI has three jobs:
   checks that `site/og.png` is a PNG of the size the share tags state, loads
   `lib/zk-graphql.js` under Node to confirm the engine still runs headless, and
   checks that an id, field or argument named after an `Object.prototype` property
-  reads as unknown.
+  reads as unknown, both in the engine and in the explorer's note lookup.
 - **`citations`** runs `check_sources.py` against the live GitHub API. Drift is
   reported but never fails the build; only an invalid citation — a file missing
   at the pinned commit, or a line range past the end of the file — is a failure.
