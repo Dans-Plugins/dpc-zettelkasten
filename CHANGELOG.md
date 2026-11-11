@@ -16,6 +16,9 @@ All notable changes to this project are documented here.
   treats any other unknown name. Before, `note(id: "constructor")` returned
   `{}` or raised a `TypeError` instead of `null`, `{ constructor }` failed with
   `def.resolve is not a function`, and an argument with such a name was accepted.
+- The explorer now shows Not found for `#/constructor` and any other name that
+  `Object.prototype` defines. Before, the lookup found `Object`'s own property,
+  so the page skipped the Not found branch and stopped on a `TypeError`.
 
 ## [0.3.4] - 2026-10-30
 
