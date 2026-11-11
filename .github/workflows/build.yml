@@ -125,6 +125,24 @@ jobs:
           console.log('inherited names read as unknown');
           JS
 
+      # The explorer routes the URL fragment through NOTES[id], so #/constructor
+      # must find nothing there, the same as any other unknown id.
+      - name: Check the explorer reads inherited names as unknown notes
+        run: |
+          node <<'JS'
+          const html = require('fs').readFileSync('site/index.html', 'utf8');
+          const line = html.split('\n').find((l) => l.startsWith('const NOTES = '));
+          if (!line) throw new Error('site/index.html has no "const NOTES = " line');
+          const NOTES = new Function(line + '\nreturn NOTES;')();
+          const failures = [];
+          for (const id of ['constructor', 'toString', 'hasOwnProperty', '__proto__']) {
+            if (NOTES[id]) failures.push('NOTES["' + id + '"] is ' + typeof NOTES[id]);
+          }
+          if (!NOTES.faction || NOTES.faction.id !== 'faction') failures.push('a real note no longer resolves');
+          if (failures.length) throw new Error(failures.join('; '));
+          console.log('explorer reads inherited names as unknown —', Object.keys(NOTES).length, 'notes');
+          JS
+
   citations:
     # Pinned: ubuntu-latest is Ubuntu 26.04, which setup-python has no 3.8 build for.
     runs-on: ubuntu-24.04
