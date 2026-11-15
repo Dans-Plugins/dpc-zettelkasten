@@ -492,7 +492,10 @@
 <script>
 /*__ZKGRAPHQL__*/
 
-const NOTES = /*__NOTES__*/null;
+// A null prototype, because the hash is looked up here by name: on a plain
+// object "#/constructor" would find Object's own constructor and not read as
+// an unknown note.
+const NOTES = Object.assign(Object.create(null), /*__NOTES__*/null);
 const META = /*__META__*/null;
 
 const $ = (sel) => document.querySelector(sel);
