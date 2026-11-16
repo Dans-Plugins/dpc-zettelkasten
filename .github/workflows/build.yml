@@ -125,6 +125,39 @@ jobs:
           console.log('inherited names read as unknown');
           JS
 
+      # Tags, arguments and aliases come from notes or queries and are written
+      # into plain objects, so "constructor" and "__proto__" must stay own keys.
+      - name: Check tags, arguments and aliases named after Object.prototype
+        run: |
+          node <<'JS'
+          const { createEngine } = require('./lib/zk-graphql.js');
+          const dataset = JSON.parse(require('fs').readFileSync('site/dataset.json', 'utf8'));
+          const failures = [];
+          const attempt = (label, fn) => { try { fn(); } catch (e) { failures.push(label + ': ' + e.message); } };
+          attempt('a note tagged constructor', () => {
+            const copy = JSON.parse(JSON.stringify(dataset));
+            copy.notes.faction.tags = ['constructor', '__proto__'];
+            const { data } = createEngine(copy).execute('{ tags { name count } }');
+            for (const name of ['constructor', '__proto__']) {
+              const tag = data.tags.find((t) => t.name === name);
+              if (!tag || tag.count !== 1) throw new Error('tag ' + name + ' is ' + JSON.stringify(tag));
+            }
+          });
+          const engine = createEngine(dataset);
+          attempt('an argument named __proto__', () => {
+            let message = '';
+            try { engine.execute('{ note(id: "faction", __proto__: 1) { id } }'); } catch (e) { message = e.message; }
+            if (!message.startsWith('Unknown argument "__proto__"')) throw new Error('gave: ' + (message || 'no error'));
+          });
+          attempt('a field aliased __proto__', () => {
+            const { data } = engine.execute('{ __proto__: stats { noteCount } }');
+            if (!Object.prototype.hasOwnProperty.call(data, '__proto__')) throw new Error('alias missing from ' + JSON.stringify(data));
+            if (data['__proto__'].noteCount < 1) throw new Error('alias holds ' + JSON.stringify(data['__proto__']));
+          });
+          if (failures.length) throw new Error(failures.join('; '));
+          console.log('tags, arguments and aliases keep inherited names as own keys');
+          JS
+
       # The explorer routes the URL fragment through NOTES[id], so #/constructor
       # must find nothing there, the same as any other unknown id.
       - name: Check the explorer reads inherited names as unknown notes
