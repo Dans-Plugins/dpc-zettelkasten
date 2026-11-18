@@ -19,6 +19,11 @@ All notable changes to this project are documented here.
 - The explorer now shows Not found for `#/constructor` and any other name that
   `Object.prototype` defines. Before, the lookup found `Object`'s own property,
   so the page skipped the Not found branch and stopped on a `TypeError`.
+- The GraphQL engine now keeps `constructor` and `__proto__` as ordinary names
+  in tags, arguments and aliases. Before, a note tagged either one made
+  `{ tags }` raise a `TypeError`, an argument named `__proto__` was accepted
+  instead of reported as unknown, and a field aliased `__proto__` was missing
+  from the result.
 
 ## [0.3.4] - 2026-10-30
 
